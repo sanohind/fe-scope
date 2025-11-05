@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Ecommerce from "./pages/Dashboard/Ecommerce";
 import Stocks from "./pages/Dashboard/Stocks";
 import Crm from "./pages/Dashboard/Crm";
@@ -59,6 +59,11 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import TaskList from "./pages/Task/TaskList";
 import Saas from "./pages/Dashboard/Saas";
+import WarehouseDashboard from "./pages/MainPages/WarehouseDashboard";
+import InventoryDashboard from "./pages/MainPages/InventoryDashboard";
+import ProductionDashboard from "./pages/MainPages/ProductionDashboard";
+import SalesDashboard from "./pages/MainPages/SalesDashboard";
+import ProcurementDashboard from "./pages/MainPages/ProcurementDashboard";
 
 export default function App() {
   return (
@@ -73,6 +78,11 @@ export default function App() {
             <Route path="/marketing" element={<Marketing />} />
             <Route path="/crm" element={<Crm />} />
             <Route path="/stocks" element={<Stocks />} />
+            <Route path="/production" element={<ProductionDashboard />} />
+            <Route path="/warehouse" element={<WarehouseDashboard />} />
+            <Route path="/inventory" element={<InventoryDashboard />} />
+            <Route path="/sales" element={<SalesDashboard />} />
+            <Route path="/procurement" element={<ProcurementDashboard />} />
             <Route path="/saas" element={<Saas />} />
 
             {/* Others Page */}
@@ -137,10 +147,7 @@ export default function App() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route
-            path="/two-step-verification"
-            element={<TwoStepVerification />}
-          />
+          <Route path="/two-step-verification" element={<TwoStepVerification />} />
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />
