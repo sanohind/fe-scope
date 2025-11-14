@@ -20,7 +20,8 @@ const SupplierDeliveryPerformance: React.FC = () => {
       try {
         setLoading(true);
         const result = await procurementApi.getSupplierDeliveryPerformance();
-        const dataArray = Array.isArray(result) ? result : [];
+        // Handle if API returns wrapped data or direct array
+        const dataArray = Array.isArray(result) ? result : (result?.data || []);
         setData(dataArray);
         setError(null);
       } catch (err) {
@@ -61,10 +62,12 @@ const SupplierDeliveryPerformance: React.FC = () => {
     }).format(value);
   };
 
-  const series = data.map((item) => ({
-    x: item.delivery_time_variance,
-    y: item.receipt_accuracy_rate,
-    z: item.total_receipt_value / 1000000, // Convert to millions for bubble size
+  // Filter out invalid data and ensure numeric values
+  const validData = data.filter((item) => item && item.bp_name);
+  const series = validData.map((item) => ({
+    x: Number(item.delivery_time_variance) || 0,
+    y: Number(item.receipt_accuracy_rate) || 0,
+    z: (Number(item.total_receipt_value) || 0) / 1000000, // Convert to millions for bubble size
     name: item.bp_name,
   }));
 

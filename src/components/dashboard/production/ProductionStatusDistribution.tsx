@@ -5,12 +5,24 @@ import { productionApi } from "../../../services/api/dashboardApi";
 
 interface StatusData {
   status: string;
-  count: number;
-  percentage: number;
+  count: string;
+  total_qty: string;
+}
+
+interface ApiResponse {
+  data: StatusData[];
+  total_orders: number;
+  filter_metadata: {
+    period: string;
+    date_field: string;
+    date_from: string | null;
+    date_to: string | null;
+  };
 }
 
 const ProductionStatusDistribution: React.FC = () => {
   const [data, setData] = useState<StatusData[]>([]);
+  const [totalOrders, setTotalOrders] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,10 +30,16 @@ const ProductionStatusDistribution: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await productionApi.getProductionStatusDistribution();
-        // Handle if API returns wrapped data or direct array
-        const dataArray = Array.isArray(result) ? result : (result?.data || []);
-        setData(dataArray);
+        const result: ApiResponse = await productionApi.getProductionStatusDistribution();
+        
+        // Extract data array and total from API response
+        if (result && result.data) {
+          setData(result.data);
+          setTotalOrders(result.total_orders || 0);
+        } else {
+          setData([]);
+          setTotalOrders(0);
+        }
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
@@ -33,9 +51,9 @@ const ProductionStatusDistribution: React.FC = () => {
     fetchData();
   }, []);
 
-  // Ensure data is an array before mapping
-  const series = Array.isArray(data) ? data.map((item) => item.count) : [];
-  const labels = Array.isArray(data) ? data.map((item) => item.status) : [];
+  // Convert string counts to numbers for the chart
+  const series = data.map((item) => parseInt(item.count, 10));
+  const labels = data.map((item) => item.status);
 
   const options: ApexOptions = {
     chart: {
@@ -82,12 +100,9 @@ const ProductionStatusDistribution: React.FC = () => {
               label: "Total Orders",
               fontSize: "14px",
               fontWeight: 500,
-              formatter: function (w) {
-                const total = w.globals.seriesTotals.reduce(
-                  (a: number, b: number) => a + b,
-                  0
-                );
-                return total.toLocaleString();
+              formatter: function () {
+                // Use the totalOrders from API instead of calculating from series
+                return totalOrders.toLocaleString();
               },
             },
           },
@@ -110,8 +125,7 @@ const ProductionStatusDistribution: React.FC = () => {
     tooltip: {
       y: {
         formatter: (val) => {
-          const total = series.reduce((a, b) => a + b, 0);
-          const percentage = ((val / total) * 100).toFixed(1);
+          const percentage = totalOrders > 0 ? ((val / totalOrders) * 100).toFixed(1) : "0.0";
           return `${val.toLocaleString()} (${percentage}%)`;
         },
       },

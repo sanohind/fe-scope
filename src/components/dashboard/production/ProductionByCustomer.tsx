@@ -34,19 +34,21 @@ const ProductionByCustomer: React.FC = () => {
     fetchData();
   }, []);
 
-  const categories = Array.isArray(data) ? data.map((item) => item.customer) : [];
+  // Filter out invalid data and ensure numeric values
+  const validData = Array.isArray(data) ? data.filter((item) => item && item.customer) : [];
+  const categories = validData.map((item) => item.customer);
   const series = [
     {
       name: "Qty Ordered",
-      data: Array.isArray(data) ? data.map((item) => item.qty_ordered) : [],
+      data: validData.map((item) => Number(item.qty_ordered) || 0),
     },
     {
       name: "Qty Delivered",
-      data: Array.isArray(data) ? data.map((item) => item.qty_delivered) : [],
+      data: validData.map((item) => Number(item.qty_delivered) || 0),
     },
     {
       name: "Qty Outstanding",
-      data: Array.isArray(data) ? data.map((item) => item.qty_outstanding) : [],
+      data: validData.map((item) => Number(item.qty_outstanding) || 0),
     },
   ];
 

@@ -21,8 +21,10 @@ const TopSellingProducts: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await salesApi.getTopProducts({ limit: 50 });
-        setData(result);
+        const result = await salesApi.getTopProducts({ limit: 10 });
+        // Handle if API returns wrapped data or direct array
+        const dataArray = Array.isArray(result) ? result : (result?.data || []);
+        setData(dataArray);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
@@ -53,7 +55,7 @@ const TopSellingProducts: React.FC = () => {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
-          Top 50 Selling Products
+          Top 10 Selling Products
         </h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
           <p className="text-error-600 dark:text-error-400">{error}</p>
@@ -66,7 +68,7 @@ const TopSellingProducts: React.FC = () => {
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Top 50 Selling Products
+          Top 10 Selling Products
         </h3>
       </div>
 

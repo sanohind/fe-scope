@@ -29,7 +29,9 @@ const StockDistributionByProductType: React.FC = () => {
       try {
         setLoading(true);
         const result = await inventoryApi.getStockDistributionByProductType();
-        setData(result);
+        // Handle if API returns wrapped data { data: {...} } or direct object
+        const dataObj = result?.data || result;
+        setData(dataObj);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
@@ -73,24 +75,32 @@ const StockDistributionByProductType: React.FC = () => {
   const allocatedValues: number[] = [];
   const availableValues: number[] = [];
 
-  Object.entries(data).forEach(([productType, models]) => {
-    let totalOnhand = 0;
-    let totalAllocated = 0;
-    let totalAvailable = 0;
+  if (data && typeof data === 'object') {
+    Object.entries(data).forEach(([productType, models]) => {
+      let totalOnhand = 0;
+      let totalAllocated = 0;
+      let totalAvailable = 0;
 
-    Object.values(models).forEach((items) => {
-      items.forEach((item) => {
-        totalOnhand += item.onhand;
-        totalAllocated += item.allocated;
-        totalAvailable += item.available;
-      });
+      if (models && typeof models === 'object') {
+        Object.values(models).forEach((items) => {
+          if (Array.isArray(items)) {
+            items.forEach((item) => {
+              if (item) {
+                totalOnhand += Number(item.onhand) || 0;
+                totalAllocated += Number(item.allocated) || 0;
+                totalAvailable += Number(item.available) || 0;
+              }
+            });
+          }
+        });
+      }
+
+      productTypes.push(productType);
+      onhandValues.push(totalOnhand);
+      allocatedValues.push(totalAllocated);
+      availableValues.push(totalAvailable);
     });
-
-    productTypes.push(productType);
-    onhandValues.push(totalOnhand);
-    allocatedValues.push(totalAllocated);
-    availableValues.push(totalAvailable);
-  });
+  }
 
   const options: ApexOptions = {
     colors: ["#465fff", "#FDB022", "#12B76A"],

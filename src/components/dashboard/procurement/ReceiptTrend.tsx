@@ -20,7 +20,8 @@ const ReceiptTrend: React.FC = () => {
       try {
         setLoading(true);
         const result = await procurementApi.getReceiptTrend({ period });
-        const dataArray = Array.isArray(result) ? result : [];
+        // Handle if API returns wrapped data or direct array
+        const dataArray = Array.isArray(result) ? result : (result?.data || []);
         setData(dataArray);
         setError(null);
       } catch (err) {
@@ -64,9 +65,11 @@ const ReceiptTrend: React.FC = () => {
     return value.toFixed(0);
   };
 
-  const categories = data.map((item) => item.date);
-  const amountSeries = data.map((item) => item.receipt_amount);
-  const countSeries = data.map((item) => item.receipt_count);
+  // Filter out invalid data and ensure numeric values
+  const validData = data.filter((item) => item && item.date);
+  const categories = validData.map((item) => item.date);
+  const amountSeries = validData.map((item) => Number(item.receipt_amount) || 0);
+  const countSeries = validData.map((item) => Number(item.receipt_count) || 0);
 
   const options: ApexOptions = {
     chart: {
@@ -102,7 +105,7 @@ const ReceiptTrend: React.FC = () => {
     },
     colors: ["#465FFF", "#FB6514"],
     xaxis: {
-      categories: categories,
+      categories: categories.length > 0 ? categories : ['No Data'],
       labels: {
         style: {
           fontSize: "12px",

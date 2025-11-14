@@ -22,7 +22,8 @@ const PurchasePriceTrend: React.FC = () => {
       try {
         setLoading(true);
         const result = await procurementApi.getPurchasePriceTrend({ limit: 10 });
-        const dataArray = Array.isArray(result) ? result : [];
+        // Handle if API returns wrapped data or direct array
+        const dataArray = Array.isArray(result) ? result : (result?.data || []);
         setData(dataArray);
         setError(null);
       } catch (err) {
@@ -63,16 +64,19 @@ const PurchasePriceTrend: React.FC = () => {
     }).format(value);
   };
 
+  // Filter out invalid data
+  const validData = Array.isArray(data) ? data.filter((item) => item && item.item_no && Array.isArray(item.data)) : [];
+  
   // Get all unique dates
   const allDates = Array.from(
-    new Set(data.flatMap((item) => item.data.map((d) => d.date)))
+    new Set(validData.flatMap((item) => item.data.map((d) => d.date)))
   ).sort();
 
-  const series = data.map((item) => ({
+  const series = validData.map((item) => ({
     name: `${item.item_no} - ${item.item_desc}`,
     data: allDates.map((date) => {
       const priceData = item.data.find((d) => d.date === date);
-      return priceData ? priceData.average_price : null;
+      return priceData ? (Number(priceData.average_price) || null) : null;
     }),
   }));
 
@@ -98,7 +102,7 @@ const PurchasePriceTrend: React.FC = () => {
       curve: "smooth",
     },
     xaxis: {
-      categories: allDates,
+      categories: allDates.length > 0 ? allDates : ['No Data'],
       labels: {
         style: {
           fontSize: "11px",

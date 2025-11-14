@@ -5,15 +5,16 @@ import { salesApi } from "../../../services/api/dashboardApi";
 
 interface ProductTypeData {
   product_type: string;
-  revenue: number;
-  qty_sold: number;
-  invoice_count: number;
+  revenue: string | number;
+  qty_sold: string | number;
+  invoice_count: string | number;
   percentage: number;
 }
 
 interface SalesByProductData {
   data: ProductTypeData[];
   total_revenue: number;
+  period?: string;
 }
 
 const SalesByProductType: React.FC = () => {
@@ -26,11 +27,12 @@ const SalesByProductType: React.FC = () => {
       try {
         setLoading(true);
         const result = await salesApi.getSalesByProductType();
-        // Handle if API returns wrapped data or direct format
-        const processedData = result?.data ? result : { data: [], total_revenue: 0 };
-        setData(processedData);
+        console.log("API Result:", result); // Debug log
+        // API returns object directly
+        setData(result);
         setError(null);
       } catch (err) {
+        console.error("Fetch error:", err); // Debug log
         setError(err instanceof Error ? err.message : "Failed to fetch data");
       } finally {
         setLoading(false);
@@ -42,10 +44,16 @@ const SalesByProductType: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded dark:bg-gray-800 w-48 mb-6"></div>
-          <div className="h-80 bg-gray-200 rounded dark:bg-gray-800"></div>
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+        <div className="mb-4">
+          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
+            Sales by Product Type
+          </h3>
+        </div>
+        <div className="flex justify-center items-center h-[300px]">
+          <div className="animate-pulse">
+            <div className="w-[250px] h-[250px] bg-gray-200 rounded-full dark:bg-gray-800"></div>
+          </div>
         </div>
       </div>
     );
@@ -53,12 +61,14 @@ const SalesByProductType: React.FC = () => {
 
   if (error || !data || !data.data || data.data.length === 0) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
-          Sales by Product Type
-        </h3>
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+        <div className="mb-4">
+          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
+            Sales by Product Type
+          </h3>
+        </div>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400">
+          <p className="text-error-600 dark:text-error-400 text-sm">
             {error || "No data available"}
           </p>
         </div>
@@ -66,10 +76,16 @@ const SalesByProductType: React.FC = () => {
     );
   }
 
-  // Ensure data.data is an array before mapping
+  // Ensure data.data is an array and parse values
   const productData = Array.isArray(data.data) ? data.data : [];
   const labels = productData.map((item) => item.product_type);
-  const series = productData.map((item) => item.revenue);
+  // Parse revenue from string to number
+  const series = productData.map((item) => {
+    const revenue = typeof item.revenue === 'string' ? parseFloat(item.revenue) : item.revenue;
+    return revenue || 0;
+  });
+
+  console.log("Chart data:", { labels, series }); // Debug log
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -93,25 +109,33 @@ const SalesByProductType: React.FC = () => {
       position: "bottom",
       horizontalAlign: "center",
       fontFamily: "Outfit",
+      fontSize: "14px",
+      itemMargin: {
+        horizontal: 8,
+        vertical: 4,
+      },
+    },
+    stroke: {
+      show: false,
+      width: 0,
     },
     plotOptions: {
       pie: {
         donut: {
-          size: "70%",
+          size: "65%",
           labels: {
             show: true,
             name: {
               show: true,
               fontSize: "14px",
               fontFamily: "Outfit",
-              offsetY: -10,
+              fontWeight: 500,
             },
             value: {
               show: true,
-              fontSize: "24px",
+              fontSize: "22px",
               fontFamily: "Outfit",
-              fontWeight: 600,
-              offsetY: 5,
+              fontWeight: 700,
               formatter: (val: string) => {
                 return formatCurrency(Number(val));
               },
@@ -121,6 +145,7 @@ const SalesByProductType: React.FC = () => {
               label: "Total Revenue",
               fontSize: "14px",
               fontFamily: "Outfit",
+              fontWeight: 500,
               formatter: () => {
                 return formatCurrency(data.total_revenue || 0);
               },
@@ -132,23 +157,48 @@ const SalesByProductType: React.FC = () => {
     dataLabels: {
       enabled: false,
     },
+    responsive: [
+      {
+        breakpoint: 480,
+        options: {
+          legend: {
+            position: "bottom",
+          },
+        },
+      },
+    ],
     tooltip: {
       y: {
         formatter: (val: number, opts) => {
           const item = productData[opts.seriesIndex];
           if (!item) return formatCurrency(val);
-          return `${formatCurrency(val)} (${(item.percentage || 0).toFixed(1)}%) - ${(item.qty_sold || 0).toLocaleString()} units`;
+          const qtySold = typeof item.qty_sold === 'string' ? parseInt(item.qty_sold) : item.qty_sold;
+          const total = series.reduce((a, b) => a + b, 0);
+          const percentage = ((val / total) * 100).toFixed(1);
+          return `${formatCurrency(val)} (${percentage}%) - ${(qtySold || 0).toLocaleString()} units`;
         },
       },
     },
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className="mb-6 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Sales by Product Type
-        </h3>
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+      <div className="mb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
+              Sales by Product Type
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Revenue distribution by product category
+            </p>
+          </div>
+          {data.period && (
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Period: {data.period}
+            </span>
+          )}
+        </div>
       </div>
       <div>
         <ReactApexChart options={options} series={series} type="donut" height={350} />

@@ -22,7 +22,9 @@ const DeliveryPerformance: React.FC = () => {
       try {
         setLoading(true);
         const result = await salesApi.getDeliveryPerformance();
-        setData(result);
+        // Handle if API returns wrapped data { data: {...} } or direct object
+        const dataObj = result?.data || result;
+        setData(dataObj);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");

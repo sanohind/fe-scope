@@ -20,8 +20,8 @@ const ReceiptByItemGroup: React.FC = () => {
       try {
         setLoading(true);
         const result = await procurementApi.getReceiptByItemGroup();
-        // Ensure result is an array
-        const dataArray = Array.isArray(result) ? result : [];
+        // Handle if API returns wrapped data or direct array
+        const dataArray = Array.isArray(result) ? result : (result?.data || []);
         setData(dataArray);
         setError(null);
       } catch (err) {
@@ -62,9 +62,11 @@ const ReceiptByItemGroup: React.FC = () => {
     }).format(value);
   };
 
-  const series = data.map((item) => ({
+  // Filter out invalid data and ensure numeric values
+  const validData = data.filter((item) => item && item.item_group && item.receipt_value != null);
+  const series = validData.map((item) => ({
     x: `${item.item_group} - ${item.item_type}`,
-    y: item.receipt_value,
+    y: Number(item.receipt_value) || 0,
   }));
 
   const options: ApexOptions = {

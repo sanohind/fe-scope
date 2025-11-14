@@ -21,10 +21,25 @@ const TopItemsMoved: React.FC = () => {
       try {
         setLoading(true);
         const result = await warehouseApi.getTopItemsMoved(20);
-        setData(result);
-        setError(null);
+
+        // Ensure result is an array
+        if (Array.isArray(result)) {
+          setData(result);
+          setError(null);
+        } else if (result && Array.isArray(result.data)) {
+          // Handle case where API returns { data: [...] }
+          setData(result.data);
+          setError(null);
+        } else {
+          // Handle case where result is not an array
+          console.error("TopItemsMoved: API returned non-array data:", result);
+          setData([]);
+          setError("Invalid data format received from API");
+        }
       } catch (err) {
+        console.error("TopItemsMoved fetch error:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch data");
+        setData([]); // Ensure data is always an array
       } finally {
         setLoading(false);
       }
@@ -44,16 +59,13 @@ const TopItemsMoved: React.FC = () => {
     );
   }
 
-  if (error || !data || data.length === 0) {
+  // Ensure data is always an array before using map
+  if (error || !Array.isArray(data) || data.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
-          Top 20 Items Moved
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Top 20 Items Moved</h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400">
-            {error || "No data available"}
-          </p>
+          <p className="text-error-600 dark:text-error-400">{error || "No data available"}</p>
         </div>
       </div>
     );
@@ -172,9 +184,7 @@ const TopItemsMoved: React.FC = () => {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Top 20 Items Moved
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Top 20 Items Moved</h3>
       </div>
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[600px]">

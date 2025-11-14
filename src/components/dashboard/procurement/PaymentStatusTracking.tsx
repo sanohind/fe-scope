@@ -19,7 +19,8 @@ const PaymentStatusTracking: React.FC = () => {
       try {
         setLoading(true);
         const result = await procurementApi.getPaymentStatusTracking();
-        const dataArray = Array.isArray(result) ? result : [];
+        // Handle if API returns wrapped data or direct array
+        const dataArray = Array.isArray(result) ? result : (result?.data || []);
         setData(dataArray);
         setError(null);
       } catch (err) {
@@ -60,9 +61,11 @@ const PaymentStatusTracking: React.FC = () => {
     }).format(value);
   };
 
-  const categories = data.map((item) => item.date);
-  const invoicedNotPaidSeries = data.map((item) => item.invoiced_not_paid);
-  const paidSeries = data.map((item) => item.paid);
+  // Filter out invalid data and ensure numeric values
+  const validData = data.filter((item) => item && item.date);
+  const categories = validData.map((item) => item.date);
+  const invoicedNotPaidSeries = validData.map((item) => Number(item.invoiced_not_paid) || 0);
+  const paidSeries = validData.map((item) => Number(item.paid) || 0);
 
   const options: ApexOptions = {
     chart: {
@@ -98,7 +101,7 @@ const PaymentStatusTracking: React.FC = () => {
       },
     },
     xaxis: {
-      categories: categories,
+      categories: categories.length > 0 ? categories : ['No Data'],
       labels: {
         style: {
           fontSize: "11px",

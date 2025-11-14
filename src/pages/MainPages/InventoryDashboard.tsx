@@ -1,4 +1,5 @@
 import PageMeta from "../../components/common/PageMeta";
+import LazyLoad from "../../components/common/LazyLoad";
 import StockLevelOverview from "../../components/dashboard/inventory/StockLevelOverview";
 import StockHealthByWarehouse from "../../components/dashboard/inventory/StockHealthByWarehouse";
 import TopCriticalItems from "../../components/dashboard/inventory/TopCriticalItems";
@@ -15,25 +16,37 @@ export default function InventoryDashboard() {
         description="Dashboard 1: Inventory Management & Stock Control - Monitoring dan analisis stock inventory"
       />
       <div className="space-y-6">
-        {/* Stock Level Overview - KPI Cards */}
+        {/* Stock Level Overview - KPI Cards - Load immediately */}
         <StockLevelOverview />
 
         {/* Stock Health by Warehouse & Stock by Customer */}
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <StockHealthByWarehouse />
-          <StockByCustomer />
+          <LazyLoad height="400px">
+            <StockHealthByWarehouse />
+          </LazyLoad>
+          <LazyLoad height="400px">
+            <StockByCustomer />
+          </LazyLoad>
         </div>
 
         {/* Top Critical Items Table */}
-        <TopCriticalItems />
+        <LazyLoad height="500px">
+          <TopCriticalItems />
+        </LazyLoad>
 
         {/* Stock Movement Trend */}
-        <StockMovementTrend />
+        <LazyLoad height="450px">
+          <StockMovementTrend />
+        </LazyLoad>
 
         {/* Stock Distribution & Inventory Availability */}
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <StockDistributionByProductType />
-          <InventoryAvailabilityVsDemand />
+          <LazyLoad height="400px">
+            <StockDistributionByProductType />
+          </LazyLoad>
+          <LazyLoad height="400px">
+            <InventoryAvailabilityVsDemand />
+          </LazyLoad>
         </div>
       </div>
     </>

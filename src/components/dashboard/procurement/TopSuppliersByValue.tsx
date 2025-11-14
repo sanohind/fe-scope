@@ -21,7 +21,8 @@ const TopSuppliersByValue: React.FC = () => {
       try {
         setLoading(true);
         const result = await procurementApi.getTopSuppliersByValue(20);
-        const dataArray = Array.isArray(result) ? result : [];
+        // Handle if API returns wrapped data or direct array
+        const dataArray = Array.isArray(result) ? result : (result?.data || []);
         setData(dataArray);
         setError(null);
       } catch (err) {
@@ -62,8 +63,10 @@ const TopSuppliersByValue: React.FC = () => {
     }).format(value);
   };
 
-  const categories = data.map((item) => item.bp_name);
-  const series = data.map((item) => item.total_receipt_amount);
+  // Filter out invalid data and ensure numeric values
+  const validData = data.filter((item) => item && item.bp_name && item.total_receipt_amount != null);
+  const categories = validData.map((item) => item.bp_name);
+  const series = validData.map((item) => Number(item.total_receipt_amount) || 0);
 
   const options: ApexOptions = {
     chart: {
@@ -85,7 +88,7 @@ const TopSuppliersByValue: React.FC = () => {
       enabled: false,
     },
     xaxis: {
-      categories: categories,
+      categories: categories.length > 0 ? categories : ['No Data'],
       labels: {
         formatter: (val) => {
           const num = parseFloat(val);
@@ -121,7 +124,8 @@ const TopSuppliersByValue: React.FC = () => {
     },
     tooltip: {
       custom: ({ dataPointIndex }) => {
-        const supplier = data[dataPointIndex];
+        const supplier = validData[dataPointIndex];
+        if (!supplier) return '';
         return `
           <div class="bg-white dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-800 shadow-lg">
             <div class="font-semibold text-gray-800 dark:text-white/90 mb-2">${supplier.bp_name}</div>
@@ -132,11 +136,11 @@ const TopSuppliersByValue: React.FC = () => {
               </div>
               <div class="flex justify-between gap-4">
                 <span class="text-gray-500 dark:text-gray-400">PO Count:</span>
-                <span class="font-medium text-gray-800 dark:text-white/90">${supplier.po_count.toLocaleString()}</span>
+                <span class="font-medium text-gray-800 dark:text-white/90">${(supplier.po_count || 0).toLocaleString()}</span>
               </div>
               <div class="flex justify-between gap-4">
                 <span class="text-gray-500 dark:text-gray-400">Receipt Count:</span>
-                <span class="font-medium text-gray-800 dark:text-white/90">${supplier.receipt_count.toLocaleString()}</span>
+                <span class="font-medium text-gray-800 dark:text-white/90">${(supplier.receipt_count || 0).toLocaleString()}</span>
               </div>
               <div class="flex justify-between gap-4">
                 <span class="text-gray-500 dark:text-gray-400">Avg PO Value:</span>

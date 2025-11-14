@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, ComposedChart } from "recharts";
+import { Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, ComposedChart } from "recharts";
 import { salesApi } from "../../../services/api/dashboardApi";
 
 interface RevenueTrendData {
@@ -19,7 +19,9 @@ const RevenueTrend: React.FC = () => {
       try {
         setLoading(true);
         const result = await salesApi.getRevenueTrend({ group_by: groupBy });
-        setData(result);
+        // Handle if API returns wrapped data or direct array
+        const dataArray = Array.isArray(result) ? result : (result?.data || []);
+        setData(dataArray);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");

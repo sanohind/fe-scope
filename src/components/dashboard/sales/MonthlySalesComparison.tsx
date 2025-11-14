@@ -4,24 +4,26 @@ import { ApexOptions } from "apexcharts";
 import { salesApi } from "../../../services/api/dashboardApi";
 
 interface MonthlySalesData {
-  month: string;
-  current_year_revenue: number;
-  previous_year_revenue: number;
-  yoy_growth: number;
+  period: string;
+  revenue: number;
+  previous_month_revenue: number | null;
+  mom_growth: number | null;
 }
 
 const MonthlySalesComparison: React.FC = () => {
   const [data, setData] = useState<MonthlySalesData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentYear] = useState(new Date().getFullYear());
+  const [dateRange, setDateRange] = useState<{ from: string; to: string } | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await salesApi.getMonthlySalesComparison({ current_year: currentYear });
-        setData(result);
+        const result = await salesApi.getMonthlySalesComparison();
+        // API returns { data: [...], date_from, date_to }
+        setData(result.data || []);
+        setDateRange({ from: result.date_from, to: result.date_to });
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
@@ -31,7 +33,7 @@ const MonthlySalesComparison: React.FC = () => {
     };
 
     fetchData();
-  }, [currentYear]);
+  }, []);
 
   if (loading) {
     return (
@@ -48,7 +50,7 @@ const MonthlySalesComparison: React.FC = () => {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
-          Monthly Sales Comparison (YoY)
+          Monthly Sales Comparison (MoM)
         </h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
           <p className="text-error-600 dark:text-error-400">
@@ -59,11 +61,15 @@ const MonthlySalesComparison: React.FC = () => {
     );
   }
 
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const categories = data.map((item) => monthNames[parseInt(item.month) - 1]);
-  const currentYearData = data.map((item) => item.current_year_revenue);
-  const previousYearData = data.map((item) => item.previous_year_revenue);
-  const yoyGrowthData = data.map((item) => item.yoy_growth);
+  // Format period YYYY-MM to display format
+  const categories = data.map((item) => {
+    const [year, month] = item.period.split('-');
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return `${monthNames[parseInt(month) - 1]} ${year.slice(2)}`;
+  });
+  const currentRevenueData = data.map((item) => item.revenue);
+  const previousRevenueData = data.map((item) => item.previous_month_revenue || 0);
+  const momGrowthData = data.map((item) => item.mom_growth || 0);
 
   const options: ApexOptions = {
     chart: {
@@ -74,7 +80,7 @@ const MonthlySalesComparison: React.FC = () => {
         show: false,
       },
     },
-    colors: ["#465fff", "#98A2B3", "#FDB022"],
+    colors: ["#465fff", "#98A2B3", "#12B76A"],
     stroke: {
       width: [0, 0, 3],
       curve: "smooth",
@@ -111,10 +117,10 @@ const MonthlySalesComparison: React.FC = () => {
       {
         opposite: true,
         title: {
-          text: "YoY Growth (%)",
+          text: "MoM Growth (%)",
         },
         labels: {
-          formatter: (val: number) => `${val.toFixed(1)}%`,
+          formatter: (val: number) => `${val >= 0 ? '+' : ''}${val.toFixed(1)}%`,
         },
       },
     ],
@@ -146,31 +152,32 @@ const MonthlySalesComparison: React.FC = () => {
 
   const series = [
     {
-      name: `${currentYear}`,
+      name: "Current Month Revenue",
       type: "column",
-      data: currentYearData,
+      data: currentRevenueData,
     },
     {
-      name: `${currentYear - 1}`,
+      name: "Previous Month Revenue",
       type: "column",
-      data: previousYearData,
+      data: previousRevenueData,
     },
     {
-      name: "YoY Growth",
+      name: "MoM Growth",
       type: "line",
-      data: yoyGrowthData,
+      data: momGrowthData,
     },
   ];
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
+      <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Monthly Sales Comparison (YoY)
+          Monthly Sales Comparison (MoM)
         </h3>
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          {currentYear} vs {currentYear - 1}
-        </span>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Month-over-Month Revenue Comparison
+          {dateRange && ` (${dateRange.from} to ${dateRange.to})`}
+        </p>
       </div>
       
       <div className="max-w-full overflow-x-auto custom-scrollbar">

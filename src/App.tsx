@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import Ecommerce from "./pages/Dashboard/Ecommerce";
 import Stocks from "./pages/Dashboard/Stocks";
 import Crm from "./pages/Dashboard/Crm";
@@ -59,11 +60,28 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import TaskList from "./pages/Task/TaskList";
 import Saas from "./pages/Dashboard/Saas";
-import WarehouseDashboard from "./pages/MainPages/WarehouseDashboard";
-import InventoryDashboard from "./pages/MainPages/InventoryDashboard";
-import ProductionDashboard from "./pages/MainPages/ProductionDashboard";
-import SalesDashboard from "./pages/MainPages/SalesDashboard";
-import ProcurementDashboard from "./pages/MainPages/ProcurementDashboard";
+
+// Lazy load dashboard pages for better performance
+const WarehouseDashboard = lazy(() => import("./pages/MainPages/WarehouseDashboard"));
+const InventoryDashboard = lazy(() => import("./pages/MainPages/InventoryDashboard"));
+const ProductionDashboard = lazy(() => import("./pages/MainPages/ProductionDashboard"));
+const SalesDashboard = lazy(() => import("./pages/MainPages/SalesDashboard"));
+const ProcurementDashboard = lazy(() => import("./pages/MainPages/ProcurementDashboard"));
+
+// Loading fallback component
+const DashboardLoading = () => (
+  <div className="p-6">
+    <div className="animate-pulse space-y-6">
+      <div className="h-8 w-64 bg-gray-200 rounded dark:bg-gray-800"></div>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-32 bg-gray-200 rounded-2xl dark:bg-gray-800"></div>
+        ))}
+      </div>
+      <div className="h-96 bg-gray-200 rounded-2xl dark:bg-gray-800"></div>
+    </div>
+  </div>
+);
 
 export default function App() {
   return (
@@ -78,11 +96,31 @@ export default function App() {
             <Route path="/marketing" element={<Marketing />} />
             <Route path="/crm" element={<Crm />} />
             <Route path="/stocks" element={<Stocks />} />
-            <Route path="/production" element={<ProductionDashboard />} />
-            <Route path="/warehouse" element={<WarehouseDashboard />} />
-            <Route path="/inventory" element={<InventoryDashboard />} />
-            <Route path="/sales" element={<SalesDashboard />} />
-            <Route path="/procurement" element={<ProcurementDashboard />} />
+            <Route path="/production" element={
+              <Suspense fallback={<DashboardLoading />}>
+                <ProductionDashboard />
+              </Suspense>
+            } />
+            <Route path="/warehouse" element={
+              <Suspense fallback={<DashboardLoading />}>
+                <WarehouseDashboard />
+              </Suspense>
+            } />
+            <Route path="/inventory" element={
+              <Suspense fallback={<DashboardLoading />}>
+                <InventoryDashboard />
+              </Suspense>
+            } />
+            <Route path="/sales" element={
+              <Suspense fallback={<DashboardLoading />}>
+                <SalesDashboard />
+              </Suspense>
+            } />
+            <Route path="/procurement" element={
+              <Suspense fallback={<DashboardLoading />}>
+                <ProcurementDashboard />
+              </Suspense>
+            } />
             <Route path="/saas" element={<Saas />} />
 
             {/* Others Page */}

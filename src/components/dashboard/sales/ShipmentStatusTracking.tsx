@@ -1,20 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { salesApi } from "../../../services/api/dashboardApi";
 
+interface ShipmentStage {
+  stage: string;
+  count: number;
+}
+
 interface ShipmentStatusData {
-  stages: {
-    sales_orders_created: number;
-    shipments_generated: number;
-    receipts_confirmed: number;
-    invoices_issued: number;
-    invoices_paid: number;
-  };
-  conversion_rates: {
-    sales_to_shipment: number;
-    shipment_to_receipt: number;
-    receipt_to_invoice: number;
-    invoice_to_paid: number;
-  };
+  data: ShipmentStage[];
 }
 
 const ShipmentStatusTracking: React.FC = () => {
@@ -27,6 +20,7 @@ const ShipmentStatusTracking: React.FC = () => {
       try {
         setLoading(true);
         const result = await salesApi.getShipmentStatusTracking();
+        // API returns { data: [{ stage, count }] }
         setData(result);
         setError(null);
       } catch (err) {
@@ -65,15 +59,23 @@ const ShipmentStatusTracking: React.FC = () => {
     );
   }
 
-  const stages = [
-    { label: "Sales Orders Created", value: data.stages.sales_orders_created || 0, color: "bg-brand-500", conversion: null },
-    { label: "Shipments Generated", value: data.stages.shipments_generated || 0, color: "bg-blue-light-500", conversion: data.conversion_rates?.sales_to_shipment },
-    { label: "Receipts Confirmed", value: data.stages.receipts_confirmed || 0, color: "bg-purple-500", conversion: data.conversion_rates?.shipment_to_receipt },
-    { label: "Invoices Issued", value: data.stages.invoices_issued || 0, color: "bg-warning-500", conversion: data.conversion_rates?.receipt_to_invoice },
-    { label: "Invoices Paid", value: data.stages.invoices_paid || 0, color: "bg-success-500", conversion: data.conversion_rates?.invoice_to_paid },
-  ];
+  // Map stages to display with colors
+  const stageColors: { [key: string]: string } = {
+    "Sales Orders Created": "bg-brand-500",
+    "Shipments Generated": "bg-blue-light-500",
+    "Receipts Confirmed": "bg-blue-500",
+    "Invoices Issued": "bg-warning-500",
+    "Invoices Posted": "bg-success-500",
+  };
 
-  const maxValue = data.stages.sales_orders_created;
+  const stages = data.data.map((item, index) => ({
+    label: item.stage,
+    value: item.count,
+    color: stageColors[item.stage] || "bg-gray-500",
+    conversion: index > 0 ? (item.count / data.data[0].count) * 100 : null,
+  }));
+
+  const maxValue = data.data[0]?.count || 0;
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
@@ -82,7 +84,7 @@ const ShipmentStatusTracking: React.FC = () => {
           Shipment Status Tracking
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Order to Payment Conversion Funnel
+          Sales Order to Invoice Posting Tracking
         </p>
       </div>
 
@@ -147,25 +149,25 @@ const ShipmentStatusTracking: React.FC = () => {
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Total Orders</p>
             <p className="text-lg font-bold text-gray-800 dark:text-white/90">
-              {data.stages.sales_orders_created.toLocaleString()}
+              {data.data[0]?.count.toLocaleString() || 0}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Paid Orders</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Invoices Posted</p>
             <p className="text-lg font-bold text-success-600 dark:text-success-400">
-              {data.stages.invoices_paid.toLocaleString()}
+              {data.data[data.data.length - 1]?.count.toLocaleString() || 0}
             </p>
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Overall Conversion</p>
             <p className="text-lg font-bold text-brand-600 dark:text-brand-400">
-              {((data.stages.invoices_paid / data.stages.sales_orders_created) * 100).toFixed(1)}%
+              {data.data[0]?.count > 0 ? ((data.data[data.data.length - 1]?.count / data.data[0]?.count) * 100).toFixed(1) : 0}%
             </p>
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400">In Progress</p>
             <p className="text-lg font-bold text-warning-600 dark:text-warning-400">
-              {(data.stages.sales_orders_created - data.stages.invoices_paid).toLocaleString()}
+              {((data.data[0]?.count || 0) - (data.data[data.data.length - 1]?.count || 0)).toLocaleString()}
             </p>
           </div>
         </div>

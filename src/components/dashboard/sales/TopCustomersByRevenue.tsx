@@ -23,7 +23,9 @@ const TopCustomersByRevenue: React.FC = () => {
       try {
         setLoading(true);
         const result = await salesApi.getTopCustomers(20);
-        setData(result);
+        // Handle if API returns wrapped data or direct array
+        const dataArray = Array.isArray(result) ? result : (result?.data || []);
+        setData(dataArray);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
@@ -61,8 +63,10 @@ const TopCustomersByRevenue: React.FC = () => {
     );
   }
 
-  const categories = data.map((item) => item.bp_name);
-  const revenues = data.map((item) => item.total_revenue);
+  // Filter out invalid data and ensure numeric values
+  const validData = data.filter((item) => item && item.bp_name && item.total_revenue != null);
+  const categories = validData.map((item) => item.bp_name);
+  const revenues = validData.map((item) => Number(item.total_revenue) || 0);
 
   const options: ApexOptions = {
     chart: {
@@ -149,8 +153,8 @@ const TopCustomersByRevenue: React.FC = () => {
       },
     },
     tooltip: {
-      custom: ({ seriesIndex, dataPointIndex, w }) => {
-        const item = data[dataPointIndex];
+      custom: ({ dataPointIndex }) => {
+        const item = validData[dataPointIndex];
         return `
           <div class="px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg">
             <div class="font-semibold text-gray-800 dark:text-white mb-2">${item.bp_name}</div>

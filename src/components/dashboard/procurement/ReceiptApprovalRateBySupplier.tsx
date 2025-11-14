@@ -22,7 +22,8 @@ const ReceiptApprovalRateBySupplier: React.FC = () => {
       try {
         setLoading(true);
         const result = await procurementApi.getReceiptApprovalRateBySupplier(20);
-        const dataArray = Array.isArray(result) ? result : [];
+        // Handle if API returns wrapped data or direct array
+        const dataArray = Array.isArray(result) ? result : (result?.data || []);
         setData(dataArray);
         setError(null);
       } catch (err) {
@@ -54,8 +55,10 @@ const ReceiptApprovalRateBySupplier: React.FC = () => {
     );
   }
 
-  const categories = data.map((item) => item.bp_name);
-  const series = data.map((item) => item.approval_rate);
+  // Filter out invalid data and ensure numeric values
+  const validData = data.filter((item) => item && item.bp_name && item.approval_rate != null);
+  const categories = validData.map((item) => item.bp_name);
+  const series = validData.map((item) => Number(item.approval_rate) || 0);
 
   const options: ApexOptions = {
     chart: {
@@ -84,7 +87,7 @@ const ReceiptApprovalRateBySupplier: React.FC = () => {
       formatter: (val) => `${parseFloat(val.toString()).toFixed(1)}%`,
     },
     xaxis: {
-      categories: categories,
+      categories: categories.length > 0 ? categories : ['No Data'],
       labels: {
         style: {
           fontSize: "11px",

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { salesApi } from "../../../services/api/dashboardApi";
-import { DollarLineIcon, BoxIconLine, FileIcon, TimeIcon, ArrowUpIcon } from "../../../icons";
+import { DollarLineIcon, BoxIconLine, FileIcon, TimeIcon, ArrowUpIcon , PieChartIcon} from "../../../icons";
 
 interface SalesOverviewData {
   total_sales_amount: string;
@@ -21,7 +21,9 @@ const SalesOverviewKPI: React.FC = () => {
       try {
         setLoading(true);
         const result = await salesApi.getSalesOverview("ytd");
-        setData(result);
+        // Handle if API returns wrapped data { data: {...} } or direct object
+        const dataObj = result?.data || result;
+        setData(dataObj);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
@@ -108,7 +110,7 @@ const SalesOverviewKPI: React.FC = () => {
       id: 5,
       title: "Sales Growth",
       value: `${data.sales_growth >= 0 ? '+' : ''}${data.sales_growth.toFixed(2)}%`,
-      icon: ArrowUpIcon,
+      icon: PieChartIcon,
       bgColor: data.sales_growth >= 0 ? "bg-success-50 dark:bg-success-500/10" : "bg-error-50 dark:bg-error-500/10",
       iconColor: data.sales_growth >= 0 ? "text-success-500" : "text-error-500",
     },

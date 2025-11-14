@@ -18,17 +18,46 @@ interface OrderSummaryData {
   status_breakdown: StatusBreakdown;
 }
 
+type FilterPeriod = 'weekly' | 'monthly' | 'yearly';
+
 const WarehouseOrderSummary: React.FC = () => {
   const [data, setData] = useState<OrderSummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('monthly');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await warehouseApi.getOrderSummary();
-        setData(result);
+        
+        // Calculate date range based on filter period
+        const today = new Date();
+        let dateFrom: string;
+        
+        if (filterPeriod === 'weekly') {
+          const weekAgo = new Date(today);
+          weekAgo.setDate(today.getDate() - 7);
+          dateFrom = weekAgo.toISOString().split('T')[0];
+        } else if (filterPeriod === 'monthly') {
+          const monthAgo = new Date(today);
+          monthAgo.setMonth(today.getMonth() - 1);
+          dateFrom = monthAgo.toISOString().split('T')[0];
+        } else {
+          const yearAgo = new Date(today);
+          yearAgo.setFullYear(today.getFullYear() - 1);
+          dateFrom = yearAgo.toISOString().split('T')[0];
+        }
+        
+        const dateTo = today.toISOString().split('T')[0];
+        
+        const result = await warehouseApi.getOrderSummary({
+          date_from: dateFrom,
+          date_to: dateTo,
+        });
+        // Handle if API returns wrapped data { data: {...} } or direct object
+        const dataObj = result?.data || result;
+        setData(dataObj);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
@@ -38,7 +67,7 @@ const WarehouseOrderSummary: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [filterPeriod]);
 
   if (loading) {
     return (
@@ -107,13 +136,49 @@ const WarehouseOrderSummary: React.FC = () => {
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
           Status Breakdown
         </h3>
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          Total: {totalBreakdown.toLocaleString()} lines
-        </span>
+        
+        <div className="flex items-center gap-3">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setFilterPeriod('weekly')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                filterPeriod === 'weekly'
+                  ? 'bg-brand-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+              }`}
+            >
+              Weekly
+            </button>
+            <button
+              onClick={() => setFilterPeriod('monthly')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                filterPeriod === 'monthly'
+                  ? 'bg-brand-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setFilterPeriod('yearly')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                filterPeriod === 'yearly'
+                  ? 'bg-brand-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+              }`}
+            >
+              Yearly
+            </button>
+          </div>
+          
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            Total: {totalBreakdown.toLocaleString()} lines
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

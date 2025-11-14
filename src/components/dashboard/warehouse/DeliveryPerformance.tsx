@@ -13,17 +13,43 @@ interface DeliveryPerformanceData {
   performance_status: string;
 }
 
+type FilterPeriod = "daily" | "monthly";
+
 const DeliveryPerformance: React.FC = () => {
   const [data, setData] = useState<DeliveryPerformanceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("monthly");
+  const fixedYear = 2025;
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await warehouseApi.getDeliveryPerformance();
-        setData(result);
+
+        // Calculate date range based on filter period (warehouse: no yearly)
+        let dateFrom: string;
+        let dateTo: string;
+        if (filterPeriod === "daily") {
+          // perbandingan antar hari dalam satu bulan (gunakan bulan terpilih di 2025)
+          const firstDay = new Date(fixedYear, selectedMonth - 1, 1);
+          const lastDay = new Date(fixedYear, selectedMonth, 0);
+          dateFrom = firstDay.toISOString().split("T")[0];
+          dateTo = lastDay.toISOString().split("T")[0];
+        } else {
+          // monthly: perbandingan antar bulan pada satu tahun (gunakan seluruh tahun 2025)
+          dateFrom = `${fixedYear}-01-01`;
+          dateTo = `${fixedYear}-12-31`;
+        }
+
+        const result = await warehouseApi.getDeliveryPerformance({
+          date_from: dateFrom,
+          date_to: dateTo,
+        });
+        // Handle if API returns wrapped data { data: {...} } or direct object
+        const dataObj = result?.data || result;
+        setData(dataObj);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
@@ -33,7 +59,7 @@ const DeliveryPerformance: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [filterPeriod, selectedMonth]);
 
   if (loading) {
     return (
@@ -49,13 +75,9 @@ const DeliveryPerformance: React.FC = () => {
   if (error || !data) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
-          Delivery Performance
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Delivery Performance</h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400">
-            {error || "No data available"}
-          </p>
+          <p className="text-error-600 dark:text-error-400">{error || "No data available"}</p>
         </div>
       </div>
     );
@@ -120,35 +142,69 @@ const DeliveryPerformance: React.FC = () => {
 
   const getStatusBadge = () => {
     if (data.performance_status === "excellent") {
-      return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-400">
-          Excellent
-        </span>
-      );
+      return <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-400">Excellent</span>;
     } else if (data.performance_status === "good") {
-      return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-warning-50 text-warning-700 dark:bg-warning-900/20 dark:text-warning-400">
-          Good
-        </span>
-      );
+      return <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-warning-50 text-warning-700 dark:bg-warning-900/20 dark:text-warning-400">Good</span>;
     } else {
-      return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-error-50 text-error-700 dark:bg-error-900/20 dark:text-error-400">
-          Needs Improvement
-        </span>
-      );
+      return <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-error-50 text-error-700 dark:bg-error-900/20 dark:text-error-400">Needs Improvement</span>;
     }
   };
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className="mb-6 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Delivery Performance
-        </h3>
-        {getStatusBadge()}
+      <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Delivery Performance</h3>
+
+        <div className="flex items-center gap-3">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setFilterPeriod("daily")}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                filterPeriod === "daily" ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              }`}
+            >
+              Daily
+            </button>
+            <button
+              onClick={() => setFilterPeriod("monthly")}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                filterPeriod === "monthly" ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              }`}
+            >
+              Monthly
+            </button>
+          </div>
+          {filterPeriod === "daily" && (
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+              className="px-3 py-2 border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-800 dark:text-white text-sm"
+            >
+              {[
+                { value: 1, label: "January" },
+                { value: 2, label: "February" },
+                { value: 3, label: "March" },
+                { value: 4, label: "April" },
+                { value: 5, label: "May" },
+                { value: 6, label: "June" },
+                { value: 7, label: "July" },
+                { value: 8, label: "August" },
+                { value: 9, label: "September" },
+                { value: 10, label: "October" },
+                { value: 11, label: "November" },
+                { value: 12, label: "December" },
+              ].map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {getStatusBadge()}
+        </div>
       </div>
-      
+
       <div>
         <Chart options={options} series={series} type="radialBar" height={300} />
       </div>
@@ -156,21 +212,15 @@ const DeliveryPerformance: React.FC = () => {
       <div className="mt-10 grid grid-cols-3 gap-4">
         <div className="text-center p-4 rounded-lg bg-success-50 dark:bg-success-900/20">
           <p className="text-sm text-gray-500 dark:text-gray-400">Early</p>
-          <p className="mt-1 text-xl font-bold text-success-600 dark:text-success-400">
-            {data.early_deliveries.toLocaleString()}
-          </p>
+          <p className="mt-1 text-xl font-bold text-success-600 dark:text-success-400">{data.early_deliveries.toLocaleString()}</p>
         </div>
         <div className="text-center p-4 rounded-lg bg-brand-50 dark:bg-brand-500/10">
           <p className="text-sm text-gray-500 dark:text-gray-400">On-Time</p>
-          <p className="mt-1 text-xl font-bold text-brand-500">
-            {data.on_time_deliveries.toLocaleString()}
-          </p>
+          <p className="mt-1 text-xl font-bold text-brand-500">{data.on_time_deliveries.toLocaleString()}</p>
         </div>
         <div className="text-center p-4 rounded-lg bg-error-50 dark:bg-error-900/20">
           <p className="text-sm text-gray-500 dark:text-gray-400">Late</p>
-          <p className="mt-1 text-xl font-bold text-error-600 dark:text-error-400">
-            {data.late_deliveries.toLocaleString()}
-          </p>
+          <p className="mt-1 text-xl font-bold text-error-600 dark:text-error-400">{data.late_deliveries.toLocaleString()}</p>
         </div>
       </div>
 

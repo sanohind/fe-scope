@@ -21,7 +21,9 @@ const StockHealthByWarehouse: React.FC = () => {
       try {
         setLoading(true);
         const result = await inventoryApi.getStockHealthByWarehouse();
-        setData(result);
+        // Handle if API returns wrapped data or direct array
+        const dataArray = Array.isArray(result) ? result : (result?.data || []);
+        setData(dataArray);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
