@@ -5,3 +5,18 @@ export { default as TopCriticalItems } from "./TopCriticalItems";
 export { default as StockByCustomer } from "./StockByCustomer";
 export { default as StockDistributionByProductType } from "./StockDistributionByProductType";
 export { default as InventoryAvailabilityVsDemand } from "./InventoryAvailabilityVsDemand";
+export { default as StockMovementTrend } from "./StockMovementTrend";
+
+// Dashboard 1 Revision: Inventory Dashboard by Warehouse Components
+export { default as InventoryKpiCards } from "./InventoryKpiCards";
+export { default as InventoryStockHealthDistribution } from "./InventoryStockHealthDistribution";
+export { default as InventoryStockMovementTrend } from "./InventoryStockMovementTrend";
+export { default as InventoryTopCriticalItems } from "./InventoryTopCriticalItems";
+export { default as InventoryMostActiveItems } from "./InventoryMostActiveItems";
+export { default as InventoryStockAndActivityByProductType } from "./InventoryStockAndActivityByProductType";
+export { default as InventoryStockByCustomer } from "./InventoryStockByCustomer";
+export { default as InventoryReceiptVsShipmentTrend } from "./InventoryReceiptVsShipmentTrend";
+export { default as InventoryTransactionTypeDistribution } from "./InventoryTransactionTypeDistribution";
+export { default as InventoryFastVsSlowMoving } from "./InventoryFastVsSlowMoving";
+export { default as InventoryStockTurnoverRate } from "./InventoryStockTurnoverRate";
+export { default as InventoryRecentTransactionHistory } from "./InventoryRecentTransactionHistory";

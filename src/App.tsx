@@ -60,10 +60,15 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import TaskList from "./pages/Task/TaskList";
 import Saas from "./pages/Dashboard/Saas";
+import InventoryWhfg01 from "./pages/MainPages/Inventory/inventory-whfg01";
+import InventoryWhfg02 from "./pages/MainPages/Inventory/inventory-whfg02";
+import InventoryWhrm01 from "./pages/MainPages/Inventory/inventory-whrm01";
+import InventoryWhrm02 from "./pages/MainPages/Inventory/inventory-whrm02";
+import InventoryWhmt01 from "./pages/MainPages/Inventory/inventory-whmt01";
 
 // Lazy load dashboard pages for better performance
 const WarehouseDashboard = lazy(() => import("./pages/MainPages/WarehouseDashboard"));
-const InventoryDashboard = lazy(() => import("./pages/MainPages/InventoryDashboard"));
+const InventoryDashboard = lazy(() => import("./pages/MainPages/Inventory/InventoryDashboard"));
 const ProductionDashboard = lazy(() => import("./pages/MainPages/ProductionDashboard"));
 const SalesDashboard = lazy(() => import("./pages/MainPages/SalesDashboard"));
 const ProcurementDashboard = lazy(() => import("./pages/MainPages/ProcurementDashboard"));
@@ -96,31 +101,51 @@ export default function App() {
             <Route path="/marketing" element={<Marketing />} />
             <Route path="/crm" element={<Crm />} />
             <Route path="/stocks" element={<Stocks />} />
-            <Route path="/production" element={
-              <Suspense fallback={<DashboardLoading />}>
-                <ProductionDashboard />
-              </Suspense>
-            } />
-            <Route path="/warehouse" element={
-              <Suspense fallback={<DashboardLoading />}>
-                <WarehouseDashboard />
-              </Suspense>
-            } />
-            <Route path="/inventory" element={
-              <Suspense fallback={<DashboardLoading />}>
-                <InventoryDashboard />
-              </Suspense>
-            } />
-            <Route path="/sales" element={
-              <Suspense fallback={<DashboardLoading />}>
-                <SalesDashboard />
-              </Suspense>
-            } />
-            <Route path="/procurement" element={
-              <Suspense fallback={<DashboardLoading />}>
-                <ProcurementDashboard />
-              </Suspense>
-            } />
+            <Route path="/inventory/whfg01" element={<InventoryWhfg01 />} />
+            <Route path="/inventory/whfg02" element={<InventoryWhfg02 />} />
+            <Route path="/inventory/whrm01" element={<InventoryWhrm01 />} />
+            <Route path="/inventory/whrm02" element={<InventoryWhrm02 />} />
+            <Route path="/inventory/whmt01" element={<InventoryWhmt01 />} />
+            <Route
+              path="/production"
+              element={
+                <Suspense fallback={<DashboardLoading />}>
+                  <ProductionDashboard />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/warehouse"
+              element={
+                <Suspense fallback={<DashboardLoading />}>
+                  <WarehouseDashboard />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/inventory"
+              element={
+                <Suspense fallback={<DashboardLoading />}>
+                  <InventoryDashboard />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/sales"
+              element={
+                <Suspense fallback={<DashboardLoading />}>
+                  <SalesDashboard />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/procurement"
+              element={
+                <Suspense fallback={<DashboardLoading />}>
+                  <ProcurementDashboard />
+                </Suspense>
+              }
+            />
             <Route path="/saas" element={<Saas />} />
 
             {/* Others Page */}

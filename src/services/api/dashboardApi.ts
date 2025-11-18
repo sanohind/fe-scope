@@ -65,6 +65,126 @@ export const inventoryApi = {
   },
 };
 
+// Dashboard 1 Revision: Inventory Dashboard by Warehouse
+export const inventoryRevApi = {
+  // Chart 1: Comprehensive KPI Cards
+  getKpi: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/kpi?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch KPI");
+    return response.json();
+  },
+
+  // Chart 2: Stock Health Distribution + Activity
+  getStockHealthDistribution: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/stock-health-distribution?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch stock health distribution");
+    return response.json();
+  },
+
+  // Chart 3: Stock Movement Trend
+  getStockMovementTrend: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/stock-movement-trend?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch stock movement trend");
+    return response.json();
+  },
+
+  // Chart 4: Top 15 Critical Items
+  getTopCriticalItems: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/top-critical-items?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch top critical items");
+    return response.json();
+  },
+
+  // Chart 5: Top 15 Most Active Items
+  getMostActiveItems: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/most-active-items?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch most active items");
+    return response.json();
+  },
+
+  // Chart 6: Stock & Activity by Product Type
+  getStockAndActivityByProductType: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/stock-and-activity-by-product-type?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch stock and activity by product type");
+    return response.json();
+  },
+
+  // Chart 7: Stock by Customer (Treemap)
+  getStockByCustomer: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/stock-by-customer?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch stock by customer");
+    return response.json();
+  },
+
+  // Chart 8: Receipt vs Shipment Trend (Weekly)
+  getReceiptVsShipmentTrend: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/receipt-vs-shipment-trend?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch receipt vs shipment trend");
+    return response.json();
+  },
+
+  // Chart 9: Transaction Type Distribution
+  getTransactionTypeDistribution: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/transaction-type-distribution?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch transaction type distribution");
+    return response.json();
+  },
+
+  // Chart 10: Fast vs Slow Moving Items
+  getFastVsSlowMoving: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/fast-vs-slow-moving?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch fast vs slow moving items");
+    return response.json();
+  },
+
+  // Chart 11: Stock Turnover Rate (Top 20)
+  getStockTurnoverRate: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/stock-turnover-rate?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch stock turnover rate");
+    return response.json();
+  },
+
+  // Chart 12: Recent Transaction History
+  getRecentTransactionHistory: async (warehouse: string, params?: { date_from?: string; date_to?: string; trans_type?: string; user?: string; page?: number; per_page?: number }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/recent-transaction-history?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch recent transaction history");
+    return response.json();
+  },
+
+  // Bulk endpoint: Get all data (Chart 1-11)
+  getAllData: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/all-data?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch all inventory revision data");
+    return response.json();
+  },
+};
+
 // Dashboard 2: Warehouse Operations
 export const warehouseApi = {
   // 2.1 Warehouse Order Summary

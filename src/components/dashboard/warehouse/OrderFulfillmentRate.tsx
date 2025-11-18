@@ -49,9 +49,26 @@ const OrderFulfillmentRate: React.FC = () => {
           date_from: dateFrom,
           date_to: dateTo,
         });
-        // Handle if API returns wrapped data { data: {...} } or direct object
-        const dataObj = result?.data || result;
-        setData(dataObj);
+
+        // Normalize response so state always matches FulfillmentData shape
+        // Expected documented shape:
+        // { data: FulfillmentItem[], target_rate: number, filter_metadata?: {...} }
+        let normalized: FulfillmentData | null = null;
+
+        if (result && Array.isArray(result.data)) {
+          normalized = {
+            data: result.data,
+            target_rate: typeof result.target_rate === "number" ? result.target_rate : 100,
+          };
+        } else if (Array.isArray(result)) {
+          // Fallback if API directly returns an array
+          normalized = {
+            data: result,
+            target_rate: 100,
+          };
+        }
+
+        setData(normalized);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
@@ -74,7 +91,7 @@ const OrderFulfillmentRate: React.FC = () => {
     );
   }
 
-  if (error || !data || data.data.length === 0) {
+  if (error || !data || !Array.isArray(data.data) || data.data.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Order Fulfillment Rate</h3>
