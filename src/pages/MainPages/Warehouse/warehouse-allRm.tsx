@@ -31,9 +31,19 @@ export default function WarehouseAllRm() {
           <OrderStatusDistribution warehouse={WAREHOUSE} />
         </LazyLoad>
 
-        <LazyLoad height="360px">
-          <DailyStockTrend warehouse={WAREHOUSE} />
-        </LazyLoad>
+        <div>
+          <h1 className="font-semibold text-black dark:text-white text-2xl mb-4">Balance WHRM01</h1>
+          <LazyLoad height="360px">
+            <DailyStockTrend warehouse={"WHRM01"} />
+          </LazyLoad>
+        </div>
+
+        <div>
+          <h1 className="font-semibold text-black dark:text-white text-2xl mb-4">Balance WHRM02</h1>
+          <LazyLoad height="360px">
+            <DailyStockTrend warehouse={"WHRM02"} />
+          </LazyLoad>
+        </div>
 
         <div>
           <h1 className="font-semibold text-black dark:text-white text-2xl mb-4">Movement WHRM01</h1>

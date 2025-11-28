@@ -31,14 +31,24 @@ export default function WarehouseAllFg() {
           <OrderStatusDistribution warehouse={WAREHOUSE} />
         </LazyLoad>
 
-        <LazyLoad height="360px">
-          <DailyStockTrend warehouse={WAREHOUSE} />
-        </LazyLoad>
+        <div>
+          <h1 className="font-semibold text-black dark:text-white text-2xl mb-4">Balance WHFG01</h1>
+          <LazyLoad height="360px">
+            <DailyStockTrend warehouse={"WHFG01"} />
+          </LazyLoad>
+        </div>
 
         <div>
-          <h1 className="font-semibold text-black dark:text-white text-2xl mb-4">Movement WHRM01</h1>
+          <h1 className="font-semibold text-black dark:text-white text-2xl mb-4">Balance WHFG02</h1>
+          <LazyLoad height="360px">
+            <DailyStockTrend warehouse={"WHFG02"} />
+          </LazyLoad>
+        </div>
+
+        <div>
+          <h1 className="font-semibold text-black dark:text-white text-2xl mb-4">Movement WHFG02</h1>
           <LazyLoad height="450px">
-            <InventoryStockMovementTrend warehouse={"WHFG01"} />
+            <InventoryStockMovementTrend warehouse={"WHFG02"} />
           </LazyLoad>
         </div>
 

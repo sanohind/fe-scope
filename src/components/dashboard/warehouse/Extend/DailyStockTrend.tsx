@@ -80,10 +80,20 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse }) => {
 
         // Extract data from the new nested structure or fallback to old format
         let responseData: StockDataItem[] = [];
+        const normalizedWarehouse = warehouse?.toUpperCase();
 
-        if (result?.warehouses && result.warehouses[warehouse]) {
-          // New API format: data nested under warehouses[warehouseId].data
-          responseData = result.warehouses[warehouse].data || [];
+        if (result?.warehouses) {
+          if (normalizedWarehouse && normalizedWarehouse !== "ALL") {
+            const exactMatch = result.warehouses[normalizedWarehouse];
+            if (exactMatch?.data) {
+              responseData = exactMatch.data;
+            } else {
+              const fallbackKey = Object.keys(result.warehouses).find((key) => key.toLowerCase() === normalizedWarehouse.toLowerCase());
+              responseData = fallbackKey ? result.warehouses[fallbackKey].data || [] : [];
+            }
+          } else {
+            responseData = Object.values(result.warehouses).flatMap((entry) => entry.data || []);
+          }
         } else if (result?.data) {
           // Fallback to old format
           responseData = result.data;
@@ -132,9 +142,9 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse }) => {
 
   const latestValue = chartData.length ? chartData[chartData.length - 1].onhand : null;
 
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const dataPoint = payload[0].payload;
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payload?: DailyStockPoint & { formattedDate: string } }[] }) => {
+    const dataPoint = payload?.[0]?.payload;
+    if (active && dataPoint) {
       return (
         <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-900">
           <p className="text-sm font-medium text-gray-800 dark:text-white">{dataPoint.formattedDate}</p>
