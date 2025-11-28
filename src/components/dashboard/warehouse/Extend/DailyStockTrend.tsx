@@ -5,19 +5,34 @@ import { warehouseRevApi } from "../../../../services/api/dashboardApi";
 interface DailyStockPoint {
   date: string;
   onhand: number;
+  receipt?: number;
+  issue?: number;
+}
+
+interface StockDataItem {
+  period_start: string;
+  period_end: string;
+  granularity: string;
+  warehouse: string;
+  onhand: number | string;
+  receipt: number | string;
+  issue: number | string;
 }
 
 interface DailyStockTrendResponse {
   meta?: {
-    warehouse?: string;
-    from?: string;
-    to?: string;
-    days?: number;
+    warehouse_filter?: string;
+    warehouses_queried?: string[];
+    period_start_filter?: string | null;
+    period_end_filter?: string | null;
+    total_records?: number;
   };
-  data?: Array<{
-    date: string;
-    onhand: number | string;
-  }>;
+  data?: StockDataItem[];
+  warehouses?: {
+    [warehouseId: string]: {
+      data: StockDataItem[];
+    };
+  };
 }
 
 interface DailyStockTrendProps {
@@ -58,20 +73,38 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse }) => {
         const to = new Date(selectedYear, selectedMonth, 0);
         const format = (d: Date) => d.toISOString().split("T")[0];
 
-        const result: DailyStockTrendResponse | DailyStockPoint[] = await warehouseRevApi.getDailyStockTrend(warehouse, {
+        const result: DailyStockTrendResponse = await warehouseRevApi.getDailyStockTrend(warehouse, {
           from: format(from),
           to: format(to),
         });
 
-        const responseData = Array.isArray((result as DailyStockTrendResponse).data) ? (result as DailyStockTrendResponse).data : Array.isArray(result) ? result : [];
+        // Extract data from the new nested structure or fallback to old format
+        let responseData: StockDataItem[] = [];
 
-        const normalizedData: DailyStockPoint[] = (responseData || []).map((item) => ({
-          date: item.date,
-          onhand: typeof item.onhand === "number" ? item.onhand : Number(item.onhand ?? 0),
-        }));
+        if (result?.warehouses && result.warehouses[warehouse]) {
+          // New API format: data nested under warehouses[warehouseId].data
+          responseData = result.warehouses[warehouse].data || [];
+        } else if (result?.data) {
+          // Fallback to old format
+          responseData = result.data;
+        }
+
+        // Filter data to only include five-minute granularity records
+        const filteredData = responseData.filter((item) => item.granularity === "five-minute");
+
+        const normalizedData: DailyStockPoint[] = filteredData.map((item) => {
+          // Extract date from period_start (format: "2025-11-28 11:25:00")
+          const dateStr = item.period_start.split(" ")[0];
+          return {
+            date: dateStr,
+            onhand: typeof item.onhand === "number" ? item.onhand : Number(item.onhand ?? 0),
+            receipt: typeof item.receipt === "number" ? item.receipt : Number(item.receipt ?? 0),
+            issue: typeof item.issue === "number" ? item.issue : Number(item.issue ?? 0),
+          };
+        });
 
         setData(normalizedData);
-        setMeta((result as DailyStockTrendResponse).meta);
+        setMeta(result?.meta);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch daily stock data");
@@ -101,12 +134,28 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse }) => {
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
-      const { payload: dataPoint } = payload[0];
+      const dataPoint = payload[0].payload;
       return (
         <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-900">
           <p className="text-sm font-medium text-gray-800 dark:text-white">{dataPoint.formattedDate}</p>
-          <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">On-hand</p>
-          <p className="text-lg font-semibold text-brand-600 dark:text-brand-300">{dataPoint.onhand.toLocaleString()} units</p>
+          <div className="mt-2 space-y-1">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm text-gray-500 dark:text-gray-300">On-hand:</p>
+              <p className="text-sm font-semibold text-brand-600 dark:text-brand-300">{dataPoint.onhand.toLocaleString()}</p>
+            </div>
+            {dataPoint.receipt !== undefined && (
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm text-gray-500 dark:text-gray-300">Receipt:</p>
+                <p className="text-sm font-semibold text-success-600 dark:text-success-300">{dataPoint.receipt.toLocaleString()}</p>
+              </div>
+            )}
+            {dataPoint.issue !== undefined && (
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm text-gray-500 dark:text-gray-300">Issue:</p>
+                <p className="text-sm font-semibold text-error-600 dark:text-error-300">{dataPoint.issue.toLocaleString()}</p>
+              </div>
+            )}
+          </div>
         </div>
       );
     }
@@ -165,7 +214,7 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse }) => {
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Daily Stock Level</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {meta?.warehouse || warehouse} · {months[selectedMonth - 1].label} {selectedYear}
+            {meta?.warehouse_filter || warehouse} · {months[selectedMonth - 1].label} {selectedYear}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -220,6 +269,8 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse }) => {
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
+              <Line type="monotone" dataKey="receipt" name="Receipt" stroke="#12B76A" strokeWidth={2} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="issue" name="Issue" stroke="#F04438" strokeWidth={2} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
               <Line type="monotone" dataKey="onhand" name="On-hand" stroke="#465fff" strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>
