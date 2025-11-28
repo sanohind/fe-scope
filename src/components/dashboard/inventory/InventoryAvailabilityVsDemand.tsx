@@ -12,19 +12,20 @@ interface AvailabilityData {
   available_to_promise: string | number;
 }
 
-const InventoryAvailabilityVsDemand: React.FC = () => {
+const InventoryAvailabilityVsDemand: React.FC<{ warehouse?: string }> = ({ warehouse }) => {
   const [data, setData] = useState<AvailabilityData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [groupBy, setGroupBy] = useState<"warehouse" | "product_group">("warehouse");
+  const [groupBy] = useState<"warehouse" | "product_group">("warehouse");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await inventoryApi.getInventoryAvailabilityVsDemand(groupBy);
+        const params = warehouse ? { warehouse } : {};
+        const result = await inventoryApi.getInventoryAvailabilityVsDemand(groupBy, params);
         // Handle if API returns wrapped data or direct array
-        const dataArray = Array.isArray(result) ? result : (result?.data || []);
+        const dataArray = Array.isArray(result) ? result : result?.data || [];
         setData(dataArray);
         setError(null);
       } catch (err) {
@@ -35,7 +36,7 @@ const InventoryAvailabilityVsDemand: React.FC = () => {
     };
 
     fetchData();
-  }, [groupBy]);
+  }, [warehouse]);
 
   if (loading) {
     return (
@@ -51,13 +52,9 @@ const InventoryAvailabilityVsDemand: React.FC = () => {
   if (error || !data || data.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
-          Inventory Available to Promise
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Inventory Available to Promise</h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400">
-            {error || "No data available"}
-          </p>
+          <p className="text-error-600 dark:text-error-400">{error || "No data available"}</p>
         </div>
       </div>
     );
@@ -162,9 +159,7 @@ const InventoryAvailabilityVsDemand: React.FC = () => {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Inventory Availability vs Demand
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Inventory Availability vs Demand</h3>
       </div>
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[600px]">

@@ -10,7 +10,11 @@ interface ProductionKpiData {
   completion_rate: number;
 }
 
-const ProductionKpiSummary: React.FC = () => {
+interface ProductionKpiSummaryProps {
+  divisi?: string;
+}
+
+const ProductionKpiSummary: React.FC<ProductionKpiSummaryProps> = ({ divisi = "ALL" }) => {
   const [data, setData] = useState<ProductionKpiData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +23,9 @@ const ProductionKpiSummary: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await productionApi.getProductionKpiSummary();
+        const result = await productionApi.getProductionKpiSummary({
+          divisi: divisi !== "ALL" ? divisi : undefined,
+        });
         // Handle if API returns wrapped data { data: {...} } or direct object
         const dataObj = result?.data || result;
         setData(dataObj);
@@ -32,16 +38,13 @@ const ProductionKpiSummary: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [divisi]);
 
   if (loading) {
     return (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 xl:grid-cols-5">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6 animate-pulse"
-          >
+          <div key={i} className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6 animate-pulse">
             <div className="h-12 w-12 bg-gray-200 rounded-xl dark:bg-gray-800"></div>
             <div className="mt-5 space-y-2">
               <div className="h-4 bg-gray-200 rounded dark:bg-gray-800 w-20"></div>
@@ -56,9 +59,7 @@ const ProductionKpiSummary: React.FC = () => {
   if (error || !data) {
     return (
       <div className="rounded-2xl border border-error-200 bg-error-50 p-5 dark:border-error-800 dark:bg-error-900/20">
-        <p className="text-error-600 dark:text-error-400">
-          {error || "Failed to load data"}
-        </p>
+        <p className="text-error-600 dark:text-error-400">{error || "Failed to load data"}</p>
       </div>
     );
   }
@@ -111,23 +112,14 @@ const ProductionKpiSummary: React.FC = () => {
       {metrics.map((metric) => {
         const IconComponent = metric.icon;
         return (
-          <div
-            key={metric.id}
-            className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6"
-          >
-            <div
-              className={`flex items-center justify-center w-12 h-12 rounded-xl ${metric.bgColor}`}
-            >
+          <div key={metric.id} className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <div className={`flex items-center justify-center w-12 h-12 rounded-xl ${metric.bgColor}`}>
               <IconComponent className={`size-6 ${metric.iconColor}`} />
             </div>
 
             <div className="mt-5">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {metric.title}
-              </span>
-              <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                {metric.value}
-              </h4>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{metric.title}</span>
+              <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">{metric.value}</h4>
             </div>
           </div>
         );

@@ -1,12 +1,29 @@
 // API Service for Dashboard
 const BASE_URL = "http://127.0.0.1:8000";
 
+// Helper function to filter out undefined/null values from params
+const cleanParams = (params?: Record<string, any>): Record<string, any> => {
+  if (!params) return {};
+  return Object.fromEntries(Object.entries(params).filter(([_, value]) => value !== undefined && value !== null));
+};
+
 // Dashboard 1: Inventory Management & Stock Control
 export const inventoryApi = {
   // 1.1 Stock Level Overview
-  getStockLevelOverview: async () => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/inventory/stock-level-overview`);
+  getStockLevelOverview: async (params?: { warehouse?: string }) => {
+    const queryParams = new URLSearchParams(params as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory/stock-level-overview${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch stock level overview");
+    return response.json();
+  },
+
+  // 1.1b Stock Level Detail Table (All warehouses)
+  getStockLevelTable: async (params?: { status?: string; search?: string; page?: number; per_page?: number }) => {
+    const queryParams = new URLSearchParams(params as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory/stock-level${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch stock level data");
     return response.json();
   },
 
@@ -34,16 +51,20 @@ export const inventoryApi = {
     return response.json();
   },
 
-  // 1.5 Stock by Customer
-  getStockByCustomer: async () => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/inventory/stock-by-customer`);
-    if (!response.ok) throw new Error("Failed to fetch stock by customer");
+  // 1.5 Stock by Customer (Group Type)
+  getStockByCustomer: async (params?: { warehouse?: string; date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams(params as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory/stock-by-customer${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch stock by group type");
     return response.json();
   },
 
   // 1.6 Inventory Availability vs Demand
-  getInventoryAvailabilityVsDemand: async (groupBy: "warehouse" | "product_group" = "warehouse") => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/inventory/inventory-availability-vs-demand?group_by=${groupBy}`);
+  getInventoryAvailabilityVsDemand: async (groupBy: "warehouse" | "product_group" = "warehouse", params?: { warehouse?: string }) => {
+    const queryParams = new URLSearchParams({ group_by: groupBy, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory/inventory-availability-vs-demand${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch inventory availability");
     return response.json();
   },
@@ -124,9 +145,18 @@ export const inventoryRevApi = {
   // Chart 7: Stock by Customer (Treemap)
   getStockByCustomer: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
     const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
-    const url = `${BASE_URL}/api/dashboard/inventory-rev/stock-by-customer?${queryParams}`;
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/stock-by-group?${queryParams}`;
     const response = await fetch(url);
-    if (!response.ok) throw new Error("Failed to fetch stock by customer");
+    if (!response.ok) throw new Error("Failed to fetch stock by group");
+    return response.json();
+  },
+
+  // Chart 7b: Stock by Group Type
+  getStockByGroup: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/stock-by-group?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch stock by group");
     return response.json();
   },
 
@@ -172,6 +202,15 @@ export const inventoryRevApi = {
     const url = `${BASE_URL}/api/dashboard/inventory-rev/recent-transaction-history?${queryParams}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch recent transaction history");
+    return response.json();
+  },
+
+  // Table: Stock Level Detail
+  getStockLevelTable: async (warehouse: string, params?: { status?: string; search?: string; page?: number; per_page?: number }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/stock-level?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch stock level data");
     return response.json();
   },
 
@@ -406,36 +445,49 @@ export const salesApi = {
 // Dashboard 3: Production Planning & Monitoring
 export const productionApi = {
   // 3.1 Production KPI Summary
-  getProductionKpiSummary: async () => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/production/kpi-summary`);
+  getProductionKpiSummary: async (params?: { divisi?: string }) => {
+    const cleaned = cleanParams(params);
+    const queryParams = new URLSearchParams(cleaned as any).toString();
+    const url = `${BASE_URL}/api/dashboard/production/kpi-summary${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch production KPI summary");
     return response.json();
   },
 
   // 3.2 Production Status Distribution
-  getProductionStatusDistribution: async () => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/production/status-distribution`);
+  getProductionStatusDistribution: async (params?: { divisi?: string }) => {
+    const cleaned = cleanParams(params);
+    const queryParams = new URLSearchParams(cleaned as any).toString();
+    const url = `${BASE_URL}/api/dashboard/production/status-distribution${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch production status distribution");
     return response.json();
   },
 
   // 3.3 Production by Customer
-  getProductionByCustomer: async (limit: number = 15) => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/production/by-customer?limit=${limit}`);
+  getProductionByCustomer: async (limit: number = 15, params?: { divisi?: string }) => {
+    const cleaned = cleanParams({ limit: limit.toString(), ...params });
+    const queryParams = new URLSearchParams(cleaned as any).toString();
+    const url = `${BASE_URL}/api/dashboard/production/by-customer?${queryParams}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch production by customer");
     return response.json();
   },
 
   // 3.4 Production by Model
-  getProductionByModel: async (limit: number = 20) => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/production/by-model?limit=${limit}`);
+  getProductionByModel: async (limit: number = 20, params?: { divisi?: string }) => {
+    const cleaned = cleanParams({ limit: limit.toString(), ...params });
+    const queryParams = new URLSearchParams(cleaned as any).toString();
+    const url = `${BASE_URL}/api/dashboard/production/by-model?${queryParams}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch production by model");
     return response.json();
   },
 
   // 3.5 Production Schedule Timeline
-  getProductionScheduleTimeline: async (params?: { date_from?: string; date_to?: string; status?: string; customer?: string; division?: string }) => {
-    const queryParams = new URLSearchParams(params as any).toString();
+  getProductionScheduleTimeline: async (params?: { date_from?: string; date_to?: string; status?: string; customer?: string; divisi?: string }) => {
+    const cleaned = cleanParams(params);
+    const queryParams = new URLSearchParams(cleaned as any).toString();
     const url = `${BASE_URL}/api/dashboard/production/schedule-timeline${queryParams ? `?${queryParams}` : ""}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch production schedule timeline");
@@ -444,23 +496,28 @@ export const productionApi = {
 
   // 3.6 Production Outstanding Analysis
   getProductionOutstandingAnalysis: async (params?: { status?: string; customer?: string; date_from?: string; date_to?: string }) => {
-    const queryParams = new URLSearchParams(params as any).toString();
+    const cleaned = cleanParams(params);
+    const queryParams = new URLSearchParams(cleaned as any).toString();
     const url = `${BASE_URL}/api/dashboard/production/outstanding-analysis${queryParams ? `?${queryParams}` : ""}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch production outstanding analysis");
     return response.json();
   },
 
-  // 3.7 Production by Division
-  getProductionByDivision: async () => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/production/by-division`);
-    if (!response.ok) throw new Error("Failed to fetch production by division");
+  // 3.7 Production by divisi
+  getProductionBydivisi: async (params?: { divisi?: string }) => {
+    const cleaned = cleanParams(params);
+    const queryParams = new URLSearchParams(cleaned as any).toString();
+    const url = `${BASE_URL}/api/dashboard/production/by-division${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch production by divisi");
     return response.json();
   },
 
   // 3.8 Production Trend
-  getProductionTrend: async (params?: { period?: "monthly" | "weekly"; date_from?: string; date_to?: string; customer?: string; division?: string }) => {
-    const queryParams = new URLSearchParams(params as any).toString();
+  getProductionTrend: async (params?: { period?: "daily" | "monthly" | "yearly"; date_from?: string; date_to?: string; customer?: string; divisi?: string }) => {
+    const cleaned = cleanParams(params);
+    const queryParams = new URLSearchParams(cleaned as any).toString();
     const url = `${BASE_URL}/api/dashboard/production/trend${queryParams ? `?${queryParams}` : ""}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch production trend");
@@ -581,6 +638,162 @@ export const procurementApi = {
   getAllData: async () => {
     const response = await fetch(`${BASE_URL}/api/dashboard/procurement/all-data`);
     if (!response.ok) throw new Error("Failed to fetch all procurement dashboard data");
+    return response.json();
+  },
+};
+
+// Supply Chain APIs
+export const SupplyChainApi = {
+  // Logistics Shipment Table
+  getShipmentTable: async (params?: { status?: string; supplier?: string; date_from?: string; date_to?: string; page?: number; per_page?: number }) => {
+    const queryParams = new URLSearchParams(params as any).toString();
+    const url = `${BASE_URL}/api/dashboard/supply-chain/shipment-table${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch shipment table data");
+    return response.json();
+  },
+
+  // Shipment Status Comparison - Chart 6.10
+  getShipmentStatusComparison: async (params?: { period?: string; date_from?: string; date_to?: string }) => {
+    // Filter out undefined and null values before creating query params
+    const cleanParams: Record<string, string> = {};
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "undefined" && value !== "null") {
+          cleanParams[key] = value;
+        }
+      });
+    }
+    const queryParams = new URLSearchParams(cleanParams).toString();
+    const url = `${BASE_URL}/api/dashboard/supply-chain/shipment-status-comparison${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch shipment status comparison data");
+    return response.json();
+  },
+};
+
+// Dashboard 2 Revision: Warehouse Operations by Warehouse
+export const warehouseRevApi = {
+  // 1. Warehouse Order Summary - KPI Cards
+  getOrderSummary: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/warehouse-rev/order-summary?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch warehouse order summary");
+    return response.json();
+  },
+
+  // 2. Delivery Performance - Gauge Chart
+  getDeliveryPerformance: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/warehouse-rev/delivery-performance?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch delivery performance");
+    return response.json();
+  },
+
+  // 3. Order Status Distribution - Stacked Bar Chart
+  getOrderStatusDistribution: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/warehouse-rev/order-status-distribution?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch order status distribution");
+    return response.json();
+  },
+
+  // 4. Daily Order Volume - Line Chart with Area
+  getDailyOrderVolume: async (warehouse: string, params?: { period?: string; date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/warehouse-rev/daily-order-volume?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch daily order volume");
+    return response.json();
+  },
+
+  // 5. Order Fulfillment by Transaction Type - Bar Chart
+  getOrderFulfillmentByTransactionType: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/warehouse-rev/order-fulfillment-by-transaction-type?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch order fulfillment by transaction type");
+    return response.json();
+  },
+
+  // 6. Top Items Moved - Horizontal Bar Chart
+  getTopItemsMoved: async (warehouse: string, params?: { limit?: number; date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/warehouse-rev/top-items-moved?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch top items moved");
+    return response.json();
+  },
+
+  // 7. Monthly Inbound vs Outbound - Grouped Bar Chart
+  getMonthlyInboundVsOutbound: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/warehouse-rev/monthly-inbound-vs-outbound?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch monthly inbound vs outbound");
+    return response.json();
+  },
+
+  // 8. Top Destinations - Horizontal Bar Chart
+  getTopDestinations: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/warehouse-rev/top-destinations?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch top destinations");
+    return response.json();
+  },
+
+  // 9. Get All Data - Combined Response
+  getAllData: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/warehouse-rev/all-data?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch all warehouse revision data");
+    return response.json();
+  },
+
+  // 10. Daily Stock Trend
+  getDailyStockTrend: async (warehouse: string, params?: { from?: string; to?: string }) => {
+    const queryParams = new URLSearchParams(cleanParams({ warehouse, ...params }) as any).toString();
+    const url = `${BASE_URL}/api/stock/daily?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch daily stock trend");
+    return response.json();
+  },
+};
+
+// Dashboard 6: HR Dashboard
+export const hrApi = {
+  // 6.1 Active Employees Count
+  getActiveEmployeesCount: async () => {
+    const response = await fetch(`${BASE_URL}/api/dashboard/hr/active-employees-count`);
+    if (!response.ok) throw new Error("Failed to fetch active employees count");
+    return response.json();
+  },
+
+  // 6.2 Employment Status Comparison
+  getEmploymentStatusComparison: async () => {
+    const response = await fetch(`${BASE_URL}/api/dashboard/hr/employment-status-comparison`);
+    if (!response.ok) throw new Error("Failed to fetch employment status comparison");
+    return response.json();
+  },
+
+  // 6.3 Present Attendance by Shift
+  getPresentAttendanceByShift: async (params?: { period?: string; startDate?: string; endDate?: string }) => {
+    const queryParams = new URLSearchParams(params as any).toString();
+    const url = `${BASE_URL}/api/dashboard/hr/present-attendance-by-shift${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch present attendance by shift");
+    return response.json();
+  },
+
+  // Get all dashboard data
+  getAllData: async () => {
+    const response = await fetch(`${BASE_URL}/api/dashboard/hr/all-data`);
+    if (!response.ok) throw new Error("Failed to fetch all HR dashboard data");
     return response.json();
   },
 };

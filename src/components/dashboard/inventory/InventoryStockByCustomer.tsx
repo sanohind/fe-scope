@@ -1,33 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { inventoryRevApi } from "../../../services/api/dashboardApi";
 
-interface CustomerData {
-  customer: string;
+interface GroupTypeData {
+  group_type_desc: string;
   total_onhand: string;
   total_items: string;
 }
 
-interface StockByCustomerResponse {
-  data: CustomerData[];
+interface StockByGroupResponse {
+  data: GroupTypeData[];
   summary: {
     total_onhand: number;
     total_items: number;
-    total_customers: number;
+    total_group_types: number;
   };
   warehouse: string;
 }
 
-interface InventoryStockByCustomerProps {
+interface InventoryStockByGroupProps {
   warehouse: string;
   dateFrom?: string;
   dateTo?: string;
 }
 
-const InventoryStockByCustomer: React.FC<InventoryStockByCustomerProps> = ({ warehouse, dateFrom, dateTo }) => {
-  const [data, setData] = useState<StockByCustomerResponse | null>(null);
+const InventoryStockByGroup: React.FC<InventoryStockByGroupProps> = ({ warehouse, dateFrom, dateTo }) => {
+  const [data, setData] = useState<StockByGroupResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCustomer, setSelectedCustomer] = useState<string>("all");
+  const [selectedGroup, setSelectedGroup] = useState<string>("all");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,7 +36,7 @@ const InventoryStockByCustomer: React.FC<InventoryStockByCustomerProps> = ({ war
         const params: { date_from?: string; date_to?: string } = {};
         if (dateFrom) params.date_from = dateFrom;
         if (dateTo) params.date_to = dateTo;
-        const result = await inventoryRevApi.getStockByCustomer(warehouse, params);
+        const result = await inventoryRevApi.getStockByGroup(warehouse, params);
         setData(result);
         setError(null);
       } catch (err) {
@@ -63,7 +63,7 @@ const InventoryStockByCustomer: React.FC<InventoryStockByCustomerProps> = ({ war
   if (error || !data || !Array.isArray(data.data) || data.data.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Stock by Customer</h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Stock by Group Type</h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
           <p className="text-error-600 dark:text-error-400">{error || "No data available"}</p>
         </div>
@@ -71,40 +71,40 @@ const InventoryStockByCustomer: React.FC<InventoryStockByCustomerProps> = ({ war
     );
   }
 
-  // Get selected customer data
+  // Get selected group type data
   const selectedData =
-    selectedCustomer === "all"
+    selectedGroup === "all"
       ? {
-          customer: "All Customers",
+          group_type_desc: "All Group Types",
           total_onhand: data.summary.total_onhand.toString(),
           total_items: data.summary.total_items.toString(),
         }
-      : data.data.find((item) => item.customer === selectedCustomer) || data.data[0];
+      : data.data.find((item) => item.group_type_desc === selectedGroup) || data.data[0];
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Stock by Customer</h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Stock by Group Type</h3>
 
-        {/* Dropdown Customer */}
+        {/* Dropdown Group Type */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Customer</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Group Type</label>
           <select
-            value={selectedCustomer}
-            onChange={(e) => setSelectedCustomer(e.target.value)}
+            value={selectedGroup}
+            onChange={(e) => setSelectedGroup(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
           >
-            <option value="all">All Customers</option>
+            <option value="all">All Group Types</option>
             {data.data.map((item, index) => (
-              <option key={item.customer || `empty-${index}`} value={item.customer}>
-                {item.customer || "Unknown Customer"}
+              <option key={item.group_type_desc || `empty-${index}`} value={item.group_type_desc}>
+                {item.group_type_desc || "Unknown Group Type"}
               </option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Display Selected Customer Info */}
+      {/* Display Selected Group Type Info */}
       <div className="space-y-4">
         <div className="rounded-lg bg-blue-50 p-6 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Total Stock On Hand</p>
@@ -122,4 +122,4 @@ const InventoryStockByCustomer: React.FC<InventoryStockByCustomerProps> = ({ war
   );
 };
 
-export default InventoryStockByCustomer;
+export default InventoryStockByGroup;

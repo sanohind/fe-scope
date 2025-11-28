@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { inventoryApi } from "../../../services/api/dashboardApi";
-import { BoxIconLine, AlertIcon, ArrowUpIcon, BoxIcon, AngleUpIcon } from "../../../icons";
+import { BoxIconLine, AlertIcon, BoxIcon, AngleUpIcon } from "../../../icons";
 
 interface StockLevelData {
   total_onhand: number;
@@ -10,7 +10,7 @@ interface StockLevelData {
   average_stock_level: number;
 }
 
-const StockLevelOverview: React.FC = () => {
+const StockLevelOverview: React.FC<{ warehouse?: string }> = ({ warehouse }) => {
   const [data, setData] = useState<StockLevelData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +19,8 @@ const StockLevelOverview: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await inventoryApi.getStockLevelOverview();
+        const params = warehouse ? { warehouse } : {};
+        const result = await inventoryApi.getStockLevelOverview(params);
         // Handle if API returns wrapped data { data: {...} } or direct object
         const dataObj = result?.data || result;
         setData(dataObj);
@@ -32,16 +33,13 @@ const StockLevelOverview: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [warehouse]);
 
   if (loading) {
     return (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 xl:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6 animate-pulse"
-          >
+          <div key={i} className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6 animate-pulse">
             <div className="h-12 w-12 bg-gray-200 rounded-xl dark:bg-gray-800"></div>
             <div className="mt-5 space-y-2">
               <div className="h-4 bg-gray-200 rounded dark:bg-gray-800 w-20"></div>
@@ -56,9 +54,7 @@ const StockLevelOverview: React.FC = () => {
   if (error || !data) {
     return (
       <div className="rounded-2xl border border-error-200 bg-error-50 p-5 dark:border-error-800 dark:bg-error-900/20">
-        <p className="text-error-600 dark:text-error-400">
-          {error || "Failed to load data"}
-        </p>
+        <p className="text-error-600 dark:text-error-400">{error || "Failed to load data"}</p>
       </div>
     );
   }
@@ -103,23 +99,14 @@ const StockLevelOverview: React.FC = () => {
       {metrics.map((metric) => {
         const IconComponent = metric.icon;
         return (
-          <div
-            key={metric.id}
-            className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6"
-          >
-            <div
-              className={`flex items-center justify-center w-12 h-12 rounded-xl ${metric.bgColor}`}
-            >
+          <div key={metric.id} className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <div className={`flex items-center justify-center w-12 h-12 rounded-xl ${metric.bgColor}`}>
               <IconComponent className={`size-6 ${metric.iconColor}`} />
             </div>
 
             <div className="mt-5">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {metric.title}
-              </span>
-              <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                {metric.value}
-              </h4>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{metric.title}</span>
+              <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">{metric.value}</h4>
             </div>
           </div>
         );

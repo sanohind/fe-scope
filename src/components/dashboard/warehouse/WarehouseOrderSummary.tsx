@@ -2,55 +2,55 @@ import React, { useEffect, useState } from "react";
 import { warehouseApi } from "../../../services/api/dashboardApi";
 
 interface StatusBreakdown {
-  staged: number;
-  null_status: number;
-  adviced: number;
-  released: number;
-  open: number;
-  shipped: number;
+  planned?: number;
+  null_status?: number;
+  put_away?: number;
+  received?: number;
+  modified?: number;
+  open?: number;
+  shipped?: number;
 }
 
 interface OrderSummaryData {
   total_order_lines: number;
   pending_deliveries: number;
   completed_orders: number;
-  average_fulfillment_rate: number;
   status_breakdown: StatusBreakdown;
 }
 
-type FilterPeriod = 'weekly' | 'monthly' | 'yearly';
+type FilterPeriod = "weekly" | "monthly" | "yearly";
 
 const WarehouseOrderSummary: React.FC = () => {
   const [data, setData] = useState<OrderSummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('monthly');
+  const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("monthly");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // Calculate date range based on filter period
         const today = new Date();
         let dateFrom: string;
-        
-        if (filterPeriod === 'weekly') {
+
+        if (filterPeriod === "weekly") {
           const weekAgo = new Date(today);
           weekAgo.setDate(today.getDate() - 7);
-          dateFrom = weekAgo.toISOString().split('T')[0];
-        } else if (filterPeriod === 'monthly') {
+          dateFrom = weekAgo.toISOString().split("T")[0];
+        } else if (filterPeriod === "monthly") {
           const monthAgo = new Date(today);
           monthAgo.setMonth(today.getMonth() - 1);
-          dateFrom = monthAgo.toISOString().split('T')[0];
+          dateFrom = monthAgo.toISOString().split("T")[0];
         } else {
           const yearAgo = new Date(today);
           yearAgo.setFullYear(today.getFullYear() - 1);
-          dateFrom = yearAgo.toISOString().split('T')[0];
+          dateFrom = yearAgo.toISOString().split("T")[0];
         }
-        
-        const dateTo = today.toISOString().split('T')[0];
-        
+
+        const dateTo = today.toISOString().split("T")[0];
+
         const result = await warehouseApi.getOrderSummary({
           date_from: dateFrom,
           date_to: dateTo,
@@ -87,13 +87,9 @@ const WarehouseOrderSummary: React.FC = () => {
   if (error || !data) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
-          Status Breakdown
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Status Breakdown</h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400">
-            {error || "Failed to load data"}
-          </p>
+          <p className="text-error-600 dark:text-error-400">{error || "Failed to load data"}</p>
         </div>
       </div>
     );
@@ -102,117 +98,95 @@ const WarehouseOrderSummary: React.FC = () => {
   const statusBreakdownItems = [
     {
       label: "Shipped",
-      value: data.status_breakdown.shipped,
+      value: data.status_breakdown.shipped ?? 0,
       color: "bg-success-500",
     },
     {
-      label: "Open",
-      value: data.status_breakdown.open,
-      color: "bg-warning-500",
-    },
-    {
-      label: "Adviced",
-      value: data.status_breakdown.adviced,
-      color: "bg-blue-light-500",
-    },
-    {
-      label: "Staged",
-      value: data.status_breakdown.staged,
+      label: "Put Away",
+      value: data.status_breakdown.put_away ?? 0,
       color: "bg-brand-500",
     },
     {
-      label: "Unknown",
-      value: data.status_breakdown.null_status,
-      color: "bg-gray-500",
+      label: "Planned",
+      value: data.status_breakdown.planned ?? 0,
+      color: "bg-blue-light-500",
     },
     {
-      label: "Released",
-      value: data.status_breakdown.released,
+      label: "Received",
+      value: data.status_breakdown.received ?? 0,
+      color: "bg-teal-500",
+    },
+    {
+      label: "Modified",
+      value: data.status_breakdown.modified ?? 0,
       color: "bg-purple-500",
+    },
+    {
+      label: "Open",
+      value: data.status_breakdown.open ?? 0,
+      color: "bg-warning-500",
     },
   ];
 
-  const totalBreakdown = Object.values(data.status_breakdown).reduce((a, b) => a + b, 0);
+  const totalBreakdown = Object.values(data.status_breakdown || {}).reduce((a, b) => a + (typeof b === "number" ? b : 0), 0);
+  const unknownStatus = data.status_breakdown.null_status ?? 0;
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Status Breakdown
-        </h3>
-        
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Status Breakdown</h3>
+
         <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500 dark:text-gray-400">Total: {totalBreakdown.toLocaleString()} items | Unknown status: {unknownStatus.toLocaleString()}</span>
           <div className="flex gap-2">
             <button
-              onClick={() => setFilterPeriod('weekly')}
+              onClick={() => setFilterPeriod("weekly")}
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                filterPeriod === 'weekly'
-                  ? 'bg-brand-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                filterPeriod === "weekly" ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
               }`}
             >
               Weekly
             </button>
             <button
-              onClick={() => setFilterPeriod('monthly')}
+              onClick={() => setFilterPeriod("monthly")}
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                filterPeriod === 'monthly'
-                  ? 'bg-brand-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                filterPeriod === "monthly" ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
               }`}
             >
               Monthly
             </button>
             <button
-              onClick={() => setFilterPeriod('yearly')}
+              onClick={() => setFilterPeriod("yearly")}
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                filterPeriod === 'yearly'
-                  ? 'bg-brand-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                filterPeriod === "yearly" ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
               }`}
             >
               Yearly
             </button>
           </div>
-          
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            Total: {totalBreakdown.toLocaleString()} lines
-          </span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {statusBreakdownItems.map((item) => {
           const percentage = totalBreakdown > 0 ? (item.value / totalBreakdown) * 100 : 0;
-          
+
           return (
-            <div
-              key={item.label}
-              className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-white/[0.02]"
-            >
+            <div key={item.label} className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-white/[0.02]">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {item.label}
-                  </span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.label}</span>
                 </div>
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                  {percentage.toFixed(1)}%
-                </span>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{percentage.toFixed(1)}%</span>
               </div>
-              
+
               <div className="space-y-2">
-                <div className="text-2xl font-bold text-gray-800 dark:text-white/90">
-                  {item.value.toLocaleString()}
-                </div>
-                
+                <div className="text-2xl font-bold text-gray-800 dark:text-white/90">{item.value.toLocaleString()}</div>
+
                 {/* Progress Bar */}
                 <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
-                  <div
-                    className={`h-full ${item.color} transition-all duration-500`}
-                    style={{ width: `${percentage}%` }}
-                  ></div>
+                  <div className={`h-full ${item.color} transition-all duration-500`} style={{ width: `${percentage}%` }}></div>
                 </div>
               </div>
             </div>

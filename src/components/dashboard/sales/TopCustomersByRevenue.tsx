@@ -24,7 +24,7 @@ const TopCustomersByRevenue: React.FC = () => {
         setLoading(true);
         const result = await salesApi.getTopCustomers(20);
         // Handle if API returns wrapped data or direct array
-        const dataArray = Array.isArray(result) ? result : (result?.data || []);
+        const dataArray = Array.isArray(result) ? result : result?.data || [];
         setData(dataArray);
         setError(null);
       } catch (err) {
@@ -51,13 +51,9 @@ const TopCustomersByRevenue: React.FC = () => {
   if (error || !data || data.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
-          Top 20 Customers by Revenue
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Top 20 Customers by Revenue</h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400">
-            {error || "No data available"}
-          </p>
+          <p className="text-error-600 dark:text-error-400">{error || "No data available"}</p>
         </div>
       </div>
     );
@@ -91,9 +87,13 @@ const TopCustomersByRevenue: React.FC = () => {
     dataLabels: {
       enabled: true,
       formatter: (val: number) => {
-        return new Intl.NumberFormat('en-US', {
-          notation: 'compact',
-          compactDisplay: 'short',
+        return new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          notation: "compact",
+          compactDisplay: "short",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
         }).format(val);
       },
       offsetX: 30,
@@ -114,9 +114,13 @@ const TopCustomersByRevenue: React.FC = () => {
       labels: {
         formatter: (val: string) => {
           const num = parseInt(val);
-          return new Intl.NumberFormat('en-US', {
-            notation: 'compact',
-            compactDisplay: 'short',
+          return new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            notation: "compact",
+            compactDisplay: "short",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
           }).format(num);
         },
       },
@@ -153,15 +157,21 @@ const TopCustomersByRevenue: React.FC = () => {
       },
     },
     tooltip: {
+      followCursor: false,
+      fixed: {
+        enabled: true,
+        position: "topRight",
+        offsetX: 0,
+        offsetY: 0,
+      },
       custom: ({ dataPointIndex }) => {
         const item = validData[dataPointIndex];
         return `
-          <div class="px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg">
             <div class="font-semibold text-gray-800 dark:text-white mb-2">${item.bp_name}</div>
             <div class="space-y-1 text-xs">
               <div class="flex justify-between gap-4">
                 <span class="text-gray-500 dark:text-gray-400">Total Revenue:</span>
-                <span class="font-medium text-gray-800 dark:text-white">$${item.total_revenue.toLocaleString()}</span>
+                <span class="font-medium text-gray-800 dark:text-white">Rp.${item.total_revenue.toLocaleString()}</span>
               </div>
               <div class="flex justify-between gap-4">
                 <span class="text-gray-500 dark:text-gray-400">Contribution:</span>
@@ -173,7 +183,7 @@ const TopCustomersByRevenue: React.FC = () => {
               </div>
               <div class="flex justify-between gap-4">
                 <span class="text-gray-500 dark:text-gray-400">Avg Order Value:</span>
-                <span class="font-medium text-gray-800 dark:text-white">$${item.avg_order_value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                <span class="font-medium text-gray-800 dark:text-white">Rp.${item.avg_order_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div class="flex justify-between gap-4">
                 <span class="text-gray-500 dark:text-gray-400">Total Qty:</span>
@@ -181,10 +191,9 @@ const TopCustomersByRevenue: React.FC = () => {
               </div>
               <div class="flex justify-between gap-4">
                 <span class="text-gray-500 dark:text-gray-400">Avg Price:</span>
-                <span class="font-medium text-gray-800 dark:text-white">$${item.avg_price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                <span class="font-medium text-gray-800 dark:text-white">Rp.${item.avg_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
-          </div>
         `;
       },
     },
@@ -200,9 +209,7 @@ const TopCustomersByRevenue: React.FC = () => {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Top 20 Customers by Revenue
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Top 20 Customers by Revenue</h3>
       </div>
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[600px]">

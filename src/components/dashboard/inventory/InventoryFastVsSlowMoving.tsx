@@ -136,7 +136,7 @@ const InventoryFastVsSlowMoving: React.FC<InventoryFastVsSlowMovingProps> = ({ w
       },
     },
     tooltip: {
-      custom: ({ seriesIndex, dataPointIndex, w }) => {
+      custom: ({ dataPointIndex }) => {
         const item = scatterData[dataPointIndex];
         return `
           <div class="p-3 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800">

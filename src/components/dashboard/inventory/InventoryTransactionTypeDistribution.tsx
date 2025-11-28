@@ -22,7 +22,6 @@ const InventoryTransactionTypeDistribution: React.FC<InventoryTransactionTypeDis
   const [data, setData] = useState<TransactionTypeData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState<{ from: string; to: string } | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,7 +34,6 @@ const InventoryTransactionTypeDistribution: React.FC<InventoryTransactionTypeDis
         // Handle if API returns wrapped data or direct array
         const dataArray = Array.isArray(result) ? result : result?.data || [];
         setData(dataArray);
-        setDateRange(result?.date_range || null);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");

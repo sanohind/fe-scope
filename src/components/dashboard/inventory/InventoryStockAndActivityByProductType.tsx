@@ -20,11 +20,7 @@ interface InventoryStockAndActivityByProductTypeProps {
   dateTo?: string;
 }
 
-const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivityByProductTypeProps> = ({ 
-  warehouse, 
-  dateFrom, 
-  dateTo 
-}) => {
+const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivityByProductTypeProps> = ({ warehouse, dateFrom, dateTo }) => {
   const [data, setData] = useState<ProductTypeData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,13 +61,9 @@ const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivity
   if (error || !data || data.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
-          Stock & Activity by Product Type
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Stock & Activity by Product Type</h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400">
-            {error || "No data available"}
-          </p>
+          <p className="text-error-600 dark:text-error-400">{error || "No data available"}</p>
         </div>
       </div>
     );
@@ -228,7 +220,7 @@ const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivity
       },
       x: {
         show: true,
-        formatter: (val, opts) => {
+        formatter: (_val, opts) => {
           return `<strong>${categories[opts.dataPointIndex]}</strong>`;
         },
       },
@@ -252,9 +244,7 @@ const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivity
       fontWeight: 500,
       offsetY: 0,
       markers: {
-        width: 12,
-        height: 12,
-        radius: 3,
+        size: 12,
       },
       itemMargin: {
         horizontal: 12,
@@ -333,40 +323,30 @@ const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivity
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-1">
-            Stock & Activity by Product Type
-          </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Inventory levels and transaction metrics across product categories
-          </p>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-1">Stock & Activity by Product Type</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Inventory levels and transaction metrics across product categories</p>
         </div>
         {dateRange && (
           <div className="flex items-center gap-2 text-xs">
             <span className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-300 font-medium">
-              {new Date(dateRange.from).toLocaleDateString("id-ID", { 
-                day: "numeric", 
-                month: "short" 
-              })}{" - "}
-              {new Date(dateRange.to).toLocaleDateString("id-ID", { 
-                day: "numeric", 
-                month: "short", 
-                year: "numeric" 
+              {new Date(dateRange.from).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "short",
+              })}
+              {" - "}
+              {new Date(dateRange.to).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
               })}
             </span>
-            <span className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-lg font-medium">
-              {dateRange.days} days
-            </span>
+            <span className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-lg font-medium">{dateRange.days} days</span>
           </div>
         )}
       </div>
-      
+
       <div className="mt-4">
-        <ReactApexChart 
-          options={options} 
-          series={series} 
-          type="line" 
-          height={450} 
-        />
+        <ReactApexChart options={options} series={series} type="line" height={450} />
       </div>
     </div>
   );

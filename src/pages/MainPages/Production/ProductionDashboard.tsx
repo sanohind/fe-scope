@@ -1,11 +1,11 @@
-import PageMeta from "../../components/common/PageMeta";
-import LazyLoad from "../../components/common/LazyLoad";
-import ProductionKpiSummary from "../../components/dashboard/production/ProductionKpiSummary";
-import ProductionStatusDistribution from "../../components/dashboard/production/ProductionStatusDistribution";
-import ProductionByCustomer from "../../components/dashboard/production/ProductionByCustomer";
-import ProductionByModel from "../../components/dashboard/production/ProductionByModel";
-import ProductionByDivision from "../../components/dashboard/production/ProductionByDivision";
-import ProductionTrend from "../../components/dashboard/production/ProductionTrend";
+import PageMeta from "../../../components/common/PageMeta";
+import LazyLoad from "../../../components/common/LazyLoad";
+import ProductionKpiSummary from "../../../components/dashboard/production/ProductionKpiSummary";
+import ProductionStatusDistribution from "../../../components/dashboard/production/ProductionStatusDistribution";
+import ProductionByCustomer from "../../../components/dashboard/production/ProductionByCustomer";
+import ProductionByModel from "../../../components/dashboard/production/ProductionByModel";
+import ProductionByDivision from "../../../components/dashboard/production/ProductionByDivision";
+import ProductionTrend from "../../../components/dashboard/production/ProductionTrend";
 
 export default function ProductionDashboard() {
   return (
@@ -25,10 +25,7 @@ export default function ProductionDashboard() {
           </LazyLoad>
         </div>
 
-        {/* Production Outstanding Analysis Table */}
-        {/* <ProductionOutstandingAnalysis /> */}
-
-        {/* Production by Model & Production by Division */}
+        {/* Production by Model & Production by divisi */}
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           <LazyLoad height="400px">
             <ProductionByModel />

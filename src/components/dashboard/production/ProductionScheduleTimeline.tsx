@@ -51,7 +51,11 @@ interface TimelineSummary {
   on_time_rate: number;
 }
 
-const ProductionScheduleTimeline: React.FC = () => {
+interface ProductionScheduleTimelineProps {
+  divisi?: string;
+}
+
+const ProductionScheduleTimeline: React.FC<ProductionScheduleTimelineProps> = () => {
   const [data, setData] = useState<ScheduleTimelineData[]>([]);
   const [summary, setSummary] = useState<TimelineSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,7 +71,7 @@ const ProductionScheduleTimeline: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [selectedTimelineStatus, setSelectedTimelineStatus] = useState<string>("all");
   const [selectedCustomer, setSelectedCustomer] = useState<string>("all");
-  const [selectedDivision, setSelectedDivision] = useState<string>("all");
+  const [selecteddivisi, setSelecteddivisi] = useState<string>("all");
   const [limit, setLimit] = useState<number>(100);
   const [rawData, setRawData] = useState<ScheduleTimelineData[]>([]); // Store unfiltered data
 
@@ -88,7 +92,7 @@ const ProductionScheduleTimeline: React.FC = () => {
 
         // Note: timeline_status is not supported by API, will filter client-side
         if (selectedCustomer !== "all") params.customer = selectedCustomer;
-        if (selectedDivision !== "all") params.division = selectedDivision;
+        if (selecteddivisi !== "all") params.divisi = selecteddivisi;
 
         const result = await productionApi.getProductionScheduleTimeline(params);
 
@@ -143,12 +147,10 @@ const ProductionScheduleTimeline: React.FC = () => {
 
         // Store raw data for client-side filtering
         setRawData(transformedData);
-        
+
         // Apply client-side timeline_status filter
-        const filteredData = selectedTimelineStatus === "all" 
-          ? transformedData 
-          : transformedData.filter(item => item.timeline_status === selectedTimelineStatus);
-        
+        const filteredData = selectedTimelineStatus === "all" ? transformedData : transformedData.filter((item) => item.timeline_status === selectedTimelineStatus);
+
         setData(filteredData);
         setSummary(timelineSummary);
         setError(null);
@@ -162,10 +164,10 @@ const ProductionScheduleTimeline: React.FC = () => {
           month: selectedMonth,
           year: selectedYear,
           statusBreakdown: {
-            on_time: filteredData.filter(d => d.timeline_status === "on_time").length,
-            delayed: filteredData.filter(d => d.timeline_status === "delayed").length,
-            pending: filteredData.filter(d => d.timeline_status === "pending").length,
-          }
+            on_time: filteredData.filter((d) => d.timeline_status === "on_time").length,
+            delayed: filteredData.filter((d) => d.timeline_status === "delayed").length,
+            pending: filteredData.filter((d) => d.timeline_status === "pending").length,
+          },
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch timeline data");
@@ -175,7 +177,7 @@ const ProductionScheduleTimeline: React.FC = () => {
     };
 
     fetchData();
-  }, [selectedMonth, selectedYear, selectedTimelineStatus, selectedCustomer, selectedDivision, limit]);
+  }, [selectedMonth, selectedYear, selectedTimelineStatus, selectedCustomer, selecteddivisi, limit]);
 
   // Initialize and render Gantt chart
   useEffect(() => {
@@ -399,7 +401,7 @@ const ProductionScheduleTimeline: React.FC = () => {
     setSelectedYear(today.getFullYear());
     setSelectedTimelineStatus("all");
     setSelectedCustomer("all");
-    setSelectedDivision("all");
+    setSelecteddivisi("all");
     setLimit(100);
   };
 
@@ -421,11 +423,11 @@ const ProductionScheduleTimeline: React.FC = () => {
   // Generate years from 2023 to 2026
   const years = Array.from({ length: 4 }, (_, i) => 2026 - i);
 
-  // Get unique customers, divisions from raw data (before timeline_status filter)
+  // Get unique customers, divisis from raw data (before timeline_status filter)
   const uniqueCustomers = Array.from(new Set(rawData.map((d) => d.customer).filter(Boolean))).sort();
-  const uniqueDivisions = Array.from(new Set(rawData.map((d) => d.divisi).filter(Boolean))).sort();
+  const uniquedivisis = Array.from(new Set(rawData.map((d) => d.divisi).filter(Boolean))).sort();
   const uniqueTimelineStatuses = Array.from(new Set(rawData.map((d) => d.timeline_status).filter(Boolean))).sort();
-  
+
   // If no data yet, show all possible timeline statuses
   const allPossibleStatuses = ["on_time", "delayed", "pending", "early", "completed", "active"];
   const timelineStatusOptions = uniqueTimelineStatuses.length > 0 ? uniqueTimelineStatuses : allPossibleStatuses;
@@ -537,18 +539,18 @@ const ProductionScheduleTimeline: React.FC = () => {
           </select>
         </div>
 
-        {/* Division Filter */}
+        {/* divisi Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Division</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">divisi</label>
           <select
-            value={selectedDivision}
-            onChange={(e) => setSelectedDivision(e.target.value)}
+            value={selecteddivisi}
+            onChange={(e) => setSelecteddivisi(e.target.value)}
             className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
           >
-            <option value="all">All Divisions</option>
-            {uniqueDivisions.map((division) => (
-              <option key={division} value={division}>
-                {division}
+            <option value="all">All divisis</option>
+            {uniquedivisis.map((divisi) => (
+              <option key={divisi} value={divisi}>
+                {divisi}
               </option>
             ))}
           </select>
@@ -660,14 +662,14 @@ const ProductionScheduleTimeline: React.FC = () => {
                 <span className="px-3 py-1 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">{selectedSchedule.status}</span>
               </div>
 
-              {/* Customer & Division */}
+              {/* Customer & divisi */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <span className="text-sm text-gray-600 dark:text-gray-400">Customer:</span>
                   <p className="text-sm font-medium text-gray-800 dark:text-white mt-1">{selectedSchedule.customer}</p>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Division:</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">divisi:</span>
                   <p className="text-sm font-medium text-gray-800 dark:text-white mt-1">{selectedSchedule.divisi}</p>
                 </div>
               </div>

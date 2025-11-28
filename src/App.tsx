@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import Ecommerce from "./pages/Dashboard/Ecommerce";
 import Stocks from "./pages/Dashboard/Stocks";
@@ -65,13 +65,25 @@ import InventoryWhfg02 from "./pages/MainPages/Inventory/inventory-whfg02";
 import InventoryWhrm01 from "./pages/MainPages/Inventory/inventory-whrm01";
 import InventoryWhrm02 from "./pages/MainPages/Inventory/inventory-whrm02";
 import InventoryWhmt01 from "./pages/MainPages/Inventory/inventory-whmt01";
+import WarehouseWhfg01 from "./pages/MainPages/Warehouse/warehouse-whfg01";
+import WarehouseWhfg02 from "./pages/MainPages/Warehouse/warehouse-whfg02";
+import WarehouseWhrm01 from "./pages/MainPages/Warehouse/warehouse-whrm01";
+import WarehouseWhrm02 from "./pages/MainPages/Warehouse/warehouse-whrm02";
+import WarehouseWhmt01 from "./pages/MainPages/Warehouse/warehouse-whmt01";
+import ProductionBz from "./pages/MainPages/Production/bzProd";
+import ProductionCh from "./pages/MainPages/Production/chProd";
+import ProductionNl from "./pages/MainPages/Production/nlProd";
+import ProductionPs from "./pages/MainPages/Production/psProd";
 
 // Lazy load dashboard pages for better performance
-const WarehouseDashboard = lazy(() => import("./pages/MainPages/WarehouseDashboard"));
-const InventoryDashboard = lazy(() => import("./pages/MainPages/Inventory/InventoryDashboard"));
-const ProductionDashboard = lazy(() => import("./pages/MainPages/ProductionDashboard"));
+const WarehouseAllRm = lazy(() => import("./pages/MainPages/Warehouse/warehouse-allRm"));
+const WarehouseAllFg = lazy(() => import("./pages/MainPages/Warehouse/warehouse-allFg"));
+const InventoryAllFg = lazy(() => import("./pages/MainPages/Inventory/inventory-allFg"));
+const InventoryAllRm = lazy(() => import("./pages/MainPages/Inventory/inventory-allRm"));
+const ProductionDashboard = lazy(() => import("./pages/MainPages/Production/ProductionDashboard"));
 const SalesDashboard = lazy(() => import("./pages/MainPages/SalesDashboard"));
-const ProcurementDashboard = lazy(() => import("./pages/MainPages/ProcurementDashboard"));
+const LogisticsDashboard = lazy(() => import("./pages/MainPages/LogisticsDashboard"));
+const HrDashboard = lazy(() => import("./pages/MainPages/HrDashboard"));
 
 // Loading fallback component
 const DashboardLoading = () => (
@@ -96,7 +108,8 @@ export default function App() {
         <Routes>
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
-            <Route index path="/" element={<Ecommerce />} />
+            <Route index path="/" element={<Navigate to="/inventory-rm" replace />} />
+            <Route path="/ecommerce" element={<Ecommerce />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/marketing" element={<Marketing />} />
             <Route path="/crm" element={<Crm />} />
@@ -106,6 +119,15 @@ export default function App() {
             <Route path="/inventory/whrm01" element={<InventoryWhrm01 />} />
             <Route path="/inventory/whrm02" element={<InventoryWhrm02 />} />
             <Route path="/inventory/whmt01" element={<InventoryWhmt01 />} />
+            <Route path="/warehouse/whfg01" element={<WarehouseWhfg01 />} />
+            <Route path="/warehouse/whfg02" element={<WarehouseWhfg02 />} />
+            <Route path="/warehouse/whrm01" element={<WarehouseWhrm01 />} />
+            <Route path="/warehouse/whrm02" element={<WarehouseWhrm02 />} />
+            <Route path="/warehouse/whmt01" element={<WarehouseWhmt01 />} />
+            <Route path="/production/bz" element={<ProductionBz />} />
+            <Route path="/production/ch" element={<ProductionCh />} />
+            <Route path="/production/nl" element={<ProductionNl />} />
+            <Route path="/production/ps" element={<ProductionPs />} />
             <Route
               path="/production"
               element={
@@ -115,18 +137,34 @@ export default function App() {
               }
             />
             <Route
-              path="/warehouse"
+              path="/warehouse-rm"
               element={
                 <Suspense fallback={<DashboardLoading />}>
-                  <WarehouseDashboard />
+                  <WarehouseAllRm />
                 </Suspense>
               }
             />
             <Route
-              path="/inventory"
+              path="/warehouse-fg"
               element={
                 <Suspense fallback={<DashboardLoading />}>
-                  <InventoryDashboard />
+                  <WarehouseAllFg />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/inventory-fg"
+              element={
+                <Suspense fallback={<DashboardLoading />}>
+                  <InventoryAllFg />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/inventory-rm"
+              element={
+                <Suspense fallback={<DashboardLoading />}>
+                  <InventoryAllRm />
                 </Suspense>
               }
             />
@@ -139,10 +177,18 @@ export default function App() {
               }
             />
             <Route
-              path="/procurement"
+              path="/logistics"
               element={
                 <Suspense fallback={<DashboardLoading />}>
-                  <ProcurementDashboard />
+                  <LogisticsDashboard />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/hr"
+              element={
+                <Suspense fallback={<DashboardLoading />}>
+                  <HrDashboard />
                 </Suspense>
               }
             />

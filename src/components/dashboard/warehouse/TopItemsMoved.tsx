@@ -148,7 +148,7 @@ const TopItemsMoved: React.FC = () => {
       },
     },
     tooltip: {
-      custom: ({ seriesIndex, dataPointIndex, w }) => {
+      custom: ({ dataPointIndex }) => {
         const item = data[dataPointIndex];
         return `
           <div class="px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg">

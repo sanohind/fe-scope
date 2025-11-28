@@ -43,7 +43,7 @@ const DailyOrderVolume: React.FC = () => {
           sunday.setDate(monday.getDate() + 6);
           dateFrom = monday.toISOString().split("T")[0];
           dateTo = sunday.toISOString().split("T")[0];
-        } else if (filterPeriod === "monthly") {
+        } else {
           // Selected month
           const firstDay = new Date(selectedYear, selectedMonth - 1, 1);
           const lastDay = new Date(selectedYear, selectedMonth, 0);

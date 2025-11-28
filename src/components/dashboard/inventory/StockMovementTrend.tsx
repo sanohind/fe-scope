@@ -36,47 +36,20 @@ const StockMovementTrend: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [apiMessage, setApiMessage] = useState<string>("");
-  
-  // Filter states
-  const [selectedWarehouse, setSelectedWarehouse] = useState<string>("all");
-  const [selectedProductType, setSelectedProductType] = useState<string>("all");
-  const [selectedPeriod, setSelectedPeriod] = useState<string>("monthly");
-  const [selectedMonth, setSelectedMonth] = useState<string>("");
-  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
 
-  // Available options (you may need to fetch these from API)
-  const warehouses = ["all", "WH001", "WH002", "WH003"];
-  const productTypes = ["all", "RAW MATERIAL", "FINISHED GOODS", "COMPONENT"];
-  const periods = [
-    { value: "daily", label: "Daily" },
-    { value: "weekly", label: "Weekly" },
-    { value: "monthly", label: "Monthly" },
-  ];
-  const months = [
-    { value: "01", label: "January" },
-    { value: "02", label: "February" },
-    { value: "03", label: "March" },
-    { value: "04", label: "April" },
-    { value: "05", label: "May" },
-    { value: "06", label: "June" },
-    { value: "07", label: "July" },
-    { value: "08", label: "August" },
-    { value: "09", label: "September" },
-    { value: "10", label: "October" },
-    { value: "11", label: "November" },
-    { value: "12", label: "December" },
-  ];
-  const years = Array.from({ length: 5 }, (_, i) => {
-    const year = new Date().getFullYear() - i;
-    return { value: year.toString(), label: year.toString() };
-  });
+  // Filter states
+  const [selectedWarehouse] = useState<string>("all");
+  const [selectedProductType] = useState<string>("all");
+  const [selectedPeriod] = useState<string>("monthly");
+  const [selectedMonth] = useState<string>("");
+  const [selectedYear] = useState<string>(new Date().getFullYear().toString());
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const params: any = {};
-        
+
         if (selectedWarehouse !== "all") {
           params.warehouse = selectedWarehouse;
         }
@@ -96,15 +69,15 @@ const StockMovementTrend: React.FC = () => {
         console.log("Stock Movement Trend - API Params:", params);
         const result: StockMovementAPIResponse = await inventoryApi.getStockMovementTrend(params);
         console.log("Stock Movement Trend - Raw API Response:", result);
-        
+
         // Set API message if present
         if (result.message) {
           setApiMessage(result.message);
         }
-        
+
         // Handle different response structures
         let dataArray: ChartDataPoint[] = [];
-        
+
         // Priority 1: Check for historical_data (proper time series)
         if (result?.historical_data && Array.isArray(result.historical_data)) {
           dataArray = result.historical_data;
@@ -123,10 +96,10 @@ const StockMovementTrend: React.FC = () => {
         } else if (result?.results && Array.isArray(result.results)) {
           dataArray = result.results;
         }
-        
+
         console.log("Stock Movement Trend - Processed Data Array:", dataArray);
         console.log("Stock Movement Trend - Data Length:", dataArray.length);
-        
+
         setData(dataArray);
         setError(null);
       } catch (err) {
@@ -150,7 +123,7 @@ const StockMovementTrend: React.FC = () => {
           onhand: 0,
           allocated: 0,
           available: 0,
-          count: 0
+          count: 0,
         };
       }
       acc[key].onhand += parseFloat(item.onhand) || 0;
@@ -166,7 +139,7 @@ const StockMovementTrend: React.FC = () => {
         period,
         onhand: Math.round(onhand * 10) / 10,
         allocated: Math.round(allocated * 10) / 10,
-        available: Math.round(available * 10) / 10
+        available: Math.round(available * 10) / 10,
       }))
       .sort((a, b) => b.onhand - a.onhand)
       .slice(0, 20); // Limit to top 20 items
@@ -262,21 +235,11 @@ const StockMovementTrend: React.FC = () => {
     },
   };
 
-  const handleResetFilters = () => {
-    setSelectedWarehouse("all");
-    setSelectedProductType("all");
-    setSelectedPeriod("monthly");
-    setSelectedMonth("");
-    setSelectedYear(new Date().getFullYear().toString());
-  };
-
   if (loading) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="mb-4">
-          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
-            Stock Movement Trend
-          </h3>
+          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Stock Movement Trend</h3>
         </div>
         <div className="flex justify-center items-center h-[400px] animate-pulse">
           <div className="w-full h-full bg-gray-200 rounded dark:bg-gray-800"></div>
@@ -289,27 +252,23 @@ const StockMovementTrend: React.FC = () => {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="mb-4">
-          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
-            Stock Movement Trend
-          </h3>
+          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Stock Movement Trend</h3>
         </div>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400 text-sm font-medium mb-2">
-            {error || "No data available"}
-          </p>
-          {apiMessage && (
-            <p className="text-warning-600 dark:text-warning-400 text-sm mb-2">
-              ℹ️ {apiMessage}
-            </p>
-          )}
+          <p className="text-error-600 dark:text-error-400 text-sm font-medium mb-2">{error || "No data available"}</p>
+          {apiMessage && <p className="text-warning-600 dark:text-warning-400 text-sm mb-2">ℹ️ {apiMessage}</p>}
           {!error && data.length === 0 && (
             <p className="text-gray-600 dark:text-gray-400 text-xs mt-2">
               API berhasil fetch, tapi data kosong. Pastikan backend mengembalikan data dengan struktur:
               <code className="block mt-1 p-2 bg-white dark:bg-gray-900 rounded text-xs overflow-x-auto">
-                {JSON.stringify({
-                  historical_data: [{ period: "2024-01", onhand: 100, allocated: 20, available: 80 }],
-                  current_data: [{ partno: "ABC", desc: "Item", onhand: "100", allocated: "20", available: "80" }]
-                }, null, 2)}
+                {JSON.stringify(
+                  {
+                    historical_data: [{ period: "2024-01", onhand: 100, allocated: 20, available: 80 }],
+                    current_data: [{ partno: "ABC", desc: "Item", onhand: "100", allocated: "20", available: "80" }],
+                  },
+                  null,
+                  2
+                )}
               </code>
             </p>
           )}
@@ -322,9 +281,7 @@ const StockMovementTrend: React.FC = () => {
     <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
       {/* Header */}
       <div className="mb-4">
-        <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
-          Stock Movement Trend
-        </h3>
+        <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Stock Movement Trend</h3>
         {/* {apiMessage && (
           <div className="mt-2 rounded-lg border border-warning-200 bg-warning-50 px-3 py-2 dark:border-warning-800 dark:bg-warning-900/20">
             <p className="text-warning-700 dark:text-warning-300 text-xs">
@@ -336,12 +293,7 @@ const StockMovementTrend: React.FC = () => {
 
       {/* Chart */}
       <div>
-        <ReactApexChart
-          options={options}
-          series={series}
-          type="area"
-          height={400}
-        />
+        <ReactApexChart options={options} series={series} type="area" height={400} />
       </div>
     </div>
   );

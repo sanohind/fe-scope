@@ -30,7 +30,7 @@ const ProductionByDivision: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await productionApi.getProductionByDivision();
+        const result = await productionApi.getProductionBydivisi({});
         // Handle if API returns wrapped data or direct array
         const rawArray: ProductionDivisionRow[] = Array.isArray(result) ? result : result?.data || [];
 

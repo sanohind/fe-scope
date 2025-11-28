@@ -17,11 +17,7 @@ interface InventoryStockHealthDistributionProps {
   dateTo?: string;
 }
 
-const InventoryStockHealthDistribution: React.FC<InventoryStockHealthDistributionProps> = ({ 
-  warehouse, 
-  dateFrom, 
-  dateTo 
-}) => {
+const InventoryStockHealthDistribution: React.FC<InventoryStockHealthDistributionProps> = ({ warehouse, dateFrom, dateTo }) => {
   const [data, setData] = useState<StockHealthData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,13 +58,9 @@ const InventoryStockHealthDistribution: React.FC<InventoryStockHealthDistributio
   if (error || !data || data.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
-          Stock Health Distribution
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Stock Health Distribution</h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400">
-            {error || "No data available"}
-          </p>
+          <p className="text-error-600 dark:text-error-400">{error || "No data available"}</p>
         </div>
       </div>
     );
@@ -137,7 +129,7 @@ const InventoryStockHealthDistribution: React.FC<InventoryStockHealthDistributio
     },
     tooltip: {
       y: {
-        formatter: (val: number, { seriesIndex }) => {
+        formatter: (_val: number, { seriesIndex }) => {
           const item = data[seriesIndex];
           return `
             <div style="text-align: left; padding: 4px;">
@@ -162,29 +154,23 @@ const InventoryStockHealthDistribution: React.FC<InventoryStockHealthDistributio
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Stock Health Distribution
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Stock Health Distribution</h3>
         {dateRange && (
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            {new Date(dateRange.from).toLocaleDateString("id-ID", { 
-              day: "numeric", 
-              month: "short" 
-            })}{" - "}
-            {new Date(dateRange.to).toLocaleDateString("id-ID", { 
-              day: "numeric", 
-              month: "short", 
-              year: "numeric" 
+            {new Date(dateRange.from).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "short",
+            })}
+            {" - "}
+            {new Date(dateRange.to).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
             })}
           </span>
         )}
       </div>
-      <ReactApexChart 
-        options={options} 
-        series={series} 
-        type="donut" 
-        height={400} 
-      />
+      <ReactApexChart options={options} series={series} type="donut" height={400} />
     </div>
   );
 };

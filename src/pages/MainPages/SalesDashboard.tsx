@@ -2,15 +2,10 @@ import PageMeta from "../../components/common/PageMeta";
 import LazyLoad from "../../components/common/LazyLoad";
 import {
   SalesOverviewKPI,
-  RevenueTrend,
   TopCustomersByRevenue,
   SalesByProductType,
-  ShipmentStatusTracking,
-  DeliveryPerformance,
-  InvoiceStatusDistribution,
   OrderFulfillment,
   TopSellingProducts,
-  RevenueByCurrency,
   MonthlySalesComparison,
 } from "../../components/dashboard/sales";
 
@@ -25,11 +20,6 @@ export default function SalesDashboard() {
         {/* Chart 4.1: Sales Overview KPI Cards - Load immediately */}
         <SalesOverviewKPI />
 
-        {/* Chart 4.2: Revenue Trend */}
-        <LazyLoad height="450px">
-          <RevenueTrend />
-        </LazyLoad>
-
         {/* Chart 4.3 & 4.4: Top Customers and Sales by Product Type */}
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           <LazyLoad height="400px">
@@ -37,16 +27,6 @@ export default function SalesDashboard() {
           </LazyLoad>
           <LazyLoad height="400px">
             <SalesByProductType />
-          </LazyLoad>
-        </div>
-
-        {/* Chart 4.5 & 4.6: Shipment Status Tracking and Delivery Performance */}
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <LazyLoad height="350px">
-            <ShipmentStatusTracking />
-          </LazyLoad>
-          <LazyLoad height="400px">
-            <RevenueByCurrency />
           </LazyLoad>
         </div>
 
@@ -61,11 +41,9 @@ export default function SalesDashboard() {
         </LazyLoad>
 
         {/* Chart 4.10 & 4.11: Revenue by Currency and Monthly Sales Comparison */}
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <LazyLoad height="400px">
-            <MonthlySalesComparison />
-          </LazyLoad>
-        </div>
+        <LazyLoad height="400px">
+          <MonthlySalesComparison />
+        </LazyLoad>
       </div>
     </>
   );

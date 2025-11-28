@@ -3,27 +3,42 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { salesApi } from "../../../services/api/dashboardApi";
 
-interface MonthlySalesData {
+interface SalesData {
   period: string;
-  revenue: number;
-  previous_month_revenue: number | null;
+  revenue: string;
+  previous_month_revenue: string | null;
   mom_growth: number | null;
 }
 
 const MonthlySalesComparison: React.FC = () => {
-  const [data, setData] = useState<MonthlySalesData[]>([]);
+  const [data, setData] = useState<SalesData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState<{ from: string; to: string } | null>(null);
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
+  // Generate available years (current year and 5 years back)
+  const currentYear = new Date().getFullYear();
+  const availableYears = Array.from({ length: 6 }, (_, i) => currentYear - i);
+
+  // Fetch data based on selected year
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await salesApi.getMonthlySalesComparison();
-        // API returns { data: [...], date_from, date_to }
-        setData(result.data || []);
-        setDateRange({ from: result.date_from, to: result.date_to });
+
+        // Build date range for selected year
+        const dateFrom = `${selectedYear}-01-01`;
+        const dateToDate = new Date(selectedYear, 11, 31);
+        const dateTo = dateToDate.toISOString().split("T")[0];
+
+        const result = await salesApi.getMonthlySalesComparison({
+          date_from: dateFrom,
+          date_to: dateTo,
+        });
+
+        // Handle both wrapped and direct response
+        const dataArray = result?.data || result || [];
+        setData(dataArray);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
@@ -33,14 +48,14 @@ const MonthlySalesComparison: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [selectedYear]);
 
   if (loading) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 rounded dark:bg-gray-800 w-48 mb-6"></div>
-          <div className="h-96 bg-gray-200 rounded dark:bg-gray-800"></div>
+          <div className="h-80 bg-gray-200 rounded dark:bg-gray-800"></div>
         </div>
       </div>
     );
@@ -49,46 +64,49 @@ const MonthlySalesComparison: React.FC = () => {
   if (error || !data || data.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
-          Monthly Sales Comparison (MoM)
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Monthly Sales Comparison (MoM)</h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400">
-            {error || "No data available"}
-          </p>
+          <p className="text-error-600 dark:text-error-400">{error || "No data available"}</p>
         </div>
       </div>
     );
   }
 
-  // Format period YYYY-MM to display format
+  // Use all data without filtering
   const categories = data.map((item) => {
-    const [year, month] = item.period.split('-');
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    return `${monthNames[parseInt(month) - 1]} ${year.slice(2)}`;
+    const [year, month] = item.period.split("-");
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
   });
-  const currentRevenueData = data.map((item) => item.revenue);
-  const previousRevenueData = data.map((item) => item.previous_month_revenue || 0);
-  const momGrowthData = data.map((item) => item.mom_growth || 0);
+
+  const revenueData = data.map(
+    (item) => parseFloat(item.revenue) / 1000000000 // Convert to billions
+  );
+
+  const momGrowthData = data.map((item) => (item.mom_growth !== null ? item.mom_growth : null));
 
   const options: ApexOptions = {
+    colors: ["#465fff", "#12B76A"],
     chart: {
       fontFamily: "Outfit, sans-serif",
       height: 400,
-      type: "line",
       toolbar: {
         show: false,
       },
+      zoom: {
+        enabled: false,
+      },
     },
-    colors: ["#465fff", "#98A2B3", "#12B76A"],
     stroke: {
-      width: [0, 0, 3],
-      curve: "smooth",
+      width: [4, 2],
+      curve: ["straight", "straight"],
+      dashArray: [0, 5],
     },
     plotOptions: {
       bar: {
-        columnWidth: "50%",
+        columnWidth: "60%",
         borderRadius: 5,
+        borderRadiusApplication: "end",
       },
     },
     dataLabels: {
@@ -106,45 +124,64 @@ const MonthlySalesComparison: React.FC = () => {
     yaxis: [
       {
         title: {
-          text: "Revenue",
+          text: "Revenue (Billion IDR)",
+          style: {
+            fontSize: "12px",
+            fontWeight: 500,
+          },
         },
         labels: {
-          formatter: (val: number) => {
-            return `$${(val / 1000).toFixed(0)}K`;
-          },
+          formatter: (val: number) => val.toFixed(1),
         },
       },
       {
         opposite: true,
         title: {
           text: "MoM Growth (%)",
+          style: {
+            fontSize: "12px",
+            fontWeight: 500,
+          },
         },
         labels: {
-          formatter: (val: number) => `${val >= 0 ? '+' : ''}${val.toFixed(1)}%`,
+          formatter: (val: number) => val.toFixed(1) + "%",
         },
       },
     ],
     legend: {
+      show: true,
       position: "top",
       horizontalAlign: "left",
       fontFamily: "Outfit",
+      markers: {
+        size: 10,
+      },
     },
     grid: {
-      borderColor: "#f0f0f0",
-      strokeDashArray: 3,
+      yaxis: {
+        lines: {
+          show: true,
+        },
+      },
+      padding: {
+        top: 0,
+        right: 10,
+        bottom: 0,
+        left: 10,
+      },
+    },
+    fill: {
+      opacity: [1, 1],
     },
     tooltip: {
       shared: true,
       intersect: false,
       y: [
         {
-          formatter: (val: number) => `$${val.toLocaleString()}`,
+          formatter: (val: number) => `Rp ${val.toFixed(2)}B`,
         },
         {
-          formatter: (val: number) => `$${val.toLocaleString()}`,
-        },
-        {
-          formatter: (val: number) => `${val >= 0 ? '+' : ''}${val.toFixed(2)}%`,
+          formatter: (val: number) => (val !== null ? `${val.toFixed(2)}%` : "N/A"),
         },
       ],
     },
@@ -152,14 +189,9 @@ const MonthlySalesComparison: React.FC = () => {
 
   const series = [
     {
-      name: "Current Month Revenue",
+      name: "Revenue",
       type: "column",
-      data: currentRevenueData,
-    },
-    {
-      name: "Previous Month Revenue",
-      type: "column",
-      data: previousRevenueData,
+      data: revenueData,
     },
     {
       name: "MoM Growth",
@@ -168,20 +200,54 @@ const MonthlySalesComparison: React.FC = () => {
     },
   ];
 
+  // Calculate summary stats
+  const totalRevenue = revenueData.reduce((sum, val) => sum + val, 0);
+  const avgRevenue = totalRevenue / revenueData.length;
+  const avgGrowth = momGrowthData.filter((val) => val !== null).reduce((sum, val) => sum + (val as number), 0) / momGrowthData.filter((val) => val !== null).length;
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Monthly Sales Comparison (MoM)
-        </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Month-over-Month Revenue Comparison
-          {dateRange && ` (${dateRange.from} to ${dateRange.to})`}
-        </p>
+      <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Monthly Sales Comparison (MoM)</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Year-over-year monthly revenue comparison</p>
+        </div>
+        <div className="flex gap-4 flex-wrap items-end">
+          {/* Year Selector */}
+          <div>
+            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-2">Select Year</label>
+            <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+              {availableYears.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Summary Stats */}
+          <div className="text-right">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Avg Revenue</p>
+            <p className="text-lg font-semibold text-gray-800 dark:text-white/90">
+              {new Intl.NumberFormat("id-ID", {
+                style: "currency",
+                currency: "IDR",
+                notation: "compact",
+                compactDisplay: "short",
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              }).format(avgRevenue * 1000000000)}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Avg Growth</p>
+            <p className={`text-lg font-semibold ${avgGrowth >= 0 ? "text-success-600 dark:text-success-400" : "text-error-600 dark:text-error-400"}`}>{avgGrowth.toFixed(2)}%</p>
+          </div>
+        </div>
       </div>
-      
+
       <div className="max-w-full overflow-x-auto custom-scrollbar">
-        <div className="min-w-[600px]">
+        <div className="min-w-[700px]">
           <Chart options={options} series={series} type="line" height={400} />
         </div>
       </div>

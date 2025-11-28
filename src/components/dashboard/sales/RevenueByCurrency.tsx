@@ -44,9 +44,7 @@ const RevenueByCurrency: React.FC = () => {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="mb-4">
-          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
-            Revenue by Currency
-          </h3>
+          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Revenue by Currency</h3>
         </div>
         <div className="flex justify-center items-center h-[300px]">
           <div className="animate-pulse">
@@ -61,14 +59,10 @@ const RevenueByCurrency: React.FC = () => {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="mb-4">
-          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
-            Revenue by Currency
-          </h3>
+          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Revenue by Currency</h3>
         </div>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400 text-sm">
-            {error || "No data available"}
-          </p>
+          <p className="text-error-600 dark:text-error-400 text-sm">{error || "No data available"}</p>
         </div>
       </div>
     );
@@ -81,9 +75,9 @@ const RevenueByCurrency: React.FC = () => {
   const series = validData.map((item) => parseFloat(item.amount_hc) || 0);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
@@ -137,10 +131,7 @@ const RevenueByCurrency: React.FC = () => {
               fontSize: "14px",
               fontWeight: 500,
               formatter: function (w) {
-                const total = w.globals.seriesTotals.reduce(
-                  (a: number, b: number) => a + b,
-                  0
-                );
+                const total = w.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0);
                 return formatCurrency(total);
               },
             },
@@ -179,18 +170,10 @@ const RevenueByCurrency: React.FC = () => {
       <div className="mb-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
-              Revenue by Currency
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Revenue distribution across currencies
-            </p>
+            <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Revenue by Currency</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Revenue distribution across currencies</p>
           </div>
-          {data.period && (
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              Period: {data.period}
-            </span>
-          )}
+          {data.period && <span className="text-sm text-gray-500 dark:text-gray-400">Period: {data.period}</span>}
         </div>
       </div>
       <div>

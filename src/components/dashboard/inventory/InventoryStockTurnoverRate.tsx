@@ -80,7 +80,7 @@ const InventoryStockTurnoverRate: React.FC<InventoryStockTurnoverRateProps> = ({
     return colors[category] || "#6B7280";
   };
 
-  const categories = data.map((item) => item.partno);
+  // const categories = data.map((item) => item.partno);
   const turnoverRates = data.map((item) => item.turnover_rate);
   const colors = data.map((item) => getCategoryColor(item.movement_category));
 
@@ -88,7 +88,6 @@ const InventoryStockTurnoverRate: React.FC<InventoryStockTurnoverRateProps> = ({
     chart: {
       type: "bar",
       fontFamily: "Outfit, sans-serif",
-      horizontal: true,
       toolbar: {
         show: false,
       },
@@ -134,7 +133,7 @@ const InventoryStockTurnoverRate: React.FC<InventoryStockTurnoverRateProps> = ({
     },
     tooltip: {
       y: {
-        formatter: (val: number, { dataPointIndex }) => {
+        formatter: (_val: number, { dataPointIndex }) => {
           const item = data[dataPointIndex];
           return `
             <div class="text-left">

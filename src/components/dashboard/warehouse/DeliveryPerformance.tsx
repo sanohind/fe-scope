@@ -75,7 +75,7 @@ const DeliveryPerformance: React.FC = () => {
   if (error || !data) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Delivery Performance</h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Warehouse Performance</h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
           <p className="text-error-600 dark:text-error-400">{error || "No data available"}</p>
         </div>

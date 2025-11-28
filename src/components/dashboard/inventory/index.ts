@@ -6,6 +6,7 @@ export { default as StockByCustomer } from "./StockByCustomer";
 export { default as StockDistributionByProductType } from "./StockDistributionByProductType";
 export { default as InventoryAvailabilityVsDemand } from "./InventoryAvailabilityVsDemand";
 export { default as StockMovementTrend } from "./StockMovementTrend";
+export { default as StockLevelTable } from "./StockLevelTable";
 
 // Dashboard 1 Revision: Inventory Dashboard by Warehouse Components
 export { default as InventoryKpiCards } from "./InventoryKpiCards";

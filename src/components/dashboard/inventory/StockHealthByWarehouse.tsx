@@ -11,7 +11,7 @@ interface StockHealthData {
   overstock: number;
 }
 
-const StockHealthByWarehouse: React.FC = () => {
+const StockHealthByWarehouse: React.FC<{ warehouse?: string }> = ({ warehouse }) => {
   const [data, setData] = useState<StockHealthData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +22,7 @@ const StockHealthByWarehouse: React.FC = () => {
         setLoading(true);
         const result = await inventoryApi.getStockHealthByWarehouse();
         // Handle if API returns wrapped data or direct array
-        const dataArray = Array.isArray(result) ? result : (result?.data || []);
+        const dataArray = Array.isArray(result) ? result : result?.data || [];
         setData(dataArray);
         setError(null);
       } catch (err) {
@@ -33,7 +33,7 @@ const StockHealthByWarehouse: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [warehouse]);
 
   if (loading) {
     return (
@@ -49,13 +49,9 @@ const StockHealthByWarehouse: React.FC = () => {
   if (error || !data || data.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
-          Stock Health by Warehouse
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Stock Health by Warehouse</h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400">
-            {error || "No data available"}
-          </p>
+          <p className="text-error-600 dark:text-error-400">{error || "No data available"}</p>
         </div>
       </div>
     );
@@ -155,9 +151,7 @@ const StockHealthByWarehouse: React.FC = () => {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Stock Health by Warehouse
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Stock Health by Warehouse</h3>
       </div>
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[600px]">

@@ -70,13 +70,6 @@ const InventoryKpiCards: React.FC<InventoryKpiCardsProps> = ({ warehouse, dateFr
     );
   }
 
-  const formatDateRange = () => {
-    if (!data.date_range) return "";
-    const from = new Date(data.date_range.from).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
-    const to = new Date(data.date_range.to).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
-    return `${from} - ${to}`;
-  };
-
   const metrics = [
     {
       id: 1,

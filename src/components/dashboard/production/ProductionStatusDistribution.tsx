@@ -20,7 +20,11 @@ interface ApiResponse {
   };
 }
 
-const ProductionStatusDistribution: React.FC = () => {
+interface ProductionStatusDistributionProps {
+  divisi?: string;
+}
+
+const ProductionStatusDistribution: React.FC<ProductionStatusDistributionProps> = ({ divisi = "ALL" }) => {
   const [data, setData] = useState<StatusData[]>([]);
   const [totalOrders, setTotalOrders] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -30,8 +34,10 @@ const ProductionStatusDistribution: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result: ApiResponse = await productionApi.getProductionStatusDistribution();
-        
+        const result: ApiResponse = await productionApi.getProductionStatusDistribution({
+          divisi: divisi !== "ALL" ? divisi : undefined,
+        });
+
         // Extract data array and total from API response
         if (result && result.data) {
           setData(result.data);
@@ -49,7 +55,7 @@ const ProductionStatusDistribution: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [divisi]);
 
   // Convert string counts to numbers for the chart
   const series = data.map((item) => parseInt(item.count, 10));
@@ -136,9 +142,7 @@ const ProductionStatusDistribution: React.FC = () => {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="mb-4">
-          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
-            Production Status Distribution
-          </h3>
+          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Production Status Distribution</h3>
         </div>
         <div className="flex justify-center items-center h-[300px]">
           <div className="animate-pulse">
@@ -153,14 +157,10 @@ const ProductionStatusDistribution: React.FC = () => {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="mb-4">
-          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
-            Production Status Distribution
-          </h3>
+          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Production Status Distribution</h3>
         </div>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400 text-sm">
-            {error || "No data available"}
-          </p>
+          <p className="text-error-600 dark:text-error-400 text-sm">{error || "No data available"}</p>
         </div>
       </div>
     );
@@ -169,20 +169,11 @@ const ProductionStatusDistribution: React.FC = () => {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
       <div className="mb-4">
-        <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
-          Production Status Distribution
-        </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Production orders by status
-        </p>
+        <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Production Status Distribution</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Production orders by status</p>
       </div>
       <div>
-        <ReactApexChart
-          options={options}
-          series={series}
-          type="donut"
-          height={350}
-        />
+        <ReactApexChart options={options} series={series} type="donut" height={350} />
       </div>
     </div>
   );

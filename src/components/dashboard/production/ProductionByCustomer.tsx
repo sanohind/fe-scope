@@ -10,7 +10,11 @@ interface CustomerData {
   qty_outstanding: number;
 }
 
-const ProductionByCustomer: React.FC = () => {
+interface ProductionByCustomerProps {
+  divisi?: string;
+}
+
+const ProductionByCustomer: React.FC<ProductionByCustomerProps> = ({ divisi = "ALL" }) => {
   const [data, setData] = useState<CustomerData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,9 +23,11 @@ const ProductionByCustomer: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await productionApi.getProductionByCustomer(15);
+        const result = await productionApi.getProductionByCustomer(15, {
+          divisi: divisi !== "ALL" ? divisi : undefined,
+        });
         // Handle if API returns wrapped data or direct array
-        const dataArray = Array.isArray(result) ? result : (result?.data || []);
+        const dataArray = Array.isArray(result) ? result : result?.data || [];
         setData(dataArray);
         setError(null);
       } catch (err) {
@@ -32,7 +38,7 @@ const ProductionByCustomer: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [divisi]);
 
   // Filter out invalid data and ensure numeric values
   const validData = Array.isArray(data) ? data.filter((item) => item && item.customer) : [];
@@ -127,9 +133,7 @@ const ProductionByCustomer: React.FC = () => {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="mb-4">
-          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
-            Production by Customer
-          </h3>
+          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Production by Customer</h3>
         </div>
         <div className="flex justify-center items-center h-[400px] animate-pulse">
           <div className="w-full h-full bg-gray-200 rounded dark:bg-gray-800"></div>
@@ -142,14 +146,10 @@ const ProductionByCustomer: React.FC = () => {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="mb-4">
-          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
-            Production by Customer
-          </h3>
+          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Production by Customer</h3>
         </div>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400 text-sm">
-            {error || "No data available"}
-          </p>
+          <p className="text-error-600 dark:text-error-400 text-sm">{error || "No data available"}</p>
         </div>
       </div>
     );
@@ -158,20 +158,11 @@ const ProductionByCustomer: React.FC = () => {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
       <div className="mb-4">
-        <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">
-          Production by Customer
-        </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Top 15 customers by production volume
-        </p>
+        <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Production by Customer</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Top 15 customers by production volume</p>
       </div>
       <div>
-        <ReactApexChart
-          options={options}
-          series={series}
-          type="bar"
-          height={400}
-        />
+        <ReactApexChart options={options} series={series} type="bar" height={400} />
       </div>
     </div>
   );

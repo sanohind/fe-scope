@@ -5,14 +5,17 @@ import { productionApi } from "../../../services/api/dashboardApi";
 
 interface TrendData {
   period: string;
-  qty_ordered: string | number;
-  qty_delivered: string | number;
-  achievement_rate: string | number;
+  qty_pelaporan: string | number;
+  total_prod_index: string | number;
+}
+
+interface ProductionTrendProps {
+  divisi?: string;
 }
 
 type TrendPeriod = "daily" | "monthly" | "yearly";
 
-const ProductionTrend: React.FC = () => {
+const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL" }) => {
   const [data, setData] = useState<TrendData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +47,12 @@ const ProductionTrend: React.FC = () => {
           dateTo = `${endYear}-12-31`;
         }
 
-        const result = await productionApi.getProductionTrend({ period, date_from: dateFrom, date_to: dateTo });
+        const result = await productionApi.getProductionTrend({
+          period,
+          date_from: dateFrom,
+          date_to: dateTo,
+          divisi: divisi !== "ALL" ? divisi : undefined,
+        });
         const dataArray = Array.isArray(result) ? result : result?.data || [];
         setData(dataArray);
         setError(null);
@@ -57,7 +65,7 @@ const ProductionTrend: React.FC = () => {
     };
 
     fetchData();
-  }, [period, selectedYear, selectedMonth]);
+  }, [period, selectedYear, selectedMonth, divisi]);
 
   // Konversi string ke number dengan aman
   const toNumber = (value: string | number): number => {
@@ -68,28 +76,15 @@ const ProductionTrend: React.FC = () => {
 
   const categories = data.map((item) => item.period);
 
-  const qtyOrderedData = data.map((item) => toNumber(item.qty_ordered));
-  const qtyDeliveredData = data.map((item) => toNumber(item.qty_delivered));
-  const achievementRateData = data.map((item) => toNumber(item.achievement_rate));
+  const qtyPelaporanData = data.map((item) => toNumber(item.qty_pelaporan));
 
   const series = [
     {
-      name: "Qty Ordered",
+      name: "Qty Pelaporan",
       type: "column" as const,
-      data: qtyOrderedData,
-    },
-    {
-      name: "Qty Delivered",
-      type: "column" as const,
-      data: qtyDeliveredData,
+      data: qtyPelaporanData,
     },
   ];
-
-  // Data terpisah untuk tooltip achievement rate
-  const achievementData = data.map((item, index) => ({
-    x: categories[index],
-    y: toNumber(item.achievement_rate),
-  }));
 
   const options: ApexOptions = {
     chart: {
@@ -98,8 +93,9 @@ const ProductionTrend: React.FC = () => {
         show: false,
       },
       height: 400,
+      type: "line",
     },
-    colors: ["#465FFF", "#12B76A", "#F79009"],
+    colors: ["#465FFF"],
     plotOptions: {
       bar: {
         horizontal: false,
@@ -110,10 +106,6 @@ const ProductionTrend: React.FC = () => {
     dataLabels: {
       enabled: false,
     },
-    stroke: {
-      width: [0, 0],
-      curve: "smooth",
-    },
     xaxis: {
       categories: categories,
       labels: {
@@ -122,50 +114,33 @@ const ProductionTrend: React.FC = () => {
         },
       },
     },
-    yaxis: [
-      {
-        seriesName: "Qty Ordered",
-        title: {
-          text: "Quantity",
-          style: {
-            fontSize: "14px",
-            fontWeight: 500,
-          },
-        },
-        labels: {
-          formatter: (val) => {
-            if (val === undefined || val === null) return "0";
-            return val.toLocaleString("en-US", { maximumFractionDigits: 0 });
-          },
+    yaxis: {
+      title: {
+        text: "Quantity",
+        style: {
+          fontSize: "14px",
+          fontWeight: 500,
         },
       },
-      {
-        seriesName: "Qty Ordered",
-        show: false,
+      labels: {
+        formatter: (val) => {
+          if (val === undefined || val === null) return "0";
+          return val.toLocaleString("en-US", { maximumFractionDigits: 0 });
+        },
       },
-    ],
+    },
     tooltip: {
       shared: true,
       intersect: false,
-      custom: function ({ series, seriesIndex, dataPointIndex, w }) {
-        const qtyOrdered = qtyOrderedData[dataPointIndex];
-        const qtyDelivered = qtyDeliveredData[dataPointIndex];
-        const achievement = achievementRateData[dataPointIndex];
+      custom: function ({ dataPointIndex}) {
+        const qtyPelaporan = qtyPelaporanData[dataPointIndex];
         const period = categories[dataPointIndex];
 
         return `<div class="px-3 py-2">
           <div class="font-semibold mb-2 text-gray-800 dark:text-gray-300">${period}</div>
-          <div class="flex items-center gap-2 mb-1">
-            <span class="w-3 h-3 rounded-full" style="background-color: #465FFF"></span>
-            <span class="text-sm text-gray-700 dark:text-gray-400">Qty Ordered: <strong>${qtyOrdered.toLocaleString("en-US", { maximumFractionDigits: 0 })} units</strong></span>
-          </div>
-          <div class="flex items-center gap-2 mb-1">
-            <span class="w-3 h-3 rounded-full" style="background-color: #12B76A"></span>
-            <span class="text-sm text-gray-700 dark:text-gray-400">Qty Delivered: <strong>${qtyDelivered.toLocaleString("en-US", { maximumFractionDigits: 0 })} units</strong></span>
-          </div>
           <div class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full" style="background-color: #F79009"></span>
-            <span class="text-sm text-gray-700 dark:text-gray-400">Achievement Rate: <strong>${achievement.toFixed(2)}%</strong></span>
+            <span class="w-3 h-3 rounded-full" style="background-color: #465FFF"></span>
+            <span class="text-sm text-gray-700 dark:text-gray-400">Qty Pelaporan: <strong>${qtyPelaporan.toLocaleString("en-US", { maximumFractionDigits: 0 })} units</strong></span>
           </div>
         </div>`;
       },

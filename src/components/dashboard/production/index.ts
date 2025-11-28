@@ -4,6 +4,5 @@ export { default as ProductionByCustomer } from "./ProductionByCustomer";
 export { default as ProductionByModel } from "./ProductionByModel";
 export { default as ProductionScheduleTimeline } from "./ProductionScheduleTimeline";
 export { default as ProductionOutstandingAnalysis } from "./ProductionOutstandingAnalysis";
-export { default as ProductionByDivision } from "./ProductionByDivision";
+export { default as ProductionByDivisi } from "./ProductionByDivision";
 export { default as ProductionTrend } from "./ProductionTrend";
-
