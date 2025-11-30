@@ -645,7 +645,7 @@ export const procurementApi = {
 // Supply Chain APIs
 export const SupplyChainApi = {
   // Logistics Shipment Table
-  getShipmentTable: async (params?: { status?: string; supplier?: string; date_from?: string; date_to?: string; page?: number; per_page?: number }) => {
+  getShipmentTable: async (params?: { status?: string; supplier?: string; date_from?: string; date_to?: string; page?: number; per_page?: number; search?: string; sort_by?: string; sort_order?: string }) => {
     const queryParams = new URLSearchParams(params as any).toString();
     const url = `${BASE_URL}/api/dashboard/supply-chain/shipment-table${queryParams ? `?${queryParams}` : ""}`;
     const response = await fetch(url);

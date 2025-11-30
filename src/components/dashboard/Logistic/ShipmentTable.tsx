@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { SupplyChainApi } from "../../../services/api/dashboardApi";
 
 interface ShipmentRow {
   shipment: string;
@@ -26,14 +27,9 @@ interface Filters {
   shipment_status: string;
 }
 
-interface ShipmentTableProps {
-  apiEndpoint?: string;
-}
-
-const BASE_URL = "http://127.0.0.1:8000";
 const NUMBER_FORMATTER = new Intl.NumberFormat("id-ID");
 
-const ShipmentTable: React.FC<ShipmentTableProps> = ({ apiEndpoint = `${BASE_URL}/api/dashboard/supply-chain/shipment-table` }) => {
+const ShipmentTable: React.FC = () => {
   const [rows, setRows] = useState<ShipmentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,41 +58,13 @@ const ShipmentTable: React.FC<ShipmentTableProps> = ({ apiEndpoint = `${BASE_URL
       try {
         setLoading(true);
 
-        const params = new URLSearchParams({
-          page: currentPage.toString(),
-          per_page: perPage.toString(),
+        const result = await SupplyChainApi.getShipmentTable({
+          page: currentPage,
+          per_page: perPage,
           sort_by: sortBy,
           sort_order: sortOrder,
+          ...(searchTerm && { search: searchTerm }),
         });
-
-        if (searchTerm) {
-          params.append("search", searchTerm);
-        }
-
-        const response = await fetch(`${apiEndpoint}?${params.toString()}`);
-
-        // Read raw text first to avoid crashing on HTML responses (e.g. index.html)
-        const contentType = response.headers.get("content-type") || "";
-        const text = await response.text();
-
-        if (!response.ok) {
-          const messageSnippet = text ? ` - ${text.slice(0, 200)}` : "";
-          throw new Error(`HTTP error! status: ${response.status}${messageSnippet}`);
-        }
-
-        // Ensure the response is JSON before parsing
-        if (!contentType.includes("application/json")) {
-          // Helpful error instead of letting JSON.parse blow up on HTML
-          const snippet = text ? text.slice(0, 200) : "(empty response)";
-          throw new Error(`Expected JSON response but received '${contentType || "text/html"}': ${snippet}`);
-        }
-
-        let result: any;
-        try {
-          result = JSON.parse(text);
-        } catch (e) {
-          throw new Error("Invalid JSON response from server");
-        }
 
         setRows(result.data || []);
         setPagination(result.pagination || null);
@@ -112,7 +80,7 @@ const ShipmentTable: React.FC<ShipmentTableProps> = ({ apiEndpoint = `${BASE_URL
     };
 
     fetchData();
-  }, [apiEndpoint, searchTerm, currentPage, perPage, sortBy, sortOrder]);
+  }, [searchTerm, currentPage, perPage, sortBy, sortOrder]);
 
   const formatNumber = (value: number) => NUMBER_FORMATTER.format(value ?? 0);
 
