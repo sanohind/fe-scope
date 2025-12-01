@@ -128,7 +128,7 @@ const TopEmployeesOvertimeTable: React.FC = () => {
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Month</label>
             <select value={month || ""} onChange={(e) => setMonth(e.target.value ? Number(e.target.value) : undefined)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-              <option value="">All Months</option>
+              {/* <option value="">All Months</option> */}
               {MONTHS.map((m) => (
                 <option key={m.value} value={m.value}>
                   {m.label}
@@ -139,7 +139,7 @@ const TopEmployeesOvertimeTable: React.FC = () => {
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Year</label>
             <select value={year || ""} onChange={(e) => setYear(e.target.value ? Number(e.target.value) : undefined)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-              <option value="">All Years</option>
+              {/* <option value="">All Years</option> */}
               {YEARS.map((y) => (
                 <option key={y} value={y}>
                   {y}
@@ -176,7 +176,7 @@ const TopEmployeesOvertimeTable: React.FC = () => {
             <tbody className="divide-y divide-gray-100 bg-white text-sm dark:divide-gray-800 dark:bg-gray-950/40">
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={6} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
                     No employee overtime data available
                   </td>
                 </tr>

@@ -125,7 +125,6 @@ const TopDepartmentsOvertimeTable: React.FC = () => {
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Month</label>
             <select value={month || ""} onChange={(e) => setMonth(e.target.value ? Number(e.target.value) : undefined)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-              <option value="">All Months</option>
               {MONTHS.map((m) => (
                 <option key={m.value} value={m.value}>
                   {m.label}
@@ -136,7 +135,6 @@ const TopDepartmentsOvertimeTable: React.FC = () => {
           <div>
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Year</label>
             <select value={year || ""} onChange={(e) => setYear(e.target.value ? Number(e.target.value) : undefined)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-              <option value="">All Years</option>
               {YEARS.map((y) => (
                 <option key={y} value={y}>
                   {y}
