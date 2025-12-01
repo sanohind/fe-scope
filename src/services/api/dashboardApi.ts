@@ -1,6 +1,6 @@
 // API Service for Dashboard
-// const BASE_URL = "http://127.0.0.1:8000";
-const BASE_URL = "http://be-scope.ns1.sanoh.co.id"
+const BASE_URL = "http://127.0.0.1:8000";
+// const BASE_URL = "http://be-scope.ns1.sanoh.co.id"
 
 // Helper function to filter out undefined/null values from params
 const cleanParams = (params?: Record<string, any>): Record<string, any> => {
@@ -788,6 +788,24 @@ export const hrApi = {
     const url = `${BASE_URL}/api/dashboard/hr/present-attendance-by-shift${queryParams ? `?${queryParams}` : ""}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch present attendance by shift");
+    return response.json();
+  },
+
+  // 6.4 Top Employees by Overtime Index
+  getTopEmployeesOvertime: async (params?: { month?: number; year?: number; page?: number; per_page?: number }) => {
+    const queryParams = new URLSearchParams(params as any).toString();
+    const url = `${BASE_URL}/api/dashboard/hr/top-employees-overtime${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch top employees overtime");
+    return response.json();
+  },
+
+  // 6.5 Top Departments by Overtime Index
+  getTopDepartmentsOvertime: async (params?: { month?: number; year?: number; page?: number; per_page?: number }) => {
+    const queryParams = new URLSearchParams(params as any).toString();
+    const url = `${BASE_URL}/api/dashboard/hr/top-departments-overtime${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch top departments overtime");
     return response.json();
   },
 
