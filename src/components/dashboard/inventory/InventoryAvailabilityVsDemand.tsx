@@ -62,8 +62,6 @@ const InventoryAvailabilityVsDemand: React.FC<{ warehouse?: string }> = ({ wareh
 
   const categories = data.map((item) => item.warehouse || item.group || "");
   const onhandData = data.map((item) => parseFloat(item.total_onhand.toString()));
-  const allocatedData = data.map((item) => parseFloat(item.total_allocated.toString()));
-  const onorderData = data.map((item) => parseFloat(item.total_onorder.toString()));
   const availableToPromise = data.map((item) => parseFloat(item.available_to_promise.toString()));
 
   const options: ApexOptions = {
@@ -138,16 +136,6 @@ const InventoryAvailabilityVsDemand: React.FC<{ warehouse?: string }> = ({ wareh
       name: "Onhand",
       type: "column",
       data: onhandData,
-    },
-    {
-      name: "Allocated",
-      type: "column",
-      data: allocatedData,
-    },
-    {
-      name: "On Order",
-      type: "column",
-      data: onorderData,
     },
     {
       name: "Available to Promise",

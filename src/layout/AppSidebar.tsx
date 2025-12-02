@@ -28,7 +28,7 @@ const navItems: NavItem[] = [
   },
   {
     icon: <BoxCubeIcon />,
-    name: "Warehouse",
+    name: "Inventory Movement",
     subItems: [
       { name: "All RM", path: "/warehouse-rm" },
       { name: "WHRM01", path: "/warehouse/whrm01" },

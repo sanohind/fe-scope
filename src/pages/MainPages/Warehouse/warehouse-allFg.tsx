@@ -46,9 +46,9 @@ export default function WarehouseAllFg() {
         </div>
 
         <div>
-          <h1 className="font-semibold text-black dark:text-white text-2xl mb-4">Movement WHFG02</h1>
+          <h1 className="font-semibold text-black dark:text-white text-2xl mb-4">Movement WHFG01</h1>
           <LazyLoad height="450px">
-            <InventoryStockMovementTrend warehouse={"WHFG02"} />
+            <InventoryStockMovementTrend warehouse={"WHFG01"} />
           </LazyLoad>
         </div>
 

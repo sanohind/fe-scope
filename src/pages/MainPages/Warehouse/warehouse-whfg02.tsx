@@ -6,6 +6,7 @@ import OrderStatusDistribution from "../../../components/dashboard/warehouse/Ext
 import TopItemsMoved from "../../../components/dashboard/warehouse/Extend/TopItemsMoved";
 import DailyStockTrend from "../../../components/dashboard/warehouse/Extend/DailyStockTrend";
 import InventoryStockMovementTrend from "../../../components/dashboard/inventory/InventoryStockMovementTrend";
+import InventoryStockAndActivityByProductType from "../../../components/dashboard/inventory/InventoryStockAndActivityByProductType"
 
 const WAREHOUSE = "WHFG01";
 
@@ -40,6 +41,11 @@ export default function WarehouseWhfg02() {
             <InventoryStockMovementTrend warehouse={WAREHOUSE} />
           </LazyLoad>
         </div>
+
+        {/* Chart 6: Stock & Activity by Product Type */}
+        <LazyLoad height="450px">
+          <InventoryStockAndActivityByProductType warehouse={WAREHOUSE} />
+        </LazyLoad>
       </div>
     </>
   );

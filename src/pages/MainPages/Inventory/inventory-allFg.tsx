@@ -2,10 +2,8 @@ import PageMeta from "../../../components/common/PageMeta";
 import LazyLoad from "../../../components/common/LazyLoad";
 import StockLevelOverview from "../../../components/dashboard/inventory/StockLevelOverview";
 import StockHealthByWarehouse from "../../../components/dashboard/inventory/StockHealthByWarehouse";
-import TopCriticalItems from "../../../components/dashboard/inventory/TopCriticalItems";
 import StockByCustomer from "../../../components/dashboard/inventory/StockByCustomer";
 import InventoryAvailabilityVsDemand from "../../../components/dashboard/inventory/InventoryAvailabilityVsDemand";
-import StockLevelTable from "../../../components/dashboard/inventory/StockLevelTable";
 
 const WAREHOUSE = "FG";
 
@@ -28,16 +26,6 @@ export default function InventoryAllFg() {
             <StockByCustomer warehouse={warehouse} />
           </LazyLoad>
         </div>
-
-        {/* Top Critical Items Table */}
-        <LazyLoad height="500px">
-          <TopCriticalItems warehouse={warehouse} />
-        </LazyLoad>
-
-        {/* Stock Level Detail Table */}
-        <LazyLoad height="650px">
-          <StockLevelTable warehouse={warehouse} />
-        </LazyLoad>
 
         <LazyLoad height="400px">
           <InventoryAvailabilityVsDemand warehouse={warehouse} />

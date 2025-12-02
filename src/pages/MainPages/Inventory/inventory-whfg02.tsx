@@ -4,7 +4,6 @@ import InventoryKpiCards from "../../../components/dashboard/inventory/Inventory
 import InventoryStockHealthDistribution from "../../../components/dashboard/inventory/InventoryStockHealthDistribution";
 import InventoryTopCriticalItems from "../../../components/dashboard/inventory/InventoryTopCriticalItems";
 import InventoryMostActiveItems from "../../../components/dashboard/inventory/InventoryMostActiveItems";
-import InventoryStockAndActivityByProductType from "../../../components/dashboard/inventory/InventoryStockAndActivityByProductType";
 import InventoryStockByCustomer from "../../../components/dashboard/inventory/InventoryStockByCustomer";
 import InventoryLevelStock from "../../../components/dashboard/inventory/InventoryLevelStock";
 
@@ -40,11 +39,6 @@ export default function InventoryWhfg02() {
         {/* Chart 5: Top 15 Most Active Items */}
         <LazyLoad height="550px">
           <InventoryMostActiveItems warehouse={WAREHOUSE} />
-        </LazyLoad>
-
-        {/* Chart 6: Stock & Activity by Product Type */}
-        <LazyLoad height="450px">
-          <InventoryStockAndActivityByProductType warehouse={WAREHOUSE} />
         </LazyLoad>
       </div>
     </>
