@@ -29,7 +29,7 @@ export const inventoryApi = {
   },
 
   // 1.2 Stock Health by Warehouse
-  getStockHealthByWarehouse: async (params?: { product_type?: string; group?: string; customer?: string }) => {
+  getStockHealthByWarehouse: async (params?: { warehouse?: string; product_type?: string; group?: string; customer?: string }) => {
     const queryParams = new URLSearchParams(params as any).toString();
     const url = `${BASE_URL}/api/dashboard/inventory/stock-health-by-warehouse${queryParams ? `?${queryParams}` : ""}`;
     const response = await fetch(url);
@@ -676,7 +676,7 @@ export const SupplyChainApi = {
 // Dashboard 2 Revision: Warehouse Operations by Warehouse
 export const warehouseRevApi = {
   // 1. Warehouse Order Summary - KPI Cards
-  getOrderSummary: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+  getOrderSummary: async (warehouse: string, params?: { period?: string; date_from?: string; date_to?: string }) => {
     const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
     const url = `${BASE_URL}/api/dashboard/warehouse-rev/order-summary?${queryParams}`;
     const response = await fetch(url);
@@ -685,7 +685,7 @@ export const warehouseRevApi = {
   },
 
   // 2. Delivery Performance - Gauge Chart
-  getDeliveryPerformance: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+  getDeliveryPerformance: async (warehouse: string, params?: { period?: string; date_from?: string; date_to?: string }) => {
     const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
     const url = `${BASE_URL}/api/dashboard/warehouse-rev/delivery-performance?${queryParams}`;
     const response = await fetch(url);
@@ -694,7 +694,7 @@ export const warehouseRevApi = {
   },
 
   // 3. Order Status Distribution - Stacked Bar Chart
-  getOrderStatusDistribution: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+  getOrderStatusDistribution: async (warehouse: string, params?: { period?: string; date_from?: string; date_to?: string }) => {
     const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
     const url = `${BASE_URL}/api/dashboard/warehouse-rev/order-status-distribution?${queryParams}`;
     const response = await fetch(url);
@@ -712,7 +712,7 @@ export const warehouseRevApi = {
   },
 
   // 5. Order Fulfillment by Transaction Type - Bar Chart
-  getOrderFulfillmentByTransactionType: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+  getOrderFulfillmentByTransactionType: async (warehouse: string, params?: { period?: string; date_from?: string; date_to?: string }) => {
     const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
     const url = `${BASE_URL}/api/dashboard/warehouse-rev/order-fulfillment-by-transaction-type?${queryParams}`;
     const response = await fetch(url);
@@ -721,7 +721,7 @@ export const warehouseRevApi = {
   },
 
   // 6. Top Items Moved - Horizontal Bar Chart
-  getTopItemsMoved: async (warehouse: string, params?: { limit?: number; date_from?: string; date_to?: string }) => {
+  getTopItemsMoved: async (warehouse: string, params?: { period?: string; limit?: number; date_from?: string; date_to?: string }) => {
     const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
     const url = `${BASE_URL}/api/dashboard/warehouse-rev/top-items-moved?${queryParams}`;
     const response = await fetch(url);
@@ -730,7 +730,7 @@ export const warehouseRevApi = {
   },
 
   // 7. Monthly Inbound vs Outbound - Grouped Bar Chart
-  getMonthlyInboundVsOutbound: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+  getMonthlyInboundVsOutbound: async (warehouse: string, params?: { period?: string; date_from?: string; date_to?: string }) => {
     const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
     const url = `${BASE_URL}/api/dashboard/warehouse-rev/monthly-inbound-vs-outbound?${queryParams}`;
     const response = await fetch(url);
@@ -739,7 +739,7 @@ export const warehouseRevApi = {
   },
 
   // 8. Top Destinations - Horizontal Bar Chart
-  getTopDestinations: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+  getTopDestinations: async (warehouse: string, params?: { period?: string; date_from?: string; date_to?: string }) => {
     const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
     const url = `${BASE_URL}/api/dashboard/warehouse-rev/top-destinations?${queryParams}`;
     const response = await fetch(url);
@@ -748,7 +748,7 @@ export const warehouseRevApi = {
   },
 
   // 9. Get All Data - Combined Response
-  getAllData: async (warehouse: string, params?: { date_from?: string; date_to?: string }) => {
+  getAllData: async (warehouse: string, params?: { period?: string; date_from?: string; date_to?: string }) => {
     const queryParams = new URLSearchParams({ warehouse, ...params } as any).toString();
     const url = `${BASE_URL}/api/dashboard/warehouse-rev/all-data?${queryParams}`;
     const response = await fetch(url);
@@ -757,7 +757,7 @@ export const warehouseRevApi = {
   },
 
   // 10. Daily Stock Trend
-  getDailyStockTrend: async (warehouse: string, params?: { from?: string; to?: string }) => {
+  getDailyStockTrend: async (warehouse: string, params?: { period?: string; from?: string; to?: string }) => {
     const queryParams = new URLSearchParams(cleanParams({ warehouse, ...params }) as any).toString();
     const url = `${BASE_URL}/api/stock/daily?${queryParams}`;
     const response = await fetch(url);

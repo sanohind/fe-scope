@@ -2,9 +2,18 @@ import React, { useEffect, useState } from "react";
 import { inventoryRevApi } from "../../../services/api/dashboardApi";
 import { BoxIconLine, AlertIcon, ArrowUpIcon, BoxIcon, AngleUpIcon, TimeIcon } from "../../../icons";
 
+// Helper function to format numbers with comma separators
+const formatNumberWithCommas = (num: string | number): string => {
+  const numValue = typeof num === "string" ? parseFloat(num) : num;
+  return numValue.toLocaleString("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 20,
+  });
+};
+
 interface KpiData {
   total_sku: number;
-  total_onhand: number;
+  total_onhand: string | number;
   critical_items: number;
   trans_in_period: number;
   net_movement: number;
@@ -82,7 +91,7 @@ const InventoryKpiCards: React.FC<InventoryKpiCardsProps> = ({ warehouse, dateFr
     {
       id: 2,
       title: "Total Onhand",
-      value: data.total_onhand.toLocaleString(),
+      value: formatNumberWithCommas(data.total_onhand),
       icon: BoxIconLine,
       bgColor: "bg-success-50 dark:bg-success-500/10",
       iconColor: "text-success-500",
