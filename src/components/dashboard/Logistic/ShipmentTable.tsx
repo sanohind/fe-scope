@@ -34,8 +34,6 @@ interface LeadTimeKPI {
   over_12: number;
 }
 
-type LeadTimeFilter = "all" | "current" | "4-7" | "7-12" | "over-12";
-
 const NUMBER_FORMATTER = new Intl.NumberFormat("id-ID");
 
 const ShipmentTable: React.FC = () => {
