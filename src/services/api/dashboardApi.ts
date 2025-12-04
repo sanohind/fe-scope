@@ -671,6 +671,15 @@ export const SupplyChainApi = {
     if (!response.ok) throw new Error("Failed to fetch shipment status comparison data");
     return response.json();
   },
+
+  // Sales Analytics Bar Chart
+  getSalesAnalyticsBarChart: async (params?: { year?: number }) => {
+    const queryParams = new URLSearchParams(params as any).toString();
+    const url = `${BASE_URL}/api/dashboard/sales-analytics/bar-chart${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch sales analytics bar chart data");
+    return response.json();
+  },
 };
 
 // Dashboard 2 Revision: Warehouse Operations by Warehouse

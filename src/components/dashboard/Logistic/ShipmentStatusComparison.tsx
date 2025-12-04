@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { SupplyChainApi } from "../../../services/api/dashboardApi";
 
 interface ShipmentStatusData {
@@ -224,10 +224,16 @@ const ShipmentStatusBarChart: React.FC = () => {
 
         <div className="flex gap-3 items-center">
           <div className="flex gap-2">
-            <button onClick={() => setPeriod("daily")} className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${period === "daily" ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300"}`}>
+            <button
+              onClick={() => setPeriod("daily")}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${period === "daily" ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300"}`}
+            >
               Daily
             </button>
-            <button onClick={() => setPeriod("monthly")} className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${period === "monthly" ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300"}`}>
+            <button
+              onClick={() => setPeriod("monthly")}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${period === "monthly" ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300"}`}
+            >
               Monthly
             </button>
           </div>
@@ -265,7 +271,7 @@ const ShipmentStatusBarChart: React.FC = () => {
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[600px]">
           <ResponsiveContainer width="100%" height={450}>
-            <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
               <XAxis dataKey="period" stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} tickFormatter={formatPeriod} />
               <YAxis
@@ -289,12 +295,12 @@ const ShipmentStatusBarChart: React.FC = () => {
                 }}
                 iconType="rect"
               />
-              <Bar dataKey="Total Shipment" fill="#465fff" name="Total Shipment" radius={[4, 4, 0, 0]} />
+              <Line dataKey="Total Shipment" stroke="#465fff" name="Total Shipment" strokeWidth={2} dot={false} />
               <Bar dataKey="Approved" fill="#FDB022" name="Approved" radius={[4, 4, 0, 0]} />
               <Bar dataKey="Released" fill="#F04438" name="Released" radius={[4, 4, 0, 0]} />
               <Bar dataKey="Invoiced" fill="#6B7280" name="Invoiced" radius={[4, 4, 0, 0]} />
               <Bar dataKey="Processed" fill="#10B981" name="Processed" radius={[4, 4, 0, 0]} />
-            </BarChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </div>

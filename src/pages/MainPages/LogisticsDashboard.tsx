@@ -1,6 +1,7 @@
 import PageMeta from "../../components/common/PageMeta";
 import LazyLoad from "../../components/common/LazyLoad";
 import { ShipmentTable, ShipmentStatusComparison } from "../../components/dashboard/Logistic";
+import { ShipmentAnalyticsChart } from "../../components/dashboard/sales";
 
 export default function LogisticsDashboard() {
   return (
@@ -12,6 +13,9 @@ export default function LogisticsDashboard() {
         </LazyLoad>
         <LazyLoad height="350px">
           <ShipmentTable />
+        </LazyLoad>
+        <LazyLoad height="350px">
+          <ShipmentAnalyticsChart />
         </LazyLoad>
       </div>
     </>
