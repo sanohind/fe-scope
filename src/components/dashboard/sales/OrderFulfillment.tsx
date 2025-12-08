@@ -6,6 +6,7 @@ import { salesApi } from "../../../services/api/dashboardApi";
 interface FulfillmentData {
   period: string;
   delivered_qty: number;
+  total_po: number;
 }
 
 interface FulfillmentResponse {
@@ -22,7 +23,7 @@ const OrderFulfillment: React.FC = () => {
   const [data, setData] = useState<FulfillmentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [metadata, setMetadata] = useState<FulfillmentResponse['filter_metadata'] | null>(null);
+  const [metadata, setMetadata] = useState<FulfillmentResponse["filter_metadata"] | null>(null);
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
@@ -35,11 +36,11 @@ const OrderFulfillment: React.FC = () => {
         if (result.data && result.data.length > 0) {
           const years = result.data
             .map((item: FulfillmentData) => {
-              const year = parseInt(item.period.split('-')[0]);
+              const year = parseInt(item.period.split("-")[0]);
               return isNaN(year) ? null : year;
             })
             .filter((year: number | null): year is number => year !== null);
-          
+
           const uniqueYears = Array.from(new Set<number>(years)).sort((a, b) => b - a);
           setAvailableYears(uniqueYears);
         }
@@ -56,13 +57,13 @@ const OrderFulfillment: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // Build API parameters based on selected year
         const params: { period?: "monthly" | "yearly"; date_from?: string; date_to?: string } = {
           date_from: `${selectedYear}-01-01`,
-          date_to: `${selectedYear}-12-31`
+          date_to: `${selectedYear}-12-31`,
         };
-        
+
         const result = await salesApi.getOrderFulfillment(params);
         // API returns { data: [...], filter_metadata: {...} }
         setData(result.data || []);
@@ -92,13 +93,9 @@ const OrderFulfillment: React.FC = () => {
   if (error || !data || data.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
-          Sales Order Fulfillment
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Sales Order Fulfillment</h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400">
-            {error || "No data available"}
-          </p>
+          <p className="text-error-600 dark:text-error-400">{error || "No data available"}</p>
         </div>
       </div>
     );
@@ -106,6 +103,7 @@ const OrderFulfillment: React.FC = () => {
 
   const categories = data.map((item) => item.period);
   const deliveredData = data.map((item) => item.delivered_qty);
+  const totalPoData = data.map((item) => item.total_po);
 
   const options: ApexOptions = {
     chart: {
@@ -115,8 +113,9 @@ const OrderFulfillment: React.FC = () => {
       toolbar: {
         show: false,
       },
+      stacked: false,
     },
-    colors: ["#465fff"],
+    colors: ["#465fff", "#10B981"],
     plotOptions: {
       bar: {
         columnWidth: "50%",
@@ -137,14 +136,15 @@ const OrderFulfillment: React.FC = () => {
     },
     yaxis: {
       title: {
-        text: "Delivered Quantity",
+        text: "Quantity",
       },
       labels: {
         formatter: (val: number) => val.toLocaleString(),
       },
     },
     legend: {
-      show: false,
+      show: true,
+      position: "top",
     },
     grid: {
       borderColor: "#f0f0f0",
@@ -162,16 +162,18 @@ const OrderFulfillment: React.FC = () => {
       name: "Delivered Qty",
       data: deliveredData,
     },
+    {
+      name: "Total PO",
+      data: totalPoData,
+    },
   ];
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-            Sales Order Fulfillment
-          </h3>
-          
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Sales Order Fulfillment</h3>
+
           {/* Year Filter Dropdown */}
           <div className="flex items-center gap-2">
             <label htmlFor="year-filter" className="text-sm text-gray-600 dark:text-gray-400">
@@ -191,13 +193,13 @@ const OrderFulfillment: React.FC = () => {
             </select>
           </div>
         </div>
-        
+
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Delivered Quantity by Period
-          {metadata && ` (${metadata.period === 'monthly' ? 'Monthly' : 'Yearly'} View)`}
+          Delivered Quantity vs Total PO by Period
+          {metadata && ` (${metadata.period === "monthly" ? "Monthly" : "Yearly"} View)`}
         </p>
       </div>
-      
+
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[600px]">
           <Chart options={options} series={series} type="bar" height={400} />

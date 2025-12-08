@@ -58,7 +58,7 @@ const ShipmentAnalyticsChart: React.FC = () => {
 
           // Get current year
           const currentYear = new Date().getFullYear();
-          
+
           // Set default year to current year if available, otherwise use the latest year
           if (years.includes(currentYear)) {
             setSelectedYear(currentYear);
@@ -165,7 +165,7 @@ const ShipmentAnalyticsChart: React.FC = () => {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Shipment Analytics</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Delivery Performance</h3>
         </div>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
           <p className="text-error-600 dark:text-error-400">{error}</p>
@@ -178,7 +178,7 @@ const ShipmentAnalyticsChart: React.FC = () => {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Shipment Analytics</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Delivery Performance</h3>
         </div>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
           <p className="text-error-600 dark:text-error-400">No data available for selected year</p>
@@ -190,7 +190,7 @@ const ShipmentAnalyticsChart: React.FC = () => {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Shipment Analytics</h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Delivery Performance</h3>
 
         <div className="flex gap-3 items-center">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Year:</label>
@@ -210,7 +210,7 @@ const ShipmentAnalyticsChart: React.FC = () => {
 
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[600px]">
-          <ResponsiveContainer width="100%" height={450}>
+          <ResponsiveContainer width="100%" height={460}>
             <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
               <XAxis dataKey="period" stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} />

@@ -14,31 +14,28 @@ export default function ProductionDashboard() {
       <div className="space-y-6">
         {/* Production KPI Summary - 5 KPI Cards - Load immediately */}
         <ProductionKpiSummary />
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
+          <div className="col-span-3">
+            <LazyLoad height="450px">
+              <ProductionTrend />
+            </LazyLoad>
+          </div>
+          <div className="col-span-2">
+            <LazyLoad height="450px">
+              <ProductionByDivision />
+            </LazyLoad>
+          </div>
+        </div>
 
         {/* Production Status Distribution & Production by Customer */}
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           <LazyLoad height="400px">
-            <ProductionStatusDistribution />
-          </LazyLoad>
-          <LazyLoad height="400px">
             <ProductionByCustomer />
           </LazyLoad>
-        </div>
-
-        {/* Production by Model & Production by divisi */}
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           <LazyLoad height="400px">
             <ProductionByModel />
           </LazyLoad>
-          <LazyLoad height="400px">
-            <ProductionByDivision />
-          </LazyLoad>
         </div>
-
-        {/* Production Trend */}
-        <LazyLoad height="450px">
-          <ProductionTrend />
-        </LazyLoad>
       </div>
     </>
   );

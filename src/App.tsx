@@ -74,6 +74,7 @@ import ProductionBz from "./pages/MainPages/Production/bzProd";
 import ProductionCh from "./pages/MainPages/Production/chProd";
 import ProductionNl from "./pages/MainPages/Production/nlProd";
 import ProductionPs from "./pages/MainPages/Production/psProd";
+import ProductionSc from "./pages/MainPages/Production/psProd";
 
 // Lazy load dashboard pages for better performance
 const WarehouseAllRm = lazy(() => import("./pages/MainPages/Warehouse/warehouse-allRm"));
@@ -128,6 +129,7 @@ export default function App() {
             <Route path="/production/ch" element={<ProductionCh />} />
             <Route path="/production/nl" element={<ProductionNl />} />
             <Route path="/production/ps" element={<ProductionPs />} />
+            <Route path="/production/sc" element={<ProductionSc />} />
             <Route
               path="/production"
               element={

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { inventoryRevApi } from "../../../services/api/dashboardApi";
 import { BoxIconLine, AlertIcon, ArrowUpIcon, BoxIcon, AngleUpIcon, TimeIcon } from "../../../icons";
+import { InventoryFilterRequestParams, inventoryFiltersToQuery } from "../../../context/InventoryFilterContext";
 
 // Helper function to format numbers with comma separators
 const formatNumberWithCommas = (num: string | number): string => {
@@ -28,9 +29,10 @@ interface InventoryKpiCardsProps {
   warehouse: string;
   dateFrom?: string;
   dateTo?: string;
+  filters?: InventoryFilterRequestParams;
 }
 
-const InventoryKpiCards: React.FC<InventoryKpiCardsProps> = ({ warehouse, dateFrom, dateTo }) => {
+const InventoryKpiCards: React.FC<InventoryKpiCardsProps> = ({ warehouse, dateFrom, dateTo, filters }) => {
   const [data, setData] = useState<KpiData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,9 +41,14 @@ const InventoryKpiCards: React.FC<InventoryKpiCardsProps> = ({ warehouse, dateFr
     const fetchData = async () => {
       try {
         setLoading(true);
-        const params: any = {};
+        const params: Record<string, string> = {};
         if (dateFrom) params.date_from = dateFrom;
         if (dateTo) params.date_to = dateTo;
+        if (!dateFrom && !dateTo) {
+          Object.assign(params, inventoryFiltersToQuery(filters));
+        } else {
+          Object.assign(params, inventoryFiltersToQuery(filters));
+        }
         const result = await inventoryRevApi.getKpi(warehouse, params);
         setData(result);
         setError(null);
@@ -53,7 +60,7 @@ const InventoryKpiCards: React.FC<InventoryKpiCardsProps> = ({ warehouse, dateFr
     };
 
     fetchData();
-  }, [warehouse, dateFrom, dateTo]);
+  }, [warehouse, dateFrom, dateTo, filters]);
 
   if (loading) {
     return (

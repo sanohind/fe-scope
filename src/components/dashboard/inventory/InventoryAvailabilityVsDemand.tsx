@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { inventoryApi } from "../../../services/api/dashboardApi";
+import { InventoryFilterRequestParams, inventoryFiltersToQuery } from "../../../context/InventoryFilterContext";
 
 interface AvailabilityData {
   warehouse?: string;
@@ -12,7 +13,12 @@ interface AvailabilityData {
   available_to_promise: string | number;
 }
 
-const InventoryAvailabilityVsDemand: React.FC<{ warehouse?: string }> = ({ warehouse }) => {
+interface InventoryAvailabilityVsDemandProps {
+  warehouse?: string;
+  filters?: InventoryFilterRequestParams;
+}
+
+const InventoryAvailabilityVsDemand: React.FC<InventoryAvailabilityVsDemandProps> = ({ warehouse, filters }) => {
   const [data, setData] = useState<AvailabilityData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +28,8 @@ const InventoryAvailabilityVsDemand: React.FC<{ warehouse?: string }> = ({ wareh
     const fetchData = async () => {
       try {
         setLoading(true);
-        const params = warehouse ? { warehouse } : {};
+        const params: Record<string, string> = { ...(warehouse ? { warehouse } : {}) };
+        Object.assign(params, inventoryFiltersToQuery(filters));
         const result = await inventoryApi.getInventoryAvailabilityVsDemand(groupBy, params);
         // Handle if API returns wrapped data or direct array
         const dataArray = Array.isArray(result) ? result : result?.data || [];
@@ -36,7 +43,7 @@ const InventoryAvailabilityVsDemand: React.FC<{ warehouse?: string }> = ({ wareh
     };
 
     fetchData();
-  }, [warehouse]);
+  }, [warehouse, groupBy, filters]);
 
   if (loading) {
     return (

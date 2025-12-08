@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { warehouseRevApi } from "../../../../services/api/dashboardApi";
+import { WarehouseFilterRequestParams, warehouseFiltersToQuery } from "../../../../context/WarehouseFilterContext";
 
 interface StatusBreakdown {
   planned?: number;
@@ -22,54 +23,31 @@ interface OrderSummaryData {
 
 interface WarehouseOrderSummaryProps {
   warehouse: string;
+  period?: "daily" | "monthly" | "yearly";
+  rangeLabel?: string;
+  modeLabel?: string;
+  filters?: WarehouseFilterRequestParams;
 }
 
-type FilterPeriod = "weekly" | "monthly" | "yearly";
-
-const WarehouseOrderSummary: React.FC<WarehouseOrderSummaryProps> = ({ warehouse }) => {
+const WarehouseOrderSummary: React.FC<WarehouseOrderSummaryProps> = ({ warehouse, period = "monthly", rangeLabel, modeLabel, filters }) => {
   const [data, setData] = useState<OrderSummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("monthly");
+
+  const effectiveRangeLabel = useMemo(() => {
+    if (rangeLabel) return rangeLabel;
+    // Fallback ringkasan sederhana jika tidak ada label dari header
+    if (period === "daily") return "Per tanggal (bulan berjalan)";
+    if (period === "monthly") return "Per bulan (tahun berjalan)";
+    return "Per tahun (beberapa tahun terakhir)";
+  }, [period, rangeLabel]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
-        // Calculate date range based on filter period (use local date formatting to avoid timezone shifts)
-        const today = new Date();
-        const formatLocalDate = (d: Date) => {
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, "0");
-          const day = String(d.getDate()).padStart(2, "0");
-          return `${y}-${m}-${day}`;
-        };
-
-        const dateTo = formatLocalDate(today);
-        let dateFrom: string;
-
-        if (filterPeriod === "weekly") {
-          // Start of current week (Monday)
-          const startOfWeek = new Date(today);
-          const day = today.getDay(); // 0 (Sun) - 6 (Sat)
-          const daysToMonday = (day + 6) % 7; // Monday -> 0, Sunday -> 6
-          startOfWeek.setDate(today.getDate() - daysToMonday);
-          dateFrom = formatLocalDate(startOfWeek);
-        } else if (filterPeriod === "monthly") {
-          // Start of current month (1st)
-          const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-          dateFrom = formatLocalDate(startOfMonth);
-        } else {
-          // Start of current year (Jan 1)
-          const startOfYear = new Date(today.getFullYear(), 0, 1);
-          dateFrom = formatLocalDate(startOfYear);
-        }
-
-        const result = await warehouseRevApi.getOrderSummary(warehouse, {
-          date_from: dateFrom,
-          date_to: dateTo,
-        });
+        const params = filters ? warehouseFiltersToQuery(filters) : { period };
+        const result = await warehouseRevApi.getOrderSummary(warehouse, params);
 
         // API returns direct object with summary data
         if (result && typeof result.total_order_lines === "number") {
@@ -87,7 +65,7 @@ const WarehouseOrderSummary: React.FC<WarehouseOrderSummaryProps> = ({ warehouse
     };
 
     fetchData();
-  }, [warehouse, filterPeriod]);
+  }, [warehouse, period, filters]);
 
   if (loading) {
     return (
@@ -144,37 +122,14 @@ const WarehouseOrderSummary: React.FC<WarehouseOrderSummaryProps> = ({ warehouse
     <div>
       {/* Status Breakdown */}
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Status Breakdown</h3>
-
-          <div className="flex items-center gap-3">
+        <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Status Breakdown</h3>
             <span className="text-sm text-gray-500 dark:text-gray-400">Unknown status: {unknownStatus.toLocaleString()}</span>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setFilterPeriod("weekly")}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  filterPeriod === "weekly" ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                }`}
-              >
-                Weekly
-              </button>
-              <button
-                onClick={() => setFilterPeriod("monthly")}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  filterPeriod === "monthly" ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setFilterPeriod("yearly")}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  filterPeriod === "yearly" ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                }`}
-              >
-                Yearly
-              </button>
-            </div>
+          </div>
+          <div className="flex flex-col items-start gap-1 text-sm text-gray-600 dark:text-gray-300 lg:items-end">
+            <span className="rounded-full bg-gray-100 px-3 py-1 font-semibold text-gray-700 dark:bg-gray-800 dark:text-white">{modeLabel ?? "Custom Range"}</span>
+            <span>{effectiveRangeLabel}</span>
           </div>
         </div>
 

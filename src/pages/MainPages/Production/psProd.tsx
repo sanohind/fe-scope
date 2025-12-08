@@ -15,6 +15,10 @@ export default function ProductionPs() {
       <div className="space-y-6">
         {/* Production KPI Summary - 5 KPI Cards - Load immediately */}
         <ProductionKpiSummary divisi={DIVISI} />
+        
+        <LazyLoad height="450px">
+          <ProductionTrend divisi={DIVISI} />
+        </LazyLoad>
 
         {/* Production Status Distribution & Production by Customer */}
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
@@ -28,11 +32,6 @@ export default function ProductionPs() {
 
         <LazyLoad height="400px">
           <ProductionByCustomer divisi={DIVISI} />
-        </LazyLoad>
-
-        {/* Production Trend */}
-        <LazyLoad height="450px">
-          <ProductionTrend divisi={DIVISI} />
         </LazyLoad>
       </div>
     </>

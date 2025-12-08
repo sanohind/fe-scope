@@ -1,6 +1,6 @@
 import PageMeta from "../../components/common/PageMeta";
 import LazyLoad from "../../components/common/LazyLoad";
-import { HrOverviewKPI, PresentAttendanceByShift, TopDepartmentsOvertimeTable, TopEmployeesOvertimeTable } from "../../components/dashboard/Hr";
+import { HrOverviewKPI, PresentAttendanceByShift, OvertimePerDay, TopDepartmentsOvertimeTable, TopEmployeesOvertimeTable } from "../../components/dashboard/Hr";
 
 export default function HrDashboard() {
   return (
@@ -10,17 +10,20 @@ export default function HrDashboard() {
         {/* Chart 6.1: HR Overview KPI Cards - Load immediately */}
         <HrOverviewKPI />
 
-        {/* Chart 6.2: Present Attendance by Shift */}
+        <LazyLoad height="500px">
+          <OvertimePerDay />
+        </LazyLoad>
+
         <LazyLoad height="500px">
           <PresentAttendanceByShift />
         </LazyLoad>
 
         <LazyLoad height="500px">
-          <TopEmployeesOvertimeTable />
+          <TopDepartmentsOvertimeTable />
         </LazyLoad>
 
         <LazyLoad height="500px">
-          <TopDepartmentsOvertimeTable />
+          <TopEmployeesOvertimeTable />
         </LazyLoad>
       </div>
     </>

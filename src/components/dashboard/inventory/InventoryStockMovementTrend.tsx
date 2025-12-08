@@ -1,39 +1,64 @@
-import React, { useEffect, useState } from "react";
-import ReactApexChart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
+import React, { useEffect, useMemo, useState } from "react";
+import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
 import { inventoryRevApi } from "../../../services/api/dashboardApi";
+import { WarehouseFilterRequestParams } from "../../../context/WarehouseFilterContext";
+
+interface APITrendDataItem {
+  period: string;
+  total_onhand: string | number;
+  total_receipt: string | number;
+  total_issue: string | number;
+  warehouse_count: number;
+}
 
 interface TrendDataPoint {
-  date: string;
-  total_receipt: number;
-  total_shipment: number;
-  net_movement: number;
-  trans_count: number;
+  period: string;
+  onhand: number;
+  receipt: number;
+  issue: number;
+  warehouse_count: number;
 }
 
 interface InventoryStockMovementTrendProps {
   warehouse: string;
   dateFrom?: string;
   dateTo?: string;
+  period?: "daily" | "monthly" | "yearly";
+  filters?: WarehouseFilterRequestParams;
 }
 
-const InventoryStockMovementTrend: React.FC<InventoryStockMovementTrendProps> = ({ warehouse, dateFrom, dateTo }) => {
+const InventoryStockMovementTrend: React.FC<InventoryStockMovementTrendProps> = ({ warehouse, dateFrom, dateTo, period, filters }) => {
   const [data, setData] = useState<TrendDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentTotalOnhand, setCurrentTotalOnhand] = useState<number>(0);
   const [dateRange, setDateRange] = useState<{ from: string; to: string; days: number } | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const params: { date_from?: string; date_to?: string } = {};
-        if (dateFrom) params.date_from = dateFrom;
-        if (dateTo) params.date_to = dateTo;
+        const params: { date_from?: string; date_to?: string; period?: string } = {};
+        if (filters) {
+          params.date_from = filters.date_from;
+          params.date_to = filters.date_to;
+          params.period = filters.period;
+        } else {
+          if (dateFrom) params.date_from = dateFrom;
+          if (dateTo) params.date_to = dateTo;
+          if (period) params.period = period;
+        }
         const result = await inventoryRevApi.getStockMovementTrend(warehouse, params);
-        setData(result.trend_data || []);
-        setCurrentTotalOnhand(result.current_total_onhand || 0);
+
+        // Transform API response to component data format
+        const transformedData: TrendDataPoint[] = (result.trend_data || []).map((item: APITrendDataItem) => ({
+          period: item.period,
+          onhand: typeof item.total_onhand === "number" ? item.total_onhand : Number(item.total_onhand ?? 0),
+          receipt: typeof item.total_receipt === "number" ? item.total_receipt : Number(item.total_receipt ?? 0),
+          issue: typeof item.total_issue === "number" ? item.total_issue : Number(item.total_issue ?? 0),
+          warehouse_count: item.warehouse_count,
+        }));
+
+        setData(transformedData);
         setDateRange(result.date_range || null);
         setError(null);
       } catch (err) {
@@ -44,16 +69,37 @@ const InventoryStockMovementTrend: React.FC<InventoryStockMovementTrendProps> = 
     };
 
     fetchData();
-  }, [warehouse, dateFrom, dateTo]);
+  }, [warehouse, dateFrom, dateTo, period, filters]);
+
+  // Format chart data with labels - MUST be before early returns
+  const chartData = useMemo(() => {
+    return data.map((item) => {
+      const date = new Date(item.period + "T00:00:00");
+      let label = "";
+      let formattedDate = "";
+
+      if (isNaN(date.getTime())) {
+        label = item.period;
+        formattedDate = item.period;
+      } else {
+        label = date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+        formattedDate = date.toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" });
+      }
+
+      return {
+        ...item,
+        label,
+        formattedDate,
+      };
+    });
+  }, [data]);
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="mb-4">
-          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Stock Movement Trend</h3>
-        </div>
-        <div className="flex justify-center items-center h-[400px] animate-pulse">
-          <div className="w-full h-full bg-gray-200 rounded dark:bg-gray-800"></div>
+      <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+        <div className="animate-pulse">
+          <div className="h-6 w-48 rounded bg-gray-200 dark:bg-gray-800 mb-6" />
+          <div className="h-80 rounded bg-gray-200 dark:bg-gray-800" />
         </div>
       </div>
     );
@@ -61,158 +107,76 @@ const InventoryStockMovementTrend: React.FC<InventoryStockMovementTrendProps> = 
 
   if (error || !data.length) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="mb-4">
-          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Stock Movement Trend</h3>
+      <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Stock Movement Trend</h3>
         </div>
-        <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
-          <p className="text-error-600 dark:text-error-400 text-sm font-medium">{error || "No data available"}</p>
-        </div>
+        <div className="rounded-lg border border-error-200 bg-error-50 p-4 text-error-600 dark:border-error-800 dark:bg-error-900/20 dark:text-error-400">{error || "No stock data available"}</div>
       </div>
     );
   }
 
-  const categories = data.map((item) => {
-    const date = new Date(item.date);
-    return date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
-  });
-
-  const options: ApexOptions = {
-    chart: {
-      type: "area",
-      fontFamily: "Outfit, sans-serif",
-      stacked: false,
-      toolbar: {
-        show: false,
-      },
-      zoom: {
-        enabled: false,
-      },
-    },
-    colors: ["#12B76A", "#F04438", "#465FFF"],
-    dataLabels: {
-      enabled: false,
-    },
-    stroke: {
-      curve: "smooth",
-      width: 2,
-    },
-    fill: {
-      type: "gradient",
-      gradient: {
-        opacityFrom: 0.6,
-        opacityTo: 0.2,
-        stops: [0, 90, 100],
-      },
-    },
-    xaxis: {
-      categories: categories,
-      labels: {
-        style: {
-          fontSize: "12px",
-        },
-        rotate: -45,
-        rotateAlways: false,
-      },
-    },
-    yaxis: [
-      {
-        title: {
-          text: "Quantity",
-          style: {
-            fontSize: "14px",
-            fontWeight: 500,
-          },
-        },
-        labels: {
-          formatter: (val) => {
-            return val.toLocaleString();
-          },
-        },
-      },
-      {
-        opposite: true,
-        title: {
-          text: "Net Movement",
-          style: {
-            fontSize: "14px",
-            fontWeight: 500,
-          },
-        },
-        labels: {
-          formatter: (val) => {
-            return val.toLocaleString();
-          },
-        },
-      },
-    ],
-    tooltip: {
-      shared: true,
-      intersect: false,
-      y: {
-        formatter: (val) => {
-          return val.toLocaleString() + " units";
-        },
-      },
-    },
-    legend: {
-      position: "top",
-      horizontalAlign: "right",
-      fontSize: "14px",
-      itemMargin: {
-        horizontal: 12,
-      },
-    },
-    grid: {
-      borderColor: "#E4E7EC",
-    },
-    annotations: {
-      yaxis: [
-        {
-          y: currentTotalOnhand,
-          borderColor: "#6B7280",
-          borderWidth: 2,
-          strokeDashArray: 5,
-          label: {
-            text: `Current Onhand: ${currentTotalOnhand.toLocaleString()}`,
-            style: {
-              color: "#6B7280",
-              fontSize: "12px",
-            },
-            position: "right",
-          },
-        },
-      ],
-    },
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payload?: (typeof chartData)[0] }[] }) => {
+    const dataPoint = payload?.[0]?.payload;
+    if (active && dataPoint) {
+      return (
+        <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+          <p className="text-sm font-medium text-gray-800 dark:text-white">{dataPoint.formattedDate}</p>
+          <div className="mt-2 space-y-1">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm text-gray-500 dark:text-gray-300">Receipt:</p>
+              <p className="text-sm font-semibold text-success-600 dark:text-success-300">{dataPoint.receipt.toLocaleString()}</p>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm text-gray-500 dark:text-gray-300">Issue:</p>
+              <p className="text-sm font-semibold text-error-600 dark:text-error-300">{dataPoint.issue.toLocaleString()}</p>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm text-gray-500 dark:text-gray-300">On-hand:</p>
+              <p className="text-sm font-semibold text-brand-600 dark:text-brand-300">{dataPoint.onhand.toLocaleString()}</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
-  const series = [
-    {
-      name: "Receipt",
-      data: data.map((item) => item.total_receipt),
-    },
-    {
-      name: "Shipment",
-      data: data.map((item) => item.total_shipment),
-    },
-    {
-      name: "Net Movement",
-      type: "line",
-      data: data.map((item) => item.net_movement),
-    },
-  ];
-
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Stock Movement Trend</h3>
+    <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Stock Movement Trend</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {warehouse}
+            {dateRange && ` · ${dateRange.days} days`}
+          </p>
+        </div>
         {dateRange && (
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            {new Date(dateRange.from).toLocaleDateString("id-ID", { day: "numeric", month: "short" })} - {new Date(dateRange.to).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} ({dateRange.days} days)
-          </span>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="rounded-xl bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-300">
+              {new Date(dateRange.from + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short" })} - {new Date(dateRange.to + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+            </div>
+          </div>
         )}
       </div>
-      <ReactApexChart options={options} series={series} type="area" height={400} />
+
+      <div className="max-w-full overflow-x-auto custom-scrollbar">
+        <div className="min-w-[600px]">
+          <ResponsiveContainer width="100%" height={320}>
+            <ComposedChart data={chartData} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+              <XAxis dataKey="label" stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12, fontFamily: "Outfit, sans-serif" }} tickLine={false} axisLine={false} />
+              <YAxis stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12, fontFamily: "Outfit, sans-serif" }} tickLine={false} axisLine={false} tickFormatter={(value) => value.toLocaleString()} />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              <Bar dataKey="receipt" name="Receipt" fill="#12B76A" />
+              <Bar dataKey="issue" name="Issue" fill="#F04438" />
+              <Line type="monotone" dataKey="onhand" name="On-hand" stroke="#465fff" strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 };

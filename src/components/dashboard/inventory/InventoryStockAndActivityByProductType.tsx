@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { inventoryRevApi } from "../../../services/api/dashboardApi";
+import { WarehouseFilterRequestParams } from "../../../context/WarehouseFilterContext";
 
 interface ProductTypeData {
   product_type: string;
@@ -18,9 +19,10 @@ interface InventoryStockAndActivityByProductTypeProps {
   warehouse: string;
   dateFrom?: string;
   dateTo?: string;
+  filters?: WarehouseFilterRequestParams;
 }
 
-const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivityByProductTypeProps> = ({ warehouse, dateFrom, dateTo }) => {
+const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivityByProductTypeProps> = ({ warehouse, dateFrom, dateTo, filters }) => {
   const [data, setData] = useState<ProductTypeData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,8 +33,13 @@ const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivity
       try {
         setLoading(true);
         const params: any = {};
-        if (dateFrom) params.date_from = dateFrom;
-        if (dateTo) params.date_to = dateTo;
+        if (filters) {
+          params.date_from = filters.date_from;
+          params.date_to = filters.date_to;
+        } else {
+          if (dateFrom) params.date_from = dateFrom;
+          if (dateTo) params.date_to = dateTo;
+        }
         const result = await inventoryRevApi.getStockAndActivityByProductType(warehouse, params);
         setData(result.data || []);
         setDateRange(result.date_range || null);
@@ -45,7 +52,7 @@ const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivity
     };
 
     fetchData();
-  }, [warehouse, dateFrom, dateTo]);
+  }, [warehouse, dateFrom, dateTo, filters]);
 
   if (loading) {
     return (
@@ -72,7 +79,6 @@ const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivity
   const categories = data.map((item) => item.product_type);
   const onhandData = data.map((item) => Number(item.total_onhand));
   const safetyStockData = data.map((item) => Number(item.total_safety_stock));
-  const availableData = data.map((item) => Number(item.total_available));
   const transCountData = data.map((item) => Number(item.trans_count));
   const turnoverData = data.map((item) => Number(item.turnover_rate));
 
@@ -301,11 +307,6 @@ const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivity
       name: "Safety Stock",
       type: "column",
       data: safetyStockData,
-    },
-    {
-      name: "Available",
-      type: "column",
-      data: availableData,
     },
     {
       name: "Trans Count",

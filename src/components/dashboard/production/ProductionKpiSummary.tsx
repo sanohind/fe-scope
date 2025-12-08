@@ -3,11 +3,11 @@ import { productionApi } from "../../../services/api/dashboardApi";
 import { BoxIconLine, CheckCircleIcon, TimeIcon, AlertIcon, PieChartIcon } from "../../../icons";
 
 interface ProductionKpiData {
-  total_production_orders: number;
-  total_qty_ordered: number;
-  total_qty_delivered: number;
-  total_outstanding_qty: number;
-  completion_rate: number;
+  total_production_orders: number | string;
+  total_qty_ordered: number | string;
+  total_qty_delivered: number | string;
+  total_outstanding_qty: number | string;
+  completion_rate: number | string;
 }
 
 interface ProductionKpiSummaryProps {
@@ -40,6 +40,30 @@ const ProductionKpiSummary: React.FC<ProductionKpiSummaryProps> = ({ divisi = "A
     fetchData();
   }, [divisi]);
 
+  // Helper function to safely convert string or number to formatted number
+  const formatNumber = (value: number | string | undefined | null): string => {
+    if (value === undefined || value === null) return "0";
+    
+    // Convert to number if it's a string
+    const numValue = typeof value === "string" ? parseFloat(value) : value;
+    
+    // Check if conversion resulted in valid number
+    if (isNaN(numValue)) return "0";
+    
+    return numValue.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  };
+
+  // Helper function to format percentage
+  const formatPercentage = (value: number | string | undefined | null): string => {
+    if (value === undefined || value === null) return "0.0%";
+    
+    const numValue = typeof value === "string" ? parseFloat(value) : value;
+    
+    if (isNaN(numValue)) return "0.0%";
+    
+    return `${numValue.toFixed(1)}%`;
+  };
+
   if (loading) {
     return (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 xl:grid-cols-5">
@@ -68,7 +92,7 @@ const ProductionKpiSummary: React.FC<ProductionKpiSummaryProps> = ({ divisi = "A
     {
       id: 1,
       title: "Total Production Orders",
-      value: (data.total_production_orders || 0).toLocaleString(),
+      value: formatNumber(data.total_production_orders),
       icon: BoxIconLine,
       bgColor: "bg-brand-50 dark:bg-brand-500/10",
       iconColor: "text-brand-500",
@@ -76,7 +100,7 @@ const ProductionKpiSummary: React.FC<ProductionKpiSummaryProps> = ({ divisi = "A
     {
       id: 2,
       title: "Total Qty Ordered",
-      value: (data.total_qty_ordered || 0).toLocaleString(),
+      value: formatNumber(data.total_qty_ordered),
       icon: TimeIcon,
       bgColor: "bg-blue-light-50 dark:bg-blue-light-500/10",
       iconColor: "text-blue-light-500",
@@ -84,7 +108,7 @@ const ProductionKpiSummary: React.FC<ProductionKpiSummaryProps> = ({ divisi = "A
     {
       id: 3,
       title: "Total Qty Delivered",
-      value: (data.total_qty_delivered || 0).toLocaleString(),
+      value: formatNumber(data.total_qty_delivered),
       icon: CheckCircleIcon,
       bgColor: "bg-success-50 dark:bg-success-500/10",
       iconColor: "text-success-500",
@@ -92,7 +116,7 @@ const ProductionKpiSummary: React.FC<ProductionKpiSummaryProps> = ({ divisi = "A
     {
       id: 4,
       title: "Outstanding Qty",
-      value: (data.total_outstanding_qty || 0).toLocaleString(),
+      value: formatNumber(data.total_outstanding_qty),
       icon: AlertIcon,
       bgColor: "bg-orange-50 dark:bg-orange-500/10",
       iconColor: "text-orange-500",
@@ -100,7 +124,7 @@ const ProductionKpiSummary: React.FC<ProductionKpiSummaryProps> = ({ divisi = "A
     {
       id: 5,
       title: "Completion Rate",
-      value: `${(data.completion_rate || 0).toFixed(1)}%`,
+      value: formatPercentage(data.completion_rate),
       icon: PieChartIcon,
       bgColor: "bg-success-50 dark:bg-success-500/10",
       iconColor: "text-success-500",

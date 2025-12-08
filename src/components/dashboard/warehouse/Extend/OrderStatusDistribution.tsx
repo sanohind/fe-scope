@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { warehouseRevApi } from "../../../../services/api/dashboardApi";
+import { WarehouseFilterRequestParams, warehouseFiltersToQuery } from "../../../../context/WarehouseFilterContext";
 
 interface StatusItem {
   order_origin: string;
@@ -19,42 +20,30 @@ interface OrderStatusData {
 
 interface OrderStatusDistributionProps {
   warehouse: string;
+  period?: "daily" | "monthly" | "yearly";
+  modeLabel?: string;
+  rangeLabel?: string;
+  filters?: WarehouseFilterRequestParams;
 }
 
-type FilterPeriod = "daily" | "monthly";
-
-const OrderStatusDistribution: React.FC<OrderStatusDistributionProps> = ({ warehouse }) => {
+const OrderStatusDistribution: React.FC<OrderStatusDistributionProps> = ({ warehouse, period = "monthly", modeLabel, rangeLabel, filters }) => {
   const [data, setData] = useState<OrderStatusData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("monthly");
-  const fixedYear = 2025;
-  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
+
+  const effectiveRangeLabel = useMemo(() => {
+    if (rangeLabel) return rangeLabel;
+    if (period === "daily") return "Per tanggal (bulan berjalan)";
+    if (period === "monthly") return "Per bulan (tahun berjalan)";
+    return "Per tahun (beberapa tahun terakhir)";
+  }, [period, rangeLabel]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
-        // Calculate date range based on filter period (warehouse: no yearly)
-        let dateFrom: string;
-        let dateTo: string;
-        if (filterPeriod === "daily") {
-          // perbandingan antar hari dalam satu bulan (gunakan bulan terpilih di 2025)
-          const firstDay = new Date(fixedYear, selectedMonth - 1, 1);
-          const lastDay = new Date(fixedYear, selectedMonth, 0);
-          dateFrom = firstDay.toISOString().split("T")[0];
-          dateTo = lastDay.toISOString().split("T")[0];
-        } else {
-          // monthly: perbandingan antar bulan pada satu tahun (2025 penuh)
-          dateFrom = `${fixedYear}-01-01`;
-          dateTo = `${fixedYear}-12-31`;
-        }
-
-        const result = await warehouseRevApi.getOrderStatusDistribution(warehouse, {
-          date_from: dateFrom,
-          date_to: dateTo,
-        });
+        const params = filters ? warehouseFiltersToQuery(filters) : { period };
+        const result = await warehouseRevApi.getOrderStatusDistribution(warehouse, params);
         // Handle if API returns wrapped data { data: {...} } or direct object
         // API guide shows: { data: { Transfer: [...], Sales: [...] } }
         let dataObj = result;
@@ -74,7 +63,7 @@ const OrderStatusDistribution: React.FC<OrderStatusDistributionProps> = ({ wareh
     };
 
     fetchData();
-  }, [warehouse, filterPeriod, selectedMonth]);
+  }, [warehouse, period, filters]);
 
   if (loading) {
     return (
@@ -254,52 +243,14 @@ const OrderStatusDistribution: React.FC<OrderStatusDistributionProps> = ({ wareh
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Order Status Distribution</h3>
-
-        <div className="flex gap-2 items-center">
-          <button
-            onClick={() => setFilterPeriod("daily")}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              filterPeriod === "daily" ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-            }`}
-          >
-            Daily
-          </button>
-          <button
-            onClick={() => setFilterPeriod("monthly")}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              filterPeriod === "monthly" ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-            }`}
-          >
-            Monthly
-          </button>
-          {filterPeriod === "daily" && (
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              className="px-3 py-2 border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-800 dark:text-white text-sm"
-            >
-              {[
-                { value: 1, label: "January" },
-                { value: 2, label: "February" },
-                { value: 3, label: "March" },
-                { value: 4, label: "April" },
-                { value: 5, label: "May" },
-                { value: 6, label: "June" },
-                { value: 7, label: "July" },
-                { value: 8, label: "August" },
-                { value: 9, label: "September" },
-                { value: 10, label: "October" },
-                { value: 11, label: "November" },
-                { value: 12, label: "December" },
-              ].map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-          )}
+      <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Order Status Distribution</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Perbandingan persentase status untuk setiap tipe transaksi</p>
+        </div>
+        <div className="flex flex-col items-start gap-1 text-sm text-gray-600 dark:text-gray-300 lg:items-end">
+          <span className="rounded-full bg-gray-100 px-3 py-1 font-semibold text-gray-700 dark:bg-gray-800 dark:text-white">{modeLabel ?? "Custom Range"}</span>
+          <span>{effectiveRangeLabel}</span>
         </div>
       </div>
       <div className="max-w-full overflow-x-auto custom-scrollbar">

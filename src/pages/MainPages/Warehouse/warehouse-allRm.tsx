@@ -6,6 +6,8 @@ import OrderStatusDistribution from "../../../components/dashboard/warehouse/Ext
 import TopItemsMoved from "../../../components/dashboard/warehouse/Extend/TopItemsMoved";
 import DailyStockTrend from "../../../components/dashboard/warehouse/Extend/DailyStockTrend";
 import InventoryStockMovementTrend from "../../../components/dashboard/inventory/InventoryStockMovementTrend";
+import WarehouseFilterHeader from "../../../components/dashboard/warehouse/WarehouseFilterHeader";
+import { WarehouseFilterProvider, useWarehouseFilters } from "../../../context/WarehouseFilterContext";
 
 const WAREHOUSE = "RM";
 
@@ -13,52 +15,63 @@ export default function WarehouseAllRm() {
   return (
     <>
       <PageMeta title="Warehouse Dashboard | SCOPE - Sanoh Indonesia" description="Dashboard 2: Warehouse Operations - Monitoring operasional warehouse order dan delivery performance" />
-      <div className="space-y-6">
-        {/* Warehouse Order Summary - KPI Cards - Load immediately */}
-        <WarehouseOrderSummary warehouse={WAREHOUSE} />
-
-        {/* Delivery Performance & Order Status Distribution */}
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <LazyLoad height="350px">
-            <DeliveryPerformance warehouse={WAREHOUSE} />
-          </LazyLoad>
-          <LazyLoad height="400px">
-            <TopItemsMoved warehouse={WAREHOUSE} />
-          </LazyLoad>
-        </div>
-
-        <LazyLoad height="350px">
-          <OrderStatusDistribution warehouse={WAREHOUSE} />
-        </LazyLoad>
-
-        <div>
-          <h1 className="font-semibold text-black dark:text-white text-2xl mb-4">Balance WHRM01</h1>
-          <LazyLoad height="360px">
-            <DailyStockTrend warehouse={"WHRM01"} />
-          </LazyLoad>
-        </div>
-
-        <div>
-          <h1 className="font-semibold text-black dark:text-white text-2xl mb-4">Balance WHRM02</h1>
-          <LazyLoad height="360px">
-            <DailyStockTrend warehouse={"WHRM02"} />
-          </LazyLoad>
-        </div>
-
-        <div>
-          <h1 className="font-semibold text-black dark:text-white text-2xl mb-4">Movement WHRM01</h1>
-          <LazyLoad height="450px">
-            <InventoryStockMovementTrend warehouse={"WHRM01"} />
-          </LazyLoad>
-        </div>
-
-        <div>
-          <h1 className="font-semibold text-black dark:text-white text-2xl mb-4">Movement WHRM02</h1>
-          <LazyLoad height="450px">
-            <InventoryStockMovementTrend warehouse={"WHRM02"} />
-          </LazyLoad>
-        </div>
-      </div>
+      <WarehouseFilterProvider>
+        <WarehouseAllRmContent />
+      </WarehouseFilterProvider>
     </>
   );
 }
+
+const WarehouseAllRmContent = () => {
+  const { requestParams, dateRange, rangeDescription, modeLabel, mode } = useWarehouseFilters();
+  const { from, to } = dateRange;
+
+  return (
+    <div className="space-y-6">
+      <WarehouseFilterHeader warehouseName="All RM" />
+
+      <WarehouseOrderSummary warehouse={WAREHOUSE} filters={requestParams} period={mode} rangeLabel={rangeDescription} modeLabel={modeLabel} />
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <LazyLoad height="350px">
+          <DeliveryPerformance warehouse={WAREHOUSE} filters={requestParams} period={mode} rangeLabel={rangeDescription} modeLabel={modeLabel} />
+        </LazyLoad>
+        <LazyLoad height="400px">
+          <TopItemsMoved warehouse={WAREHOUSE} filters={requestParams} period={mode} rangeLabel={rangeDescription} modeLabel={modeLabel} />
+        </LazyLoad>
+      </div>
+
+      <LazyLoad height="350px">
+        <OrderStatusDistribution warehouse={WAREHOUSE} filters={requestParams} period={mode} rangeLabel={rangeDescription} modeLabel={modeLabel} />
+      </LazyLoad>
+
+      <div>
+        <h1 className="mb-4 text-2xl font-semibold text-black dark:text-white">Balance WHRM01</h1>
+        <LazyLoad height="360px">
+          <DailyStockTrend warehouse="WHRM01" filters={requestParams} period={mode} rangeLabel={rangeDescription} modeLabel={modeLabel} />
+        </LazyLoad>
+      </div>
+
+      <div>
+        <h1 className="mb-4 text-2xl font-semibold text-black dark:text-white">Balance WHRM02</h1>
+        <LazyLoad height="360px">
+          <DailyStockTrend warehouse="WHRM02" filters={requestParams} period={mode} rangeLabel={rangeDescription} modeLabel={modeLabel} />
+        </LazyLoad>
+      </div>
+
+      <div>
+        <h1 className="mb-4 text-2xl font-semibold text-black dark:text-white">Movement WHRM01</h1>
+        <LazyLoad height="450px">
+          <InventoryStockMovementTrend warehouse="WHRM01" filters={requestParams} dateFrom={from} dateTo={to} />
+        </LazyLoad>
+      </div>
+
+      <div>
+        <h1 className="mb-4 text-2xl font-semibold text-black dark:text-white">Movement WHRM02</h1>
+        <LazyLoad height="450px">
+          <InventoryStockMovementTrend warehouse="WHRM02" filters={requestParams} dateFrom={from} dateTo={to} />
+        </LazyLoad>
+      </div>
+    </div>
+  );
+};

@@ -25,8 +25,9 @@ const PresentAttendanceByShift: React.FC = () => {
         const firstDay = new Date(selectedYear, selectedMonth - 1, 1);
         const lastDay = new Date(selectedYear, selectedMonth, 0);
 
-        const startDate = firstDay.toISOString().split("T")[0];
-        const endDate = lastDay.toISOString().split("T")[0];
+        // Format dates as YYYY-MM-DD using local date (not UTC)
+        const startDate = firstDay.toLocaleDateString("en-CA");
+        const endDate = lastDay.toLocaleDateString("en-CA");
 
         const result = await hrApi.getPresentAttendanceByShift({
           period: "daily",

@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
 import { warehouseRevApi } from "../../../../services/api/dashboardApi";
+import { WarehouseFilterRequestParams } from "../../../../context/WarehouseFilterContext";
 
 interface DailyStockPoint {
   date: string;
+  period: string;
+  granularity: string;
   onhand: number;
   receipt?: number;
   issue?: number;
@@ -19,101 +22,108 @@ interface StockDataItem {
   issue: number | string;
 }
 
+interface WarehouseDataEntry {
+  warehouse: string;
+  data: StockDataItem[];
+}
+
 interface DailyStockTrendResponse {
   meta?: {
     warehouse_filter?: string;
     warehouses_queried?: string[];
     period_start_filter?: string | null;
     period_end_filter?: string | null;
+    date_from_filter?: string | null;
+    date_to_filter?: string | null;
+    period?: string;
+    granularity?: string;
     total_records?: number;
   };
   data?: StockDataItem[];
-  warehouses?: {
-    [warehouseId: string]: {
-      data: StockDataItem[];
-    };
-  };
+  warehouses?: WarehouseDataEntry[];
 }
 
 interface DailyStockTrendProps {
   warehouse: string;
+  period?: "daily" | "monthly" | "yearly";
+  rangeLabel?: string;
+  modeLabel?: string;
+  filters?: WarehouseFilterRequestParams;
 }
 
-const months = [
-  { value: 1, label: "January" },
-  { value: 2, label: "February" },
-  { value: 3, label: "March" },
-  { value: 4, label: "April" },
-  { value: 5, label: "May" },
-  { value: 6, label: "June" },
-  { value: 7, label: "July" },
-  { value: 8, label: "August" },
-  { value: 9, label: "September" },
-  { value: 10, label: "October" },
-  { value: 11, label: "November" },
-  { value: 12, label: "December" },
-];
-
-const currentYear = new Date().getFullYear();
-const years = Array.from({ length: 4 }, (_, idx) => currentYear - 1 + idx);
-
-const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse }) => {
+const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse, period = "daily", rangeLabel, modeLabel, filters }) => {
   const [data, setData] = useState<DailyStockPoint[]>([]);
   const [meta, setMeta] = useState<DailyStockTrendResponse["meta"]>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
+
+  const effectiveRangeLabel = useMemo(() => {
+    if (rangeLabel) return rangeLabel;
+    if (period === "daily") return "Per tanggal (periode default sistem)";
+    if (period === "monthly") return "Per bulan (periode default sistem)";
+    return "Per tahun (periode default sistem)";
+  }, [period, rangeLabel]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const from = new Date(selectedYear, selectedMonth - 1, 1);
-        const to = new Date(selectedYear, selectedMonth, 0);
-        const format = (d: Date) => d.toISOString().split("T")[0];
-
-        const result: DailyStockTrendResponse = await warehouseRevApi.getDailyStockTrend(warehouse, {
-          from: format(from),
-          to: format(to),
-        });
+        const params = filters ? { period: filters.period, date_from: filters.date_from, date_to: filters.date_to } : { period };
+        const result: DailyStockTrendResponse = await warehouseRevApi.getDailyStockTrend(warehouse, params);
 
         // Extract data from the new nested structure or fallback to old format
         let responseData: StockDataItem[] = [];
         const normalizedWarehouse = warehouse?.toUpperCase();
 
-        if (result?.warehouses) {
+        if (result?.warehouses && Array.isArray(result.warehouses)) {
+          // New format: warehouses is an array
           if (normalizedWarehouse && normalizedWarehouse !== "ALL") {
-            const exactMatch = result.warehouses[normalizedWarehouse];
-            if (exactMatch?.data) {
-              responseData = exactMatch.data;
-            } else {
-              const fallbackKey = Object.keys(result.warehouses).find((key) => key.toLowerCase() === normalizedWarehouse.toLowerCase());
-              responseData = fallbackKey ? result.warehouses[fallbackKey].data || [] : [];
-            }
+            const warehouseEntry = result.warehouses.find((entry) => entry.warehouse?.toUpperCase() === normalizedWarehouse);
+            responseData = warehouseEntry?.data || [];
           } else {
-            responseData = Object.values(result.warehouses).flatMap((entry) => entry.data || []);
+            // Combine data from all warehouses
+            responseData = result.warehouses.flatMap((entry) => entry.data || []);
           }
         } else if (result?.data) {
           // Fallback to old format
           responseData = result.data;
         }
 
-        // Filter data to only include five-minute granularity records
-        const filteredData = responseData.filter((item) => item.granularity === "five-minute");
-
-        const normalizedData: DailyStockPoint[] = filteredData.map((item) => {
-          // Extract date from period_start (format: "2025-11-28 11:25:00")
-          const dateStr = item.period_start.split(" ")[0];
+        // Normalize all data from both granularities
+        const normalizedData: DailyStockPoint[] = responseData.map((item) => {
+          // Use period field for grouping (more reliable across granularities)
+          // For daily: "2025-12-01", monthly: "2025-01", yearly: "2025"
+          const periodStr = (item as any).period || item.period_start.split(" ")[0];
           return {
-            date: dateStr,
+            date: periodStr,
+            period: periodStr,
+            granularity: item.granularity,
             onhand: typeof item.onhand === "number" ? item.onhand : Number(item.onhand ?? 0),
             receipt: typeof item.receipt === "number" ? item.receipt : Number(item.receipt ?? 0),
             issue: typeof item.issue === "number" ? item.issue : Number(item.issue ?? 0),
           };
         });
 
-        setData(normalizedData);
+        // Group by date and sum the values
+        const groupedByDate = new Map<string, DailyStockPoint>();
+        normalizedData.forEach((item) => {
+          const existing = groupedByDate.get(item.date);
+          if (existing) {
+            groupedByDate.set(item.date, {
+              date: item.date,
+              period: item.period,
+              granularity: item.granularity,
+              onhand: existing.onhand + item.onhand,
+              receipt: (existing.receipt ?? 0) + (item.receipt ?? 0),
+              issue: (existing.issue ?? 0) + (item.issue ?? 0),
+            });
+          } else {
+            groupedByDate.set(item.date, item);
+          }
+        });
+
+        const mergedData = Array.from(groupedByDate.values());
+        setData(mergedData);
         setMeta(result?.meta);
         setError(null);
       } catch (err) {
@@ -125,19 +135,38 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse }) => {
     };
 
     fetchData();
-  }, [warehouse, selectedMonth, selectedYear]);
+  }, [warehouse, period, filters]);
 
   const chartData = useMemo(() => {
     return data
       .map((item) => {
-        const dateObj = new Date(item.date);
+        let label = "";
+        let formattedDate = "";
+
+        if (item.granularity === "daily") {
+          // Daily: show day number (e.g., "1", "2", "3")
+          const dateObj = new Date(item.date);
+          label = dateObj.toLocaleDateString("en-US", { day: "numeric" });
+          formattedDate = dateObj.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+        } else if (item.granularity === "monthly") {
+          // Monthly: show month name (e.g., "Jan", "Feb", "Mar")
+          const [year, month] = item.period.split("-");
+          const dateObj = new Date(parseInt(year), parseInt(month) - 1, 1);
+          label = dateObj.toLocaleDateString("en-US", { month: "short" });
+          formattedDate = dateObj.toLocaleDateString("en-US", { year: "numeric", month: "long" });
+        } else if (item.granularity === "yearly") {
+          // Yearly: show year (e.g., "2025")
+          label = item.period;
+          formattedDate = item.period;
+        }
+
         return {
           ...item,
-          label: dateObj.toLocaleDateString("en-US", { day: "numeric" }),
-          formattedDate: dateObj.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+          label,
+          formattedDate,
         };
       })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      .sort((a, b) => a.period.localeCompare(b.period));
   }, [data]);
 
   const latestValue = chartData.length ? chartData[chartData.length - 1].onhand : null;
@@ -188,30 +217,7 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse }) => {
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Daily Stock Level</h3>
-          <div className="flex gap-3">
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-800 focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-            >
-              {months.map((month) => (
-                <option key={month.value} value={month.value}>
-                  {month.label}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-800 focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-            >
-              {years.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
+          <span className="text-sm text-gray-500 dark:text-gray-400">{effectiveRangeLabel}</span>
         </div>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 text-error-600 dark:border-error-800 dark:bg-error-900/20 dark:text-error-400">{error || "No stock data available"}</div>
       </div>
@@ -224,7 +230,7 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse }) => {
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Daily Stock Level</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {meta?.warehouse_filter || warehouse} · {months[selectedMonth - 1].label} {selectedYear}
+            {meta?.warehouse_filter || warehouse} · {modeLabel ?? "Custom Range"}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -233,28 +239,7 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse }) => {
               Latest On-hand: <span className="text-brand-600 dark:text-brand-300">{latestValue.toLocaleString()}</span>
             </div>
           )}
-          <select
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(Number(e.target.value))}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-800 focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-          >
-            {months.map((month) => (
-              <option key={month.value} value={month.value}>
-                {month.label}
-              </option>
-            ))}
-          </select>
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(Number(e.target.value))}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-800 focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-          >
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
+          <div className="rounded-xl bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-300">{effectiveRangeLabel}</div>
         </div>
       </div>
 

@@ -3,20 +3,13 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { hrApi } from "../../../services/api/dashboardApi";
 
-interface EmployeeOvertimeData {
-  rank: number;
-  emp_id: string;
-  emp_no: string;
-  full_name: string;
-  department: string;
-  cost_center: string;
-  total_overtime_index: number;
-  total_overtime_index_minutes: number;
-  total_overtime_index_formatted: string;
+interface OvertimeData {
+  date: string | null;
+  total_ot_formatted: string;
 }
 
-const TopEmployeesOvertimeTable: React.FC = () => {
-  const [data, setData] = useState<EmployeeOvertimeData[]>([]);
+const OvertimePerDay: React.FC = () => {
+  const [data, setData] = useState<OvertimeData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
@@ -27,22 +20,23 @@ const TopEmployeesOvertimeTable: React.FC = () => {
       try {
         setLoading(true);
 
-        const result = await hrApi.getTopEmployeesOvertime({
+        const result = await hrApi.getOvertimePerDay({
           month: selectedMonth,
           year: selectedYear,
         });
 
         // Handle API response structure: { success, data: { data: [...], ... }, message }
-        let employeeData: EmployeeOvertimeData[] = [];
+        let overtimeData: OvertimeData[] = [];
         if (result?.data?.data && Array.isArray(result.data.data)) {
-          employeeData = result.data.data;
+          // Filter out entries with null date
+          overtimeData = result.data.data.filter((item: OvertimeData) => item.date !== null);
         } else if (Array.isArray(result?.data)) {
-          employeeData = result.data;
+          overtimeData = result.data.filter((item: OvertimeData) => item.date !== null);
         } else if (Array.isArray(result)) {
-          employeeData = result;
+          overtimeData = result.filter((item: OvertimeData) => item.date !== null);
         }
 
-        setData(employeeData);
+        setData(overtimeData);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
@@ -69,7 +63,7 @@ const TopEmployeesOvertimeTable: React.FC = () => {
   if (error || !data || data.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Top Employees by Overtime</h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Overtime Per Day</h3>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
           <p className="text-error-600 dark:text-error-400">{error || "No data available"}</p>
         </div>
@@ -77,22 +71,36 @@ const TopEmployeesOvertimeTable: React.FC = () => {
     );
   }
 
-  // Sort data by rank (ascending)
-  const sortedData = [...data].sort((a, b) => a.rank - b.rank);
+  // Sort data by date
+  const sortedData = [...data].sort((a, b) => {
+    if (!a.date || !b.date) return 0;
+    return new Date(a.date).getTime() - new Date(b.date).getTime();
+  });
 
-  // Prepare series data - use total_overtime_index (hours) as the main value
+  // Extract numeric hours from formatted string (e.g., "1271 jam 42 menit" -> 1271.7)
+  const extractHours = (formatted: string): number => {
+    const match = formatted.match(/(\d+)\s+jam/);
+    if (!match) return 0;
+    return parseInt(match[1]) || 0;
+  };
+
+  // Prepare series data
   const series = [
     {
       name: "Overtime Hours",
-      data: sortedData.map((item) => item.total_overtime_index),
+      data: sortedData.map((item) => extractHours(item.total_ot_formatted)),
     },
   ];
 
-  // Format employee names for x-axis labels
+  // Format date labels
   const categories = sortedData.map((item) => {
-    // Truncate long names to prevent overcrowding
-    const name = item.full_name || `Employee ${item.emp_no}`;
-    return name.length > 20 ? name.substring(0, 20) + "..." : name;
+    if (!item.date) return "";
+    try {
+      const date = new Date(item.date);
+      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    } catch {
+      return item.date;
+    }
   });
 
   const options: ApexOptions = {
@@ -151,23 +159,9 @@ const TopEmployeesOvertimeTable: React.FC = () => {
     tooltip: {
       shared: true,
       intersect: false,
-      custom: ({ dataPointIndex }: { dataPointIndex: number }) => {
-        const employee = sortedData[dataPointIndex];
-        if (!employee) return "";
-
-        const formatted = employee.total_overtime_index_formatted || "";
-        const dept = employee.department || "N/A";
-        const costCenter = employee.cost_center || "N/A";
-
-        return `
-          <div class="px-3 py-2 bg-gray-900 text-white rounded text-sm">
-            <div class="font-semibold mb-1">${employee.full_name}</div>
-            <div class="text-xs opacity-90">${dept} - ${costCenter}</div>
-            <div class="mt-1 pt-1 border-t border-gray-700">
-              <span class="font-medium">Overtime: ${formatted}</span>
-            </div>
-          </div>
-        `;
+      custom: ({ dataPointIndex }: any) => {
+        const formatted = sortedData[dataPointIndex]?.total_ot_formatted || "";
+        return `<div class="px-3 py-2 bg-gray-900 text-white rounded text-sm"><span>${formatted}</span></div>`;
       },
     },
     fill: {
@@ -197,8 +191,8 @@ const TopEmployeesOvertimeTable: React.FC = () => {
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Top Employees by Overtime</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Top employees ranked by overtime hours</p>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Overtime Per Day</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Daily overtime hours breakdown</p>
         </div>
 
         <div className="flex gap-3 items-center">
@@ -237,4 +231,4 @@ const TopEmployeesOvertimeTable: React.FC = () => {
   );
 };
 
-export default TopEmployeesOvertimeTable;
+export default OvertimePerDay;

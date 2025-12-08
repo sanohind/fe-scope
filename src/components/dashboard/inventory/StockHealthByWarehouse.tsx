@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { inventoryApi } from "../../../services/api/dashboardApi";
+import { InventoryFilterRequestParams, inventoryFiltersToQuery } from "../../../context/InventoryFilterContext";
 
 interface StockHealthData {
   warehouse: string;
@@ -11,7 +12,12 @@ interface StockHealthData {
   overstock: number;
 }
 
-const StockHealthByWarehouse: React.FC<{ warehouse?: string }> = ({ warehouse }) => {
+interface StockHealthByWarehouseProps {
+  warehouse?: string;
+  filters?: InventoryFilterRequestParams;
+}
+
+const StockHealthByWarehouse: React.FC<StockHealthByWarehouseProps> = ({ warehouse, filters }) => {
   const [data, setData] = useState<StockHealthData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +26,9 @@ const StockHealthByWarehouse: React.FC<{ warehouse?: string }> = ({ warehouse })
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await inventoryApi.getStockHealthByWarehouse();
+        const params: Record<string, string> = { ...(warehouse ? { warehouse } : {}) };
+        Object.assign(params, inventoryFiltersToQuery(filters));
+        const result = await inventoryApi.getStockHealthByWarehouse(params);
         // Handle if API returns wrapped data or direct array
         const dataArray = Array.isArray(result) ? result : result?.data || [];
         setData(dataArray);
@@ -33,7 +41,7 @@ const StockHealthByWarehouse: React.FC<{ warehouse?: string }> = ({ warehouse })
     };
 
     fetchData();
-  }, [warehouse]);
+  }, [warehouse, filters]);
 
   if (loading) {
     return (

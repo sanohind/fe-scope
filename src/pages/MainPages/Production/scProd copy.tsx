@@ -6,9 +6,9 @@ import ProductionByCustomer from "../../../components/dashboard/production/Produ
 import ProductionByModel from "../../../components/dashboard/production/ProductionByModel";
 import ProductionTrend from "../../../components/dashboard/production/ProductionTrend";
 
-const DIVISI = "NL";
+const DIVISI = "SC";
 
-export default function ProductionNl() {
+export default function ProductionSc() {
   return (
     <>
       <PageMeta title="Production Dashboard | SCOPE - Sanoh Indonesia" description="Dashboard 3: Production Planning & Monitoring - Monitoring production orders dan tracking achievement" />

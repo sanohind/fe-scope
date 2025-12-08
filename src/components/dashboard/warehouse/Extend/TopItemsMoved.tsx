@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { warehouseRevApi } from "../../../../services/api/dashboardApi";
+import { WarehouseFilterRequestParams, warehouseFiltersToQuery } from "../../../../context/WarehouseFilterContext";
 
 interface TopItemData {
   item_code: string;
@@ -13,18 +14,30 @@ interface TopItemData {
 
 interface TopItemsMovedProps {
   warehouse: string;
+  period?: "daily" | "monthly" | "yearly";
+  rangeLabel?: string;
+  modeLabel?: string;
+  filters?: WarehouseFilterRequestParams;
 }
 
-const TopItemsMoved: React.FC<TopItemsMovedProps> = ({ warehouse }) => {
+const TopItemsMoved: React.FC<TopItemsMovedProps> = ({ warehouse, period = "monthly", rangeLabel, modeLabel, filters }) => {
   const [data, setData] = useState<TopItemData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const effectiveRangeLabel = useMemo(() => {
+    if (rangeLabel) return rangeLabel;
+    if (period === "daily") return "Per tanggal (bulan berjalan)";
+    if (period === "monthly") return "Per bulan (tahun berjalan)";
+    return "Per tahun (beberapa tahun terakhir)";
+  }, [period, rangeLabel]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await warehouseRevApi.getTopItemsMoved(warehouse, { limit: 20 });
+        const baseParams = filters ? warehouseFiltersToQuery(filters) : { period };
+        const result = await warehouseRevApi.getTopItemsMoved(warehouse, { limit: 20, ...baseParams });
 
         // Ensure result is an array
         if (Array.isArray(result)) {
@@ -50,7 +63,7 @@ const TopItemsMoved: React.FC<TopItemsMovedProps> = ({ warehouse }) => {
     };
 
     fetchData();
-  }, [warehouse]);
+  }, [warehouse, period, filters]);
 
   if (loading) {
     return (
@@ -187,8 +200,12 @@ const TopItemsMoved: React.FC<TopItemsMovedProps> = ({ warehouse }) => {
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Top 20 Items Moved</h3>
+        <div className="flex flex-col items-start gap-1 text-sm text-gray-600 dark:text-gray-300 lg:items-end">
+          <span className="rounded-full bg-gray-100 px-3 py-1 font-semibold text-gray-700 dark:bg-gray-800 dark:text-white">{modeLabel ?? "Custom Range"}</span>
+          <span>{effectiveRangeLabel}</span>
+        </div>
       </div>
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[600px]">

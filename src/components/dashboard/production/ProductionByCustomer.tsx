@@ -162,7 +162,7 @@ const ProductionByCustomer: React.FC<ProductionByCustomerProps> = ({ divisi = "A
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Top 15 customers by production volume</p>
       </div>
       <div>
-        <ReactApexChart options={options} series={series} type="bar" height={400} />
+        <ReactApexChart options={options} series={series} type="bar" height={500} />
       </div>
     </div>
   );

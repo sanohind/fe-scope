@@ -208,7 +208,7 @@ const ProductionByDivision: React.FC = () => {
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Production volume by division and status</p>
       </div>
       <div>
-        <ReactApexChart options={options} series={series} type="bar" height={400} />
+        <ReactApexChart options={options} series={series} type="bar" height={425} />
       </div>
     </div>
   );

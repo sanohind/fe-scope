@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { inventoryRevApi } from "../../../services/api/dashboardApi";
+import { InventoryFilterRequestParams, inventoryFiltersToQuery } from "../../../context/InventoryFilterContext";
 
 interface ActiveItem {
   partno: string;
@@ -24,9 +25,10 @@ interface InventoryMostActiveItemsProps {
   warehouse: string;
   dateFrom?: string;
   dateTo?: string;
+  filters?: InventoryFilterRequestParams;
 }
 
-const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ warehouse, dateFrom, dateTo }) => {
+const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ warehouse, dateFrom, dateTo, filters }) => {
   const [activeData, setActiveData] = useState<ActiveItem[]>([]);
   const [nonActiveData, setNonActiveData] = useState<NonActiveItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,9 +39,10 @@ const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ war
     const fetchData = async () => {
       try {
         setLoading(true);
-        const params: any = {};
+        const params: Record<string, string> = {};
         if (dateFrom) params.date_from = dateFrom;
         if (dateTo) params.date_to = dateTo;
+        Object.assign(params, inventoryFiltersToQuery(filters));
         const result = await inventoryRevApi.getMostActiveItems(warehouse, params);
         setActiveData(result.most_active_items || result.data || []);
         setNonActiveData(result.most_non_active_items || []);
@@ -52,7 +55,7 @@ const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ war
       }
     };
     fetchData();
-  }, [warehouse, dateFrom, dateTo]);
+  }, [warehouse, dateFrom, dateTo, filters]);
 
   if (loading) {
     return (
@@ -213,16 +216,12 @@ const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ war
           </div>
           {dateRange && (
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              {new Date(dateRange.from).toLocaleDateString("id-ID", { day: "numeric", month: "short" })} -{" "}
-              {new Date(dateRange.to).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} ({Math.round(dateRange.days)} days)
+              {new Date(dateRange.from).toLocaleDateString("id-ID", { day: "numeric", month: "short" })} - {new Date(dateRange.to).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} (
+              {Math.round(dateRange.days)} days)
             </span>
           )}
         </div>
-        {activeData.length > 0 ? (
-          <ReactApexChart options={activeOptions} series={activeSeries} type="bar" height={500} />
-        ) : (
-          <div className="flex items-center justify-center h-80 text-gray-500">No active items data available</div>
-        )}
+        {activeData.length > 0 ? <ReactApexChart options={activeOptions} series={activeSeries} type="bar" height={500} /> : <div className="flex items-center justify-center h-80 text-gray-500">No active items data available</div>}
       </div>
 
       {/* Most Non-Active Items */}
@@ -234,8 +233,8 @@ const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ war
           </div>
           {dateRange && (
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              {new Date(dateRange.from).toLocaleDateString("id-ID", { day: "numeric", month: "short" })} -{" "}
-              {new Date(dateRange.to).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} ({Math.round(dateRange.days)} days)
+              {new Date(dateRange.from).toLocaleDateString("id-ID", { day: "numeric", month: "short" })} - {new Date(dateRange.to).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} (
+              {Math.round(dateRange.days)} days)
             </span>
           )}
         </div>

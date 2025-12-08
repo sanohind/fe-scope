@@ -1,16 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { inventoryApi } from "../../../services/api/dashboardApi";
 import { BoxIconLine, AlertIcon, BoxIcon, AngleUpIcon } from "../../../icons";
+import { InventoryFilterRequestParams, inventoryFiltersToQuery } from "../../../context/InventoryFilterContext";
 
 interface StockLevelData {
-  total_onhand: number;
+  total_onhand: string | number;
   items_below_safety_stock: number;
   items_above_max_stock: number;
   total_items: number;
   average_stock_level: number;
 }
 
-const StockLevelOverview: React.FC<{ warehouse?: string }> = ({ warehouse }) => {
+// Helper function to format numbers with comma separators
+const formatNumberWithCommas = (num: string | number): string => {
+  const numValue = typeof num === "string" ? parseFloat(num) : num;
+  return numValue.toLocaleString("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 20,
+  });
+};
+
+interface StockLevelOverviewProps {
+  warehouse?: string;
+  filters?: InventoryFilterRequestParams;
+}
+
+const StockLevelOverview: React.FC<StockLevelOverviewProps> = ({ warehouse, filters }) => {
   const [data, setData] = useState<StockLevelData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +34,8 @@ const StockLevelOverview: React.FC<{ warehouse?: string }> = ({ warehouse }) => 
     const fetchData = async () => {
       try {
         setLoading(true);
-        const params = warehouse ? { warehouse } : {};
+        const params: Record<string, string> = { ...(warehouse ? { warehouse } : {}) };
+        Object.assign(params, inventoryFiltersToQuery(filters));
         const result = await inventoryApi.getStockLevelOverview(params);
         // Handle if API returns wrapped data { data: {...} } or direct object
         const dataObj = result?.data || result;
@@ -33,7 +49,7 @@ const StockLevelOverview: React.FC<{ warehouse?: string }> = ({ warehouse }) => 
     };
 
     fetchData();
-  }, [warehouse]);
+  }, [warehouse, filters]);
 
   if (loading) {
     return (
@@ -63,7 +79,7 @@ const StockLevelOverview: React.FC<{ warehouse?: string }> = ({ warehouse }) => 
     {
       id: 1,
       title: "Total Onhand",
-      value: data.total_onhand.toLocaleString(),
+      value: formatNumberWithCommas(data.total_onhand),
       icon: BoxIconLine,
       bgColor: "bg-brand-50 dark:bg-brand-500/10",
       iconColor: "text-brand-500",

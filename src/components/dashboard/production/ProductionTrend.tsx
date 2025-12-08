@@ -31,10 +31,14 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL" }) => 
         let dateFrom: string | undefined;
         let dateTo: string | undefined;
         if (period === "daily") {
-          const firstDay = new Date(selectedYear, selectedMonth - 1, 1);
-          const lastDay = new Date(selectedYear, selectedMonth, 0);
-          dateFrom = firstDay.toISOString().split("T")[0];
-          dateTo = lastDay.toISOString().split("T")[0];
+          // Format date manually untuk menghindari masalah timezone
+          const year = selectedYear;
+          const month = String(selectedMonth).padStart(2, '0');
+          dateFrom = `${year}-${month}-01`;
+          
+          // Hitung hari terakhir di bulan tersebut
+          const lastDay = new Date(selectedYear, selectedMonth, 0).getDate();
+          dateTo = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
         } else if (period === "monthly") {
           dateFrom = `${selectedYear}-01-01`;
           dateTo = `${selectedYear}-12-31`;
@@ -57,7 +61,7 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL" }) => 
         setData(dataArray);
         setError(null);
       } catch (err) {
-        console.error("Error fetching production trend:", err);
+        console.error("Error fetching Production Achievement:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch data");
       } finally {
         setLoading(false);
@@ -162,7 +166,7 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL" }) => 
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="mb-4">
-          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Production Trend</h3>
+          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Production Achievement</h3>
         </div>
         <div className="flex justify-center items-center h-[400px] animate-pulse">
           <div className="w-full h-full bg-gray-200 rounded dark:bg-gray-800"></div>
@@ -175,7 +179,7 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL" }) => 
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="mb-4">
-          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Production Trend</h3>
+          <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Production Achievement</h3>
         </div>
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
           <p className="text-red-600 dark:text-red-400 text-sm">{error || "No data available"}</p>
@@ -187,7 +191,7 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL" }) => 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
       <div className="mb-4">
-        <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Production Trend</h3>
+        <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Production Achievement</h3>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <div className="flex gap-2">
             <button onClick={() => setPeriod("daily")} className={`px-3 py-1.5 text-sm rounded-lg ${period === "daily" ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"}`}>

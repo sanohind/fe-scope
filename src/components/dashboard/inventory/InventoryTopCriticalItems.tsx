@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { inventoryRevApi } from "../../../services/api/dashboardApi";
+import { InventoryFilterRequestParams, inventoryFiltersToQuery } from "../../../context/InventoryFilterContext";
 
 interface ItemWithoutIssue {
   partno: string;
@@ -17,9 +18,10 @@ interface InventoryTopItemsWithoutIssueProps {
   warehouse: string;
   dateFrom?: string;
   dateTo?: string;
+  filters?: InventoryFilterRequestParams;
 }
 
-const InventoryTopItemsWithoutIssue: React.FC<InventoryTopItemsWithoutIssueProps> = ({ warehouse, dateFrom, dateTo }) => {
+const InventoryTopItemsWithoutIssue: React.FC<InventoryTopItemsWithoutIssueProps> = ({ warehouse, dateFrom, dateTo, filters }) => {
   const [data, setData] = useState<ItemWithoutIssue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +34,7 @@ const InventoryTopItemsWithoutIssue: React.FC<InventoryTopItemsWithoutIssueProps
         const params: Record<string, string> = {};
         if (dateFrom) params.date_from = dateFrom;
         if (dateTo) params.date_to = dateTo;
+        Object.assign(params, inventoryFiltersToQuery(filters));
         const result = await inventoryRevApi.getTopCriticalItems(warehouse, params);
         setData(result.data || []);
         setDateRange(result.date_range || null);
@@ -44,7 +47,7 @@ const InventoryTopItemsWithoutIssue: React.FC<InventoryTopItemsWithoutIssueProps
     };
 
     fetchData();
-  }, [warehouse, dateFrom, dateTo]);
+  }, [warehouse, dateFrom, dateTo, filters]);
 
   const getActivityColor = (flag: string) => {
     switch (flag) {
@@ -94,7 +97,8 @@ const InventoryTopItemsWithoutIssue: React.FC<InventoryTopItemsWithoutIssueProps
         </div>
         {dateRange && (
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            {new Date(dateRange.from).toLocaleDateString("id-ID", { day: "numeric", month: "short" })} - {new Date(dateRange.to).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} ({Math.round(dateRange.days)} days)
+            {new Date(dateRange.from).toLocaleDateString("id-ID", { day: "numeric", month: "short" })} - {new Date(dateRange.to).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} ({Math.round(dateRange.days)}{" "}
+            days)
           </span>
         )}
       </div>
@@ -127,23 +131,19 @@ const InventoryTopItemsWithoutIssue: React.FC<InventoryTopItemsWithoutIssueProps
                   data.map((item, index) => (
                     <tr key={`${item.partno}-${index}`} className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5">
                       <td className="px-4 py-3 text-sm font-medium text-gray-800 dark:text-white/90">{item.partno}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 max-w-[200px] truncate" title={item.description}>{item.description}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 max-w-[200px] truncate" title={item.description}>
+                        {item.description}
+                      </td>
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{item.product_type || "-"}</td>
                       <td className="px-4 py-3 text-right text-sm font-medium text-gray-800 dark:text-white/90">{Number(item.onhand).toLocaleString()}</td>
                       <td className="px-4 py-3 text-right text-sm text-gray-700 dark:text-gray-300">{Number(item.total_issue_qty).toLocaleString()}</td>
                       <td className="px-4 py-3 text-right text-sm text-gray-700 dark:text-gray-300">{item.issue_count}</td>
                       <td className="px-4 py-3 text-right">
-                        <span className="inline-block px-2 py-1 rounded text-sm font-medium bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400">
-                          {Number(item.qty_gap).toLocaleString()}
-                        </span>
+                        <span className="inline-block px-2 py-1 rounded text-sm font-medium bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400">{Number(item.qty_gap).toLocaleString()}</span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-                        {item.last_issue_date ? new Date(item.last_issue_date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-"}
-                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{item.last_issue_date ? new Date(item.last_issue_date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-"}</td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`inline-block px-2 py-1 rounded text-xs font-medium whitespace-nowrap ${getActivityColor(item.activity_flag)}`}>
-                          {item.activity_flag}
-                        </span>
+                        <span className={`inline-block px-2 py-1 rounded text-xs font-medium whitespace-nowrap ${getActivityColor(item.activity_flag)}`}>{item.activity_flag}</span>
                       </td>
                     </tr>
                   ))

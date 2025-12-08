@@ -40,7 +40,7 @@ const ShipmentStatusBarChart: React.FC = () => {
   const [data, setData] = useState<ShipmentStatusData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [period, setPeriod] = useState<PeriodType>("monthly");
+  const [period, setPeriod] = useState<PeriodType>("daily"); // Changed to "daily" as default
 
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);

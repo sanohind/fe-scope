@@ -3,39 +3,35 @@ import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { inventoryApi } from "../../../services/api/dashboardApi";
 
-interface StockItem {
-  partno: string;
-  desc: string;
-  onhand: string;
-  allocated: string;
-  available: string;
+interface TrendDataItem {
+  period: string;
+  total_onhand: string | number;
+  total_receipt: string | number;
+  total_issue: string | number;
+  warehouse_count: number;
 }
 
 interface StockMovementAPIResponse {
-  message?: string;
-  current_data?: StockItem[];
-  historical_data?: {
-    period: string;
-    onhand: number;
-    allocated: number;
-    available: number;
-  }[];
-  data?: ChartDataPoint[];
-  results?: ChartDataPoint[];
+  trend_data?: TrendDataItem[];
+  date_range?: {
+    date_from: string;
+    date_to: string;
+  };
+  period?: string;
+  granularity?: string;
 }
 
 interface ChartDataPoint {
   period: string;
   onhand: number;
-  allocated: number;
-  available: number;
+  receipt: number;
+  issue: number;
 }
 
 const StockMovementTrend: React.FC = () => {
   const [data, setData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [apiMessage, setApiMessage] = useState<string>("");
 
   // Filter states
   const [selectedWarehouse] = useState<string>("all");
@@ -70,31 +66,17 @@ const StockMovementTrend: React.FC = () => {
         const result: StockMovementAPIResponse = await inventoryApi.getStockMovementTrend(params);
         console.log("Stock Movement Trend - Raw API Response:", result);
 
-        // Set API message if present
-        if (result.message) {
-          setApiMessage(result.message);
-        }
-
-        // Handle different response structures
+        // Handle trend_data from new API format
         let dataArray: ChartDataPoint[] = [];
 
-        // Priority 1: Check for historical_data (proper time series)
-        if (result?.historical_data && Array.isArray(result.historical_data)) {
-          dataArray = result.historical_data;
-          console.log("Using historical_data");
-        }
-        // Priority 2: Transform current_data (snapshot) to aggregated time series
-        else if (result?.current_data && Array.isArray(result.current_data)) {
-          console.log("Transforming current_data to chart format");
-          dataArray = transformCurrentDataToChart(result.current_data);
-        }
-        // Fallback: Direct array or nested data/results
-        else if (Array.isArray(result)) {
-          dataArray = result as ChartDataPoint[];
-        } else if (result?.data && Array.isArray(result.data)) {
-          dataArray = result.data;
-        } else if (result?.results && Array.isArray(result.results)) {
-          dataArray = result.results;
+        if (result?.trend_data && Array.isArray(result.trend_data)) {
+          dataArray = result.trend_data.map((item) => ({
+            period: item.period,
+            onhand: typeof item.total_onhand === "number" ? item.total_onhand : Number(item.total_onhand ?? 0),
+            receipt: typeof item.total_receipt === "number" ? item.total_receipt : Number(item.total_receipt ?? 0),
+            issue: typeof item.total_issue === "number" ? item.total_issue : Number(item.total_issue ?? 0),
+          }));
+          console.log("Using trend_data from API");
         }
 
         console.log("Stock Movement Trend - Processed Data Array:", dataArray);
@@ -112,52 +94,30 @@ const StockMovementTrend: React.FC = () => {
     fetchData();
   }, [selectedWarehouse, selectedProductType, selectedPeriod, selectedMonth, selectedYear]);
 
-  // Transform current_data snapshot to aggregated chart data
-  const transformCurrentDataToChart = (currentData: StockItem[]): ChartDataPoint[] => {
-    // Group by partno and aggregate
-    const grouped = currentData.reduce((acc, item) => {
-      const key = item.partno;
-      if (!acc[key]) {
-        acc[key] = {
-          period: item.desc || item.partno,
-          onhand: 0,
-          allocated: 0,
-          available: 0,
-          count: 0,
-        };
-      }
-      acc[key].onhand += parseFloat(item.onhand) || 0;
-      acc[key].allocated += parseFloat(item.allocated) || 0;
-      acc[key].available += parseFloat(item.available) || 0;
-      acc[key].count += 1;
-      return acc;
-    }, {} as Record<string, { period: string; onhand: number; allocated: number; available: number; count: number }>);
+  // Format categories for display
+  const categories = Array.isArray(data)
+    ? data.map((item) => {
+        // Format: 2025-12-01 -> Dec 1
+        const date = new Date(item.period + "T00:00:00");
+        if (isNaN(date.getTime())) {
+          return item.period; // Fallback if date is invalid
+        }
+        return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      })
+    : [];
 
-    // Convert to array and take top items
-    return Object.values(grouped)
-      .map(({ period, onhand, allocated, available }) => ({
-        period,
-        onhand: Math.round(onhand * 10) / 10,
-        allocated: Math.round(allocated * 10) / 10,
-        available: Math.round(available * 10) / 10,
-      }))
-      .sort((a, b) => b.onhand - a.onhand)
-      .slice(0, 20); // Limit to top 20 items
-  };
-
-  const categories = Array.isArray(data) ? data.map((item) => item.period) : [];
   const series = [
     {
-      name: "Onhand",
+      name: "On-hand",
       data: Array.isArray(data) ? data.map((item) => item.onhand) : [],
     },
     {
-      name: "Allocated",
-      data: Array.isArray(data) ? data.map((item) => item.allocated) : [],
+      name: "Receipt",
+      data: Array.isArray(data) ? data.map((item) => item.receipt) : [],
     },
     {
-      name: "Available",
-      data: Array.isArray(data) ? data.map((item) => item.available) : [],
+      name: "Issue",
+      data: Array.isArray(data) ? data.map((item) => item.issue) : [],
     },
   ];
 
@@ -173,7 +133,7 @@ const StockMovementTrend: React.FC = () => {
         enabled: false,
       },
     },
-    colors: ["#465FFF", "#F79009", "#12B76A"],
+    colors: ["#465FFF", "#12B76A", "#F04438"],
     dataLabels: {
       enabled: false,
     },
@@ -256,22 +216,6 @@ const StockMovementTrend: React.FC = () => {
         </div>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
           <p className="text-error-600 dark:text-error-400 text-sm font-medium mb-2">{error || "No data available"}</p>
-          {apiMessage && <p className="text-warning-600 dark:text-warning-400 text-sm mb-2">ℹ️ {apiMessage}</p>}
-          {!error && data.length === 0 && (
-            <p className="text-gray-600 dark:text-gray-400 text-xs mt-2">
-              API berhasil fetch, tapi data kosong. Pastikan backend mengembalikan data dengan struktur:
-              <code className="block mt-1 p-2 bg-white dark:bg-gray-900 rounded text-xs overflow-x-auto">
-                {JSON.stringify(
-                  {
-                    historical_data: [{ period: "2024-01", onhand: 100, allocated: 20, available: 80 }],
-                    current_data: [{ partno: "ABC", desc: "Item", onhand: "100", allocated: "20", available: "80" }],
-                  },
-                  null,
-                  2
-                )}
-              </code>
-            </p>
-          )}
         </div>
       </div>
     );
