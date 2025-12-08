@@ -1,7 +1,6 @@
 import PageMeta from "../../../components/common/PageMeta";
 import LazyLoad from "../../../components/common/LazyLoad";
 import ProductionKpiSummary from "../../../components/dashboard/production/ProductionKpiSummary";
-import ProductionStatusDistribution from "../../../components/dashboard/production/ProductionStatusDistribution";
 import ProductionByCustomer from "../../../components/dashboard/production/ProductionByCustomer";
 import ProductionByModel from "../../../components/dashboard/production/ProductionByModel";
 import ProductionByDivision from "../../../components/dashboard/production/ProductionByDivision";

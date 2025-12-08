@@ -151,15 +151,15 @@ const LogisticsPerformance: React.FC = () => {
   };
 
   // Determine status badge based on performance
-  const getStatusBadge = () => {
-    if (data.performance >= 95) {
-      return <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-400">Excellent</span>;
-    } else if (data.performance >= 85) {
-      return <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-warning-50 text-warning-700 dark:bg-warning-900/20 dark:text-warning-400">Good</span>;
-    } else {
-      return <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-error-50 text-error-700 dark:bg-error-900/20 dark:text-error-400">Needs Improvement</span>;
-    }
-  };
+  // const getStatusBadge = () => {
+  //   if (data.performance >= 95) {
+  //     return <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-400">Excellent</span>;
+  //   } else if (data.performance >= 85) {
+  //     return <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-warning-50 text-warning-700 dark:bg-warning-900/20 dark:text-warning-400">Good</span>;
+  //   } else {
+  //     return <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-error-50 text-error-700 dark:bg-error-900/20 dark:text-error-400">Needs Improvement</span>;
+  //   }
+  // };
 
   const options: ApexOptions = {
     chart: {

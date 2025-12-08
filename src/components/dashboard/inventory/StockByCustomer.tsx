@@ -27,7 +27,7 @@ const StockByCustomer: React.FC<StockByCustomerProps> = ({ warehouse, filters })
   const [data, setData] = useState<StockByGroupData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedGroup, setSelectedGroup] = useState<string>("all");
+  const [selectedGroup] = useState<string>("all");
 
   useEffect(() => {
     const fetchData = async () => {
