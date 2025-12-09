@@ -108,6 +108,8 @@ const ProductionByCustomer: React.FC<ProductionByCustomerProps> = ({ divisi = "A
       opacity: 1,
     },
     tooltip: {
+      shared: true,
+      intersect: false,
       y: {
         formatter: (val) => {
           return val.toLocaleString() + " units";

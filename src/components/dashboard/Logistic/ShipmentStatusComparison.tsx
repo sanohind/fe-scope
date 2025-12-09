@@ -61,10 +61,20 @@ const ShipmentStatusBarChart: React.FC = () => {
         if (period === "daily") {
           // For daily period, set date range for the selected month
           const firstDay = new Date(selectedYear, selectedMonth - 1, 1);
-          const lastDay = new Date(selectedYear, selectedMonth, 0);
+          // Get last day of the month: day 0 of next month = last day of current month
+          const nextMonthFirstDay = new Date(selectedYear, selectedMonth, 1);
+          const lastDay = new Date(nextMonthFirstDay.getTime() - 1);
 
-          params.date_from = firstDay.toISOString().split("T")[0]; // Format: YYYY-MM-DD
-          params.date_to = lastDay.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+          // Format dates as YYYY-MM-DD using local date (not UTC)
+          const formatDate = (date: Date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            return `${year}-${month}-${day}`;
+          };
+
+          params.date_from = formatDate(firstDay); // Format: YYYY-MM-DD
+          params.date_to = formatDate(lastDay); // Format: YYYY-MM-DD
         }
         // For monthly period, date_from and date_to are not included in params
 
