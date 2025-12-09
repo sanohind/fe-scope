@@ -7,7 +7,6 @@ interface CustomerData {
   customer: string;
   qty_ordered: number;
   qty_delivered: number;
-  qty_outstanding: number;
 }
 
 interface ProductionByCustomerProps {
@@ -45,28 +44,27 @@ const ProductionByCustomer: React.FC<ProductionByCustomerProps> = ({ divisi = "A
   const categories = validData.map((item) => item.customer);
   const series = [
     {
-      name: "Qty Ordered",
-      data: validData.map((item) => Number(item.qty_ordered) || 0),
-    },
-    {
       name: "Qty Delivered",
       data: validData.map((item) => Number(item.qty_delivered) || 0),
+      type: "bar",
     },
     {
-      name: "Qty Outstanding",
-      data: validData.map((item) => Number(item.qty_outstanding) || 0),
+      name: "Qty Ordered",
+      data: validData.map((item) => Number(item.qty_ordered) || 0),
+      type: "line",
     },
   ];
 
   const options: ApexOptions = {
     chart: {
       type: "bar",
+      stacked: false,
       fontFamily: "Outfit, sans-serif",
       toolbar: {
         show: false,
       },
     },
-    colors: ["#465FFF", "#12B76A", "#F04438"],
+    colors: ["#12B76A", "#465FFF"],
     plotOptions: {
       bar: {
         horizontal: false,
@@ -79,8 +77,8 @@ const ProductionByCustomer: React.FC<ProductionByCustomerProps> = ({ divisi = "A
     },
     stroke: {
       show: true,
-      width: 2,
-      colors: ["transparent"],
+      width: [0, 2],
+      colors: ["transparent", "#465FFF"],
     },
     xaxis: {
       categories: categories,

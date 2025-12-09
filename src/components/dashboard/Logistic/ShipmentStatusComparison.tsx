@@ -271,9 +271,9 @@ const ShipmentStatusBarChart: React.FC = () => {
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[600px]">
           <ResponsiveContainer width="100%" height={450}>
-            <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-              <XAxis dataKey="period" stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} tickFormatter={formatPeriod} />
+              <XAxis dataKey="period" stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} tickFormatter={formatPeriod} angle={-45} textAnchor="end" height={40} />
               <YAxis
                 stroke="#9ca3af"
                 tick={{ fill: "#6b7280", fontSize: 12 }}
@@ -295,11 +295,11 @@ const ShipmentStatusBarChart: React.FC = () => {
                 }}
                 iconType="rect"
               />
+              <Bar dataKey="Approved" fill="#FDB022" name="Approved" stackId="status" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Released" fill="#F04438" name="Released" stackId="status" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Invoiced" fill="#6B7280" name="Invoiced" stackId="status" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Processed" fill="#10B981" name="Processed" stackId="status" radius={[4, 4, 0, 0]} />
               <Line dataKey="Total Shipment" stroke="#465fff" name="Total Shipment" strokeWidth={2} dot={false} />
-              <Bar dataKey="Approved" fill="#FDB022" name="Approved" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Released" fill="#F04438" name="Released" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Invoiced" fill="#6B7280" name="Invoiced" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Processed" fill="#10B981" name="Processed" radius={[4, 4, 0, 0]} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

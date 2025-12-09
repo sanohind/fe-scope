@@ -376,7 +376,7 @@ const InventoryStockHealthDistributionBarChart: React.FC<InventoryStockHealthDis
           <ResponsiveContainer width="100%" height={450}>
             <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-              <XAxis dataKey="period" stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} tickFormatter={formatPeriod} />
+              <XAxis dataKey="period" stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} tickFormatter={formatPeriod} angle={-45} textAnchor="end" height={50} />
               <YAxis
                 stroke="#9ca3af"
                 tick={{ fill: "#6b7280", fontSize: 12 }}
@@ -398,10 +398,10 @@ const InventoryStockHealthDistributionBarChart: React.FC<InventoryStockHealthDis
                 }}
                 iconType="rect"
               />
-              <Bar dataKey="Critical" fill="#DC3545" name="Critical" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Low Stock" fill="#FD7E14" name="Low Stock" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Normal" fill="#28A745" name="Normal" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Overstock" fill="#007BFF" name="Overstock" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Critical" fill="#DC3545" name="Critical" stackId="health" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Low Stock" fill="#FD7E14" name="Low Stock" stackId="health" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Normal" fill="#28A745" name="Normal" stackId="health" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Overstock" fill="#007BFF" name="Overstock" stackId="health" radius={[4, 4, 0, 0]} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

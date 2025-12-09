@@ -2,8 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 // Assume these icons are imported from an icon library
-import { BoxCubeIcon, ChevronDownIcon, HorizontaLDots, PlugInIcon, TaskIcon, UserCircleIcon } from "../icons";
+import { ChevronDownIcon, HorizontaLDots} from "../icons";
 import { useSidebar } from "../context/SidebarContext";
+import { Boxes, BadgeDollarSign, HousePlug, Van, Handshake, Waypoints } from 'lucide-react';
 
 type NavItem = {
   name: string;
@@ -14,7 +15,7 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    icon: <UserCircleIcon />,
+    icon: <Boxes size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Inventory",
     subItems: [
       { name: "Overview Raw Material", path: "/inventory-rm" },
@@ -27,7 +28,7 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <Waypoints size={12} strokeWidth={0.7} absoluteStrokeWidth/>,
     name: "Inventory Movement",
     subItems: [
       { name: "Overview Raw Material", path: "/warehouse-rm" },
@@ -40,7 +41,7 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    icon: <TaskIcon />,
+    icon: <HousePlug size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Production",
     subItems: [
       { name: "Overview", path: "/production" },
@@ -52,17 +53,17 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    icon: <TaskIcon />,
+    icon: <BadgeDollarSign size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Sales",
     path: "/sales",
   },
   {
-    icon: <PlugInIcon />,
+    icon: <Van size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Logistics",
     path: "/logistics",
   },
   {
-    icon: <PlugInIcon />,
+    icon: <Handshake size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Human Resource",
     path: "/hr",
   },

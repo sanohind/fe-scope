@@ -8,13 +8,17 @@ export default function LogisticsDashboard() {
     <>
       <PageMeta title="Logistics Dashboard | SCOPE - Sanoh Indonesia" description="Dashboard 6: Logistics - Monitoring Shipment " />
       <div className="space-y-6">
-        <div className="grid grid-cols-2 gap-4">
-          <LazyLoad height="350px">
-            <ShipmentAnalyticsChart />
-          </LazyLoad>
-          <LazyLoad height="350px">
-            <LogisticsPerformance />
-          </LazyLoad>
+        <div className="grid grid-cols-10 gap-4">
+          <div className="col-span-5">
+            <LazyLoad height="350px">
+              <ShipmentAnalyticsChart />
+            </LazyLoad>
+          </div>
+          <div className="col-span-5">
+            <LazyLoad height="350px">
+              <LogisticsPerformance />
+            </LazyLoad>
+          </div>
         </div>
         <LazyLoad height="500px">
           <ShipmentStatusComparison />

@@ -33,49 +33,10 @@ const ShipmentAnalyticsChart: React.FC = () => {
   const [data, setData] = useState<BarChartData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedYear, setSelectedYear] = useState<number | null>(null);
-  const [availableYears, setAvailableYears] = useState<number[]>([]);
+  const [selectedYear, setSelectedYear] = useState<number>(2025);
 
-  // Fetch available years on component mount
-  useEffect(() => {
-    const fetchAvailableYears = async () => {
-      try {
-        const result = await SupplyChainApi.getSalesAnalyticsBarChart({});
-
-        let responseData: BarChartData[] = [];
-
-        if (result && typeof result === "object" && "data" in result) {
-          const apiResponse = result as ApiResponse;
-          if (Array.isArray(apiResponse.data)) {
-            responseData = apiResponse.data;
-          }
-        }
-
-        if (responseData.length > 0) {
-          // Extract unique years and sort them
-          const years = Array.from(new Set(responseData.map((item) => item.year))).sort((a, b) => b - a);
-          setAvailableYears(years);
-
-          // Get current year
-          const currentYear = new Date().getFullYear();
-
-          // Set default year to current year if available, otherwise use the latest year
-          if (years.includes(currentYear)) {
-            setSelectedYear(currentYear);
-          } else if (years.length > 0) {
-            setSelectedYear(years[0]);
-          }
-        } else {
-          setError("No data available");
-        }
-      } catch (err) {
-        console.error("Error fetching available years:", err);
-        setError(err instanceof Error ? err.message : "Failed to fetch data");
-      }
-    };
-
-    fetchAvailableYears();
-  }, []);
+  // Hardcoded available years
+  const availableYears = [2026, 2025, 2024, 2023];
 
   // Fetch data based on selected year
   useEffect(() => {
@@ -213,7 +174,7 @@ const ShipmentAnalyticsChart: React.FC = () => {
           <ResponsiveContainer width="100%" height={460}>
             <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-              <XAxis dataKey="period" stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} />
+              <XAxis dataKey="period" stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={50} />
               <YAxis
                 stroke="#9ca3af"
                 tick={{ fill: "#6b7280", fontSize: 12 }}
