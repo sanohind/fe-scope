@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import ProductionPlanDropZone from "./ProductionPlanDropZone";
 import { productionPlanApi } from "../../../services/productionPlanApi";
+import { API_CONFIG } from "../../../config/apiConfig";
 import Button from "../../ui/button/Button";
 import { Download, SlidersVertical } from "lucide-react";
 
@@ -44,7 +45,8 @@ const ProductionPlanManage: React.FC = () => {
   // Handle file download
   const handleDownload = async () => {
     try {
-      const response = await fetch("/api/files/download/prod_plan/ProdPlanTest1.xlsx");
+      const downloadUrl = `${API_CONFIG.BASE_URL}/api/files/download/prod_plan/${encodeURIComponent("ProdPlanTest1.xlsx")}`;
+      const response = await fetch(downloadUrl);
       if (!response.ok) throw new Error("Download failed");
 
       const blob = await response.blob();
@@ -76,7 +78,9 @@ const ProductionPlanManage: React.FC = () => {
             Download Template
           </button>
           <Link to="/daily-use-manage">
-            <Button size="sm" className="bg-purple-600 hover:bg-purple-700"><SlidersVertical size={16} /> Manage Data</Button>
+            <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+              <SlidersVertical size={16} /> Manage Data
+            </Button>
           </Link>
         </div>
       </div>
