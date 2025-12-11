@@ -106,6 +106,8 @@ const OrderStatusDistribution: React.FC<OrderStatusDistributionProps> = ({ wareh
     Adviced: "#8098F9",
     Released: "#36BFFA",
     Unknown: "#98A2B3",
+    dn_qty: "#6172F3",
+    receipt_qty: "#8098F9"
   };
 
   // Generate colors for all statuses

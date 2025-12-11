@@ -22,9 +22,12 @@ interface ApiResponse {
 
 interface ProductionStatusDistributionProps {
   divisi?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  period?: "daily" | "monthly" | "yearly";
 }
 
-const ProductionStatusDistribution: React.FC<ProductionStatusDistributionProps> = ({ divisi = "ALL" }) => {
+const ProductionStatusDistribution: React.FC<ProductionStatusDistributionProps> = ({ divisi = "ALL", dateFrom, dateTo, period = "daily" }) => {
   const [data, setData] = useState<StatusData[]>([]);
   const [totalOrders, setTotalOrders] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -35,7 +38,10 @@ const ProductionStatusDistribution: React.FC<ProductionStatusDistributionProps> 
       try {
         setLoading(true);
         const result: ApiResponse = await productionApi.getProductionStatusDistribution({
+          period,
           divisi: divisi !== "ALL" ? divisi : undefined,
+          date_from: dateFrom,
+          date_to: dateTo,
         });
 
         // Extract data array and total from API response
@@ -55,7 +61,7 @@ const ProductionStatusDistribution: React.FC<ProductionStatusDistributionProps> 
     };
 
     fetchData();
-  }, [divisi]);
+  }, [divisi, dateFrom, dateTo, period]);
 
   // Convert string counts to numbers for the chart
   const series = data.map((item) => parseInt(item.count, 10));

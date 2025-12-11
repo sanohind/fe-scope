@@ -75,6 +75,10 @@ import ProductionCh from "./pages/MainPages/Production/chProd";
 import ProductionNl from "./pages/MainPages/Production/nlProd";
 import ProductionPs from "./pages/MainPages/Production/psProd";
 import ProductionSc from "./pages/MainPages/Production/psProd";
+import DailyUseUpload from "./pages/MainPages/PlanningManage/daily-use-upload";
+import DailyUseManage from "./pages/MainPages/PlanningManage/daily-use-manage";
+import ProductionPlanUpload from "./pages/MainPages/PlanningManage/production-plan-upload";
+import ProductionPlanManage from "./pages/MainPages/PlanningManage/production-plan-manage";
 
 // Lazy load dashboard pages for better performance
 const WarehouseAllRm = lazy(() => import("./pages/MainPages/Warehouse/warehouse-allRm"));
@@ -194,6 +198,10 @@ export default function App() {
                 </Suspense>
               }
             />
+            <Route path="/daily-use-upload" element={<DailyUseUpload />} />
+            <Route path="/daily-use-manage" element={<DailyUseManage />} />
+            <Route path="/production-plan-upload" element={<ProductionPlanUpload />} />
+            <Route path="/production-plan-manage" element={<ProductionPlanManage />} />
             <Route path="/saas" element={<Saas />} />
 
             {/* Others Page */}

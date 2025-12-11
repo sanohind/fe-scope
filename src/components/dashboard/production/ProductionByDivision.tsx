@@ -24,7 +24,13 @@ interface ApiResponse {
   };
 }
 
-const ProductionByDivision: React.FC = () => {
+interface ProductionByDivisionProps {
+  dateFrom?: string;
+  dateTo?: string;
+  period?: "daily" | "monthly" | "yearly";
+}
+
+const ProductionByDivision: React.FC<ProductionByDivisionProps> = ({ dateFrom, dateTo, period = "daily" }) => {
   const [data, setData] = useState<DivisionData[]>([]);
   const [totalQty, setTotalQty] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -34,7 +40,11 @@ const ProductionByDivision: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result: ApiResponse = await productionApi.getProductionBydivisi({});
+        const result: ApiResponse = await productionApi.getProductionBydivisi({
+          period,
+          date_from: dateFrom,
+          date_to: dateTo,
+        });
 
         // Extract data array from API response
         if (result && result.data) {
@@ -57,7 +67,7 @@ const ProductionByDivision: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [dateFrom, dateTo, period]);
 
   // Convert string quantities to numbers for the chart
   const series = data.map((item) => parseFloat(item.qty_delivery) || 0);

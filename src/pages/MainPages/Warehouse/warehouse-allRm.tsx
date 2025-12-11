@@ -5,6 +5,7 @@ import DeliveryPerformance from "../../../components/dashboard/warehouse/Extend/
 import OrderStatusDistribution from "../../../components/dashboard/warehouse/Extend/OrderStatusDistribution";
 import TopItemsMoved from "../../../components/dashboard/warehouse/Extend/TopItemsMoved";
 import DailyStockTrend from "../../../components/dashboard/warehouse/Extend/DailyStockTrend";
+import PlanReceiptChart from "../../../components/dashboard/warehouse/Extend/PlanReceiptChart";
 import InventoryStockMovementTrend from "../../../components/dashboard/inventory/InventoryStockMovementTrend";
 import WarehouseFilterHeader from "../../../components/dashboard/warehouse/WarehouseFilterHeader";
 import { WarehouseFilterProvider, useWarehouseFilters } from "../../../context/WarehouseFilterContext";
@@ -56,6 +57,20 @@ const WarehouseAllRmContent = () => {
         <h1 className="mb-4 text-2xl font-semibold text-black dark:text-white">Balance WHRM02</h1>
         <LazyLoad height="360px">
           <DailyStockTrend warehouse="WHRM02" filters={requestParams} period={mode} rangeLabel={rangeDescription} modeLabel={modeLabel} />
+        </LazyLoad>
+      </div>
+
+      <div>
+        <h1 className="mb-4 text-2xl font-semibold text-black dark:text-white">Plan Receipt WHRM01</h1>
+        <LazyLoad height="480px">
+          <PlanReceiptChart warehouse="WHRM01" dateFrom={from} dateTo={to} />
+        </LazyLoad>
+      </div>
+
+      <div>
+        <h1 className="mb-4 text-2xl font-semibold text-black dark:text-white">Plan Receipt WHRM02</h1>
+        <LazyLoad height="480px">
+          <PlanReceiptChart warehouse="WHRM02" dateFrom={from} dateTo={to} />
         </LazyLoad>
       </div>
 

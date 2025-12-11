@@ -12,3 +12,4 @@ export { default as ExtendWOrderStatusDistribution } from "./Extend/OrderStatusD
 export { default as ExtendWTopItemsMoved } from "./Extend/TopItemsMoved.tsx";
 export { default as ExtendWOrderSummary } from "./Extend/WarehouseOrderSummary.tsx";
 export { default as ExtendWDailyStockTrend } from "./Extend/DailyStockTrend";
+export { default as ExtendWPlanReceiptChart } from "./Extend/PlanReceiptChart";

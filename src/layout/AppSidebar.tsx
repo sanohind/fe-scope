@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 // Assume these icons are imported from an icon library
 import { ChevronDownIcon, HorizontaLDots} from "../icons";
 import { useSidebar } from "../context/SidebarContext";
-import { Boxes, BadgeDollarSign, HousePlug, Van, Handshake, Waypoints } from 'lucide-react';
+import { Boxes, BadgeDollarSign, HousePlug, Van, Handshake, Waypoints, ChartNetwork } from 'lucide-react';
 
 type NavItem = {
   name: string;
@@ -66,6 +66,14 @@ const navItems: NavItem[] = [
     icon: <Handshake size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Human Resource",
     path: "/hr",
+  },
+  {
+    icon: <ChartNetwork size={12} strokeWidth={0.7} absoluteStrokeWidth />,
+    name: "Planning Manage",
+    subItems: [
+      { name: "Daily Use", path: "/daily-use-upload" },
+      { name: "Production Plan", path: "/production-plan-upload" },
+    ],
   },
   // {
   //   icon: <TaskIcon />,

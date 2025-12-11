@@ -6,51 +6,26 @@ import { productionApi } from "../../../services/api/dashboardApi";
 interface TrendData {
   period: string;
   qty_pelaporan: string | number;
+  qty_plan: string | number;
   total_prod_index: string | number;
 }
 
 interface ProductionTrendProps {
   divisi?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  period?: "daily" | "monthly" | "yearly";
 }
 
-type TrendPeriod = "daily" | "monthly" | "yearly";
-
-const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL" }) => {
+const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL", dateFrom, dateTo, period = "daily" }) => {
   const [data, setData] = useState<TrendData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [period, setPeriod] = useState<TrendPeriod>("monthly");
-  const [selectedYear, setSelectedYear] = useState<number>(2025);
-  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Calculate date range based on period
-        let dateFrom: string | undefined;
-        let dateTo: string | undefined;
-        if (period === "daily") {
-          // Format date manually untuk menghindari masalah timezone
-          const year = selectedYear;
-          const month = String(selectedMonth).padStart(2, '0');
-          dateFrom = `${year}-${month}-01`;
-          
-          // Hitung hari terakhir di bulan tersebut
-          const lastDay = new Date(selectedYear, selectedMonth, 0).getDate();
-          dateTo = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
-        } else if (period === "monthly") {
-          dateFrom = `${selectedYear}-01-01`;
-          dateTo = `${selectedYear}-12-31`;
-        } else {
-          // yearly: banding antar tahun, biarkan API aggregate per year dengan range lebar
-          // (gunakan rentang 3 tahun mengelilingi selectedYear untuk perbandingan)
-          const startYear = selectedYear - 1;
-          const endYear = selectedYear + 1;
-          dateFrom = `${startYear}-01-01`;
-          dateTo = `${endYear}-12-31`;
-        }
-
         const result = await productionApi.getProductionTrend({
           period,
           date_from: dateFrom,
@@ -69,7 +44,7 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL" }) => 
     };
 
     fetchData();
-  }, [period, selectedYear, selectedMonth, divisi]);
+  }, [divisi, dateFrom, dateTo, period]);
 
   // Konversi string ke number dengan aman
   const toNumber = (value: string | number): number => {
@@ -81,12 +56,18 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL" }) => 
   const categories = data.map((item) => item.period);
 
   const qtyPelaporanData = data.map((item) => toNumber(item.qty_pelaporan));
+  const qtyPlanData = data.map((item) => toNumber(item.qty_plan));
 
   const series = [
     {
       name: "Qty Pelaporan",
       type: "column" as const,
       data: qtyPelaporanData,
+    },
+    {
+      name: "Qty Plan",
+      type: "line" as const,
+      data: qtyPlanData,
     },
   ];
 
@@ -99,7 +80,7 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL" }) => 
       height: 400,
       type: "line",
     },
-    colors: ["#465FFF"],
+    colors: ["#465FFF", "#10B981"],
     plotOptions: {
       bar: {
         horizontal: false,
@@ -136,8 +117,9 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL" }) => 
     tooltip: {
       shared: true,
       intersect: false,
-      custom: function ({ dataPointIndex}) {
+      custom: function ({ dataPointIndex }) {
         const qtyPelaporan = qtyPelaporanData[dataPointIndex];
+        const qtyPlan = qtyPlanData[dataPointIndex];
         const period = categories[dataPointIndex];
 
         return `<div class="px-3 py-2">
@@ -145,6 +127,10 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL" }) => 
           <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded-full" style="background-color: #465FFF"></span>
             <span class="text-sm text-gray-700 dark:text-gray-400">Qty Pelaporan: <strong>${qtyPelaporan.toLocaleString("en-US", { maximumFractionDigits: 0 })} units</strong></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full" style="background-color: #10B981"></span>
+            <span class="text-sm text-gray-700 dark:text-gray-400">Qty Plan: <strong>${qtyPlan.toLocaleString("en-US", { maximumFractionDigits: 0 })} units</strong></span>
           </div>
         </div>`;
       },
@@ -192,84 +178,6 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL" }) => 
     <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
       <div className="mb-4">
         <h3 className="font-semibold text-gray-800 text-lg dark:text-white/90">Production Achievement</h3>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <div className="flex gap-2">
-            <button onClick={() => setPeriod("daily")} className={`px-3 py-1.5 text-sm rounded-lg ${period === "daily" ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"}`}>
-              Daily
-            </button>
-            <button onClick={() => setPeriod("monthly")} className={`px-3 py-1.5 text-sm rounded-lg ${period === "monthly" ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"}`}>
-              Monthly
-            </button>
-            <button onClick={() => setPeriod("yearly")} className={`px-3 py-1.5 text-sm rounded-lg ${period === "yearly" ? "bg-brand-500 text-white" : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"}`}>
-              Yearly
-            </button>
-          </div>
-          {period === "daily" && (
-            <div className="flex items-center gap-2">
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                className="px-3 py-2 border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-800 dark:text-white text-sm"
-              >
-                {[
-                  { value: 1, label: "January" },
-                  { value: 2, label: "February" },
-                  { value: 3, label: "March" },
-                  { value: 4, label: "April" },
-                  { value: 5, label: "May" },
-                  { value: 6, label: "June" },
-                  { value: 7, label: "July" },
-                  { value: 8, label: "August" },
-                  { value: 9, label: "September" },
-                  { value: 10, label: "October" },
-                  { value: 11, label: "November" },
-                  { value: 12, label: "December" },
-                ].map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="px-3 py-2 border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-800 dark:text-white text-sm"
-              >
-                {[2024, 2025, 2026].map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-          {period === "monthly" && (
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="px-3 py-2 border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-800 dark:text-white text-sm"
-            >
-              {[2024, 2025, 2026].map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          )}
-          {period === "yearly" && (
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="px-3 py-2 border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-800 dark:text-white text-sm"
-            >
-              {[2024, 2025, 2026].map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
       </div>
       <div>
         <ReactApexChart options={options} series={series} type="line" height={400} />

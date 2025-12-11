@@ -12,9 +12,12 @@ interface ModelData {
 
 interface ProductionByModelProps {
   divisi?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  period?: "daily" | "monthly" | "yearly";
 }
 
-const ProductionByModel: React.FC<ProductionByModelProps> = ({ divisi = "ALL" }) => {
+const ProductionByModel: React.FC<ProductionByModelProps> = ({ divisi = "ALL", dateFrom, dateTo, period = "daily" }) => {
   const [data, setData] = useState<ModelData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +28,10 @@ const ProductionByModel: React.FC<ProductionByModelProps> = ({ divisi = "ALL" })
         setLoading(true);
         console.log("Fetching production by model data...");
         const result = await productionApi.getProductionByModel(20, {
+          period,
           divisi: divisi !== "ALL" ? divisi : undefined,
+          date_from: dateFrom,
+          date_to: dateTo,
         });
         console.log("Production by model API response:", result);
 
@@ -60,7 +66,7 @@ const ProductionByModel: React.FC<ProductionByModelProps> = ({ divisi = "ALL" })
     };
 
     fetchData();
-  }, [divisi]);
+  }, [divisi, dateFrom, dateTo, period]);
 
   // Create categories with model and customer info
   const categories = Array.isArray(data) ? data.map((item) => `${item.model} (${item.customer})`) : [];

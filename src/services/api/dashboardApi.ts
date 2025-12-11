@@ -474,17 +474,18 @@ export const salesApi = {
 // Dashboard 3: Production Planning & Monitoring
 export const productionApi = {
   // 3.1 Production KPI Summary
-  getProductionKpiSummary: async (params?: { divisi?: string }) => {
+  getProductionKpiSummary: async (params?: { period?: "daily" | "monthly" | "yearly"; divisi?: string; date_from?: string; date_to?: string }) => {
     const cleaned = cleanParams(params);
     const queryParams = new URLSearchParams(cleaned as any).toString();
     const url = `${BASE_URL}/api/dashboard/production/kpi-summary${queryParams ? `?${queryParams}` : ""}`;
+    console.log("getProductionKpiSummary - params:", params, "cleaned:", cleaned, "URL:", url);
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch production KPI summary");
     return response.json();
   },
 
   // 3.2 Production Status Distribution
-  getProductionStatusDistribution: async (params?: { divisi?: string }) => {
+  getProductionStatusDistribution: async (params?: { period?: "daily" | "monthly" | "yearly"; divisi?: string; date_from?: string; date_to?: string }) => {
     const cleaned = cleanParams(params);
     const queryParams = new URLSearchParams(cleaned as any).toString();
     const url = `${BASE_URL}/api/dashboard/production/status-distribution${queryParams ? `?${queryParams}` : ""}`;
@@ -494,7 +495,7 @@ export const productionApi = {
   },
 
   // 3.3 Production by Customer
-  getProductionByCustomer: async (limit: number = 15, params?: { divisi?: string }) => {
+  getProductionByCustomer: async (limit: number = 15, params?: { period?: "daily" | "monthly" | "yearly"; divisi?: string; date_from?: string; date_to?: string }) => {
     const cleaned = cleanParams({ limit: limit.toString(), ...params });
     const queryParams = new URLSearchParams(cleaned as any).toString();
     const url = `${BASE_URL}/api/dashboard/production/by-customer?${queryParams}`;
@@ -504,7 +505,7 @@ export const productionApi = {
   },
 
   // 3.4 Production by Model
-  getProductionByModel: async (limit: number = 20, params?: { divisi?: string }) => {
+  getProductionByModel: async (limit: number = 20, params?: { period?: "daily" | "monthly" | "yearly"; divisi?: string; date_from?: string; date_to?: string }) => {
     const cleaned = cleanParams({ limit: limit.toString(), ...params });
     const queryParams = new URLSearchParams(cleaned as any).toString();
     const url = `${BASE_URL}/api/dashboard/production/by-model?${queryParams}`;
@@ -534,7 +535,7 @@ export const productionApi = {
   },
 
   // 3.7 Production by divisi
-  getProductionBydivisi: async (params?: { divisi?: string }) => {
+  getProductionBydivisi: async (params?: { period?: "daily" | "monthly" | "yearly"; date_from?: string; date_to?: string }) => {
     const cleaned = cleanParams(params);
     const queryParams = new URLSearchParams(cleaned as any).toString();
     const url = `${BASE_URL}/api/dashboard/production/by-division${queryParams ? `?${queryParams}` : ""}`;
@@ -808,6 +809,15 @@ export const warehouseRevApi = {
     const url = `${BASE_URL}/api/stock/daily?${queryParams}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch daily stock trend");
+    return response.json();
+  },
+
+  // 11. Plan Receipt Chart
+  getPlanReceipt: async (warehouse: string, params?: { period?: string; date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams({ warehouse, ...cleanParams(params) } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/warehouse-rev/dn-plan-receipt?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch plan receipt data");
     return response.json();
   },
 };

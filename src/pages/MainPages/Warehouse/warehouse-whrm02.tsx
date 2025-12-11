@@ -5,6 +5,7 @@ import DeliveryPerformance from "../../../components/dashboard/warehouse/Extend/
 import OrderStatusDistribution from "../../../components/dashboard/warehouse/Extend/OrderStatusDistribution";
 import TopItemsMoved from "../../../components/dashboard/warehouse/Extend/TopItemsMoved";
 import DailyStockTrend from "../../../components/dashboard/warehouse/Extend/DailyStockTrend";
+import PlanReceiptChart from "../../../components/dashboard/warehouse/Extend/PlanReceiptChart";
 import InventoryStockMovementTrend from "../../../components/dashboard/inventory/InventoryStockMovementTrend";
 import InventoryStockAndActivityByProductType from "../../../components/dashboard/inventory/InventoryStockAndActivityByProductType";
 import WarehouseFilterHeader from "../../../components/dashboard/warehouse/WarehouseFilterHeader";
@@ -48,6 +49,10 @@ const WarehouseWhrm02Content = () => {
 
       <LazyLoad height="360px">
         <DailyStockTrend warehouse={WAREHOUSE} filters={requestParams} period={mode} rangeLabel={rangeDescription} modeLabel={modeLabel} />
+      </LazyLoad>
+
+      <LazyLoad height="480px">
+        <PlanReceiptChart warehouse={WAREHOUSE} dateFrom={from} dateTo={to} />
       </LazyLoad>
 
       <div>

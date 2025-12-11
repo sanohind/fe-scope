@@ -12,9 +12,12 @@ interface ProductionKpiData {
 
 interface ProductionKpiSummaryProps {
   divisi?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  period?: "daily" | "monthly" | "yearly";
 }
 
-const ProductionKpiSummary: React.FC<ProductionKpiSummaryProps> = ({ divisi = "ALL" }) => {
+const ProductionKpiSummary: React.FC<ProductionKpiSummaryProps> = ({ divisi = "ALL", dateFrom, dateTo, period = "daily" }) => {
   const [data, setData] = useState<ProductionKpiData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,9 +26,14 @@ const ProductionKpiSummary: React.FC<ProductionKpiSummaryProps> = ({ divisi = "A
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await productionApi.getProductionKpiSummary({
+        const params = {
+          period,
           divisi: divisi !== "ALL" ? divisi : undefined,
-        });
+          date_from: dateFrom,
+          date_to: dateTo,
+        };
+        console.log("ProductionKpiSummary API params:", params);
+        const result = await productionApi.getProductionKpiSummary(params);
         // Handle if API returns wrapped data { data: {...} } or direct object
         const dataObj = result?.data || result;
         setData(dataObj);
@@ -38,29 +46,29 @@ const ProductionKpiSummary: React.FC<ProductionKpiSummaryProps> = ({ divisi = "A
     };
 
     fetchData();
-  }, [divisi]);
+  }, [divisi, dateFrom, dateTo, period]);
 
   // Helper function to safely convert string or number to formatted number
   const formatNumber = (value: number | string | undefined | null): string => {
     if (value === undefined || value === null) return "0";
-    
+
     // Convert to number if it's a string
     const numValue = typeof value === "string" ? parseFloat(value) : value;
-    
+
     // Check if conversion resulted in valid number
     if (isNaN(numValue)) return "0";
-    
+
     return numValue.toLocaleString("en-US", { maximumFractionDigits: 0 });
   };
 
   // Helper function to format percentage
   const formatPercentage = (value: number | string | undefined | null): string => {
     if (value === undefined || value === null) return "0.0%";
-    
+
     const numValue = typeof value === "string" ? parseFloat(value) : value;
-    
+
     if (isNaN(numValue)) return "0.0%";
-    
+
     return `${numValue.toFixed(1)}%`;
   };
 

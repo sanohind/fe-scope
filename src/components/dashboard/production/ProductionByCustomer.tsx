@@ -11,9 +11,12 @@ interface CustomerData {
 
 interface ProductionByCustomerProps {
   divisi?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  period?: "daily" | "monthly" | "yearly";
 }
 
-const ProductionByCustomer: React.FC<ProductionByCustomerProps> = ({ divisi = "ALL" }) => {
+const ProductionByCustomer: React.FC<ProductionByCustomerProps> = ({ divisi = "ALL", dateFrom, dateTo, period = "daily" }) => {
   const [data, setData] = useState<CustomerData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +26,10 @@ const ProductionByCustomer: React.FC<ProductionByCustomerProps> = ({ divisi = "A
       try {
         setLoading(true);
         const result = await productionApi.getProductionByCustomer(15, {
+          period,
           divisi: divisi !== "ALL" ? divisi : undefined,
+          date_from: dateFrom,
+          date_to: dateTo,
         });
         // Handle if API returns wrapped data or direct array
         const dataArray = Array.isArray(result) ? result : result?.data || [];
@@ -37,7 +43,7 @@ const ProductionByCustomer: React.FC<ProductionByCustomerProps> = ({ divisi = "A
     };
 
     fetchData();
-  }, [divisi]);
+  }, [divisi, dateFrom, dateTo, period]);
 
   // Filter out invalid data and ensure numeric values
   const validData = Array.isArray(data) ? data.filter((item) => item && item.customer) : [];
