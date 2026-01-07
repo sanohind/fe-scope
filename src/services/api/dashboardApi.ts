@@ -374,15 +374,17 @@ export const warehouseApi = {
 // Dashboard 4: Sales & Shipment Analysis
 export const salesApi = {
   // 4.1 Sales Overview KPI
-  getSalesOverview: async (period: "mtd" | "qtd" | "ytd" = "mtd") => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/sales/overview-kpi?period=${period}`);
+  getSalesOverview: async (params?: { period?: "daily" | "monthly" | "yearly"; date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams(cleanParams(params) as any).toString();
+    const url = `${BASE_URL}/api/dashboard/sales/overview-kpi${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch sales overview");
     return response.json();
   },
 
   // 4.2 Revenue Trend
-  getRevenueTrend: async (params?: { group_by?: "daily" | "weekly" | "monthly"; customer?: string; product_type?: string; date_from?: string; date_to?: string }) => {
-    const queryParams = new URLSearchParams(params as any).toString();
+  getRevenueTrend: async (params?: { period?: "daily" | "monthly" | "yearly"; customer?: string; product_type?: string; date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams(cleanParams(params) as any).toString();
     const url = `${BASE_URL}/api/dashboard/sales/revenue-trend${queryParams ? `?${queryParams}` : ""}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch revenue trend");
@@ -390,8 +392,10 @@ export const salesApi = {
   },
 
   // 4.3 Top Customers by Revenue
-  getTopCustomers: async (limit: number = 20) => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/sales/top-customers-by-revenue?limit=${limit}`);
+  getTopCustomers: async (params?: { limit?: number; period?: "daily" | "monthly" | "yearly"; date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams(cleanParams(params) as any).toString();
+    const url = `${BASE_URL}/api/dashboard/sales/top-customers-by-revenue${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
     if (!response.ok) {
       const errorText = await response.text().catch(() => response.statusText);
       throw new Error(`Failed to fetch top customers: ${response.status} ${errorText}`);
@@ -402,36 +406,44 @@ export const salesApi = {
   },
 
   // 4.4 Sales by Product Type
-  getSalesByProductType: async () => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/sales/by-product-type`);
+  getSalesByProductType: async (params?: { period?: "daily" | "monthly" | "yearly"; date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams(cleanParams(params) as any).toString();
+    const url = `${BASE_URL}/api/dashboard/sales/by-product-type${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch sales by product type");
     return response.json();
   },
 
   // 4.5 Shipment Status Tracking
-  getShipmentStatusTracking: async () => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/sales/shipment-status-tracking`);
+  getShipmentStatusTracking: async (params?: { period?: "daily" | "monthly" | "yearly"; date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams(cleanParams(params) as any).toString();
+    const url = `${BASE_URL}/api/dashboard/sales/shipment-status-tracking${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch shipment status tracking");
     return response.json();
   },
 
   // 4.6 Delivery Performance
-  getDeliveryPerformance: async () => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/sales/delivery-performance`);
+  getDeliveryPerformance: async (params?: { period?: "daily" | "monthly" | "yearly"; date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams(cleanParams(params) as any).toString();
+    const url = `${BASE_URL}/api/dashboard/sales/delivery-performance${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch delivery performance");
     return response.json();
   },
 
   // 4.7 Invoice Status Distribution
-  getInvoiceStatusDistribution: async (groupBy: "monthly" | "customer" = "monthly") => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/sales/invoice-status-distribution?group_by=${groupBy}`);
+  getInvoiceStatusDistribution: async (params?: { group_by?: "daily" | "monthly" | "yearly" | "customer"; period?: "daily" | "monthly" | "yearly"; date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams(cleanParams(params) as any).toString();
+    const url = `${BASE_URL}/api/dashboard/sales/invoice-status-distribution${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch invoice status distribution");
     return response.json();
   },
 
   // 4.8 Sales Order Fulfillment
-  getOrderFulfillment: async (params?: { period?: "monthly" | "yearly"; date_from?: string; date_to?: string; product_type?: string; customer?: string }) => {
-    const queryParams = new URLSearchParams(params as any).toString();
+  getOrderFulfillment: async (params?: { period?: "daily" | "monthly" | "yearly"; date_from?: string; date_to?: string; product_type?: string; customer?: string }) => {
+    const queryParams = new URLSearchParams(cleanParams(params) as any).toString();
     const url = `${BASE_URL}/api/dashboard/sales/order-fulfillment${queryParams ? `?${queryParams}` : ""}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch order fulfillment");
@@ -439,8 +451,8 @@ export const salesApi = {
   },
 
   // 4.9 Top Selling Products
-  getTopProducts: async (params?: { limit?: number; product_type?: string; customer?: string; date_from?: string; date_to?: string }) => {
-    const queryParams = new URLSearchParams(params as any).toString();
+  getTopProducts: async (params?: { limit?: number; period?: "daily" | "monthly" | "yearly"; product_type?: string; customer?: string; date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams(cleanParams(params) as any).toString();
     const url = `${BASE_URL}/api/dashboard/sales/top-selling-products${queryParams ? `?${queryParams}` : ""}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch top products");
@@ -448,15 +460,17 @@ export const salesApi = {
   },
 
   // 4.10 Revenue by Currency
-  getRevenueByCurrency: async () => {
-    const response = await fetch(`${BASE_URL}/api/dashboard/sales/revenue-by-currency`);
+  getRevenueByCurrency: async (params?: { period?: "daily" | "monthly" | "yearly"; date_from?: string; date_to?: string }) => {
+    const queryParams = new URLSearchParams(cleanParams(params) as any).toString();
+    const url = `${BASE_URL}/api/dashboard/sales/revenue-by-currency${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch revenue by currency");
     return response.json();
   },
 
   // 4.11 Monthly Sales Comparison
-  getMonthlySalesComparison: async (params?: { date_from?: string; date_to?: string; product_type?: string; customer?: string }) => {
-    const queryParams = new URLSearchParams(params as any).toString();
+  getMonthlySalesComparison: async (params?: { period?: "daily" | "monthly" | "yearly"; date_from?: string; date_to?: string; product_type?: string; customer?: string }) => {
+    const queryParams = new URLSearchParams(cleanParams(params) as any).toString();
     const url = `${BASE_URL}/api/dashboard/sales/monthly-sales-comparison${queryParams ? `?${queryParams}` : ""}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch monthly sales comparison");

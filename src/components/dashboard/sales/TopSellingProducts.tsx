@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { salesApi } from "../../../services/api/dashboardApi";
+import { useSalesFilters } from "../../../context/SalesFilterContext";
 
 interface ProductData {
   rank: number;
@@ -13,6 +14,7 @@ interface ProductData {
 }
 
 const TopSellingProducts: React.FC = () => {
+  const { requestParams } = useSalesFilters();
   const [data, setData] = useState<ProductData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +23,7 @@ const TopSellingProducts: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await salesApi.getTopProducts({ limit: 10 });
+        const result = await salesApi.getTopProducts({ limit: 10, ...requestParams });
         // Handle if API returns wrapped data or direct array
         const dataArray = Array.isArray(result) ? result : result?.data || [];
         setData(dataArray);
@@ -34,7 +36,7 @@ const TopSellingProducts: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [requestParams]);
 
   if (loading) {
     return (

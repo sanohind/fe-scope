@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { salesApi } from "../../../services/api/dashboardApi";
+import { useSalesFilters } from "../../../context/SalesFilterContext";
 
 interface ProductTypeData {
   product_type: string;
@@ -18,6 +19,7 @@ interface SalesByProductData {
 }
 
 const SalesByProductType: React.FC = () => {
+  const { requestParams } = useSalesFilters();
   const [data, setData] = useState<SalesByProductData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +28,7 @@ const SalesByProductType: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await salesApi.getSalesByProductType();
+        const result = await salesApi.getSalesByProductType(requestParams);
         console.log("API Result:", result); // Debug log
         // API returns object directly
         setData(result);
@@ -40,7 +42,7 @@ const SalesByProductType: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [requestParams]);
 
   if (loading) {
     return (

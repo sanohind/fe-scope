@@ -11,3 +11,4 @@ export { default as TopSellingProducts } from "./TopSellingProducts";
 export { default as RevenueByCurrency } from "./RevenueByCurrency";
 export { default as MonthlySalesComparison } from "./MonthlySalesComparison";
 export { default as ShipmentAnalyticsChart } from "./ShipmentAnalyticsChart";
+export { default as SalesFilterHeader } from "./SalesFilterHeader";

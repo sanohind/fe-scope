@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { salesApi } from "../../../services/api/dashboardApi";
 import { DollarLineIcon, BoxIconLine, FileIcon, TimeIcon, PieChartIcon } from "../../../icons";
+import { useSalesFilters } from "../../../context/SalesFilterContext";
 
 interface SalesOverviewData {
   total_sales_amount: string;
@@ -12,6 +13,7 @@ interface SalesOverviewData {
 }
 
 const SalesOverviewKPI: React.FC = () => {
+  const { requestParams } = useSalesFilters();
   const [data, setData] = useState<SalesOverviewData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +22,7 @@ const SalesOverviewKPI: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await salesApi.getSalesOverview("ytd");
+        const result = await salesApi.getSalesOverview(requestParams);
         // Handle if API returns wrapped data { data: {...} } or direct object
         const dataObj = result?.data || result;
         setData(dataObj);
@@ -33,7 +35,7 @@ const SalesOverviewKPI: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [requestParams]);
 
   if (loading) {
     return (

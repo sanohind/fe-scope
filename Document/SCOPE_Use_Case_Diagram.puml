@@ -1,0 +1,225 @@
+@startuml SCOPE_Use_Case_Diagram
+!theme cerulean-outline
+title SCOPE System - Use Case Diagram\nSanoh Comprehensive Operations Platform for Enterprise
+
+' Actors
+actor "SPHERE Portal\n(SSO Provider)" as SPHERE <<External System>>
+actor "Superadmin" as SuperAdmin <<User>>
+actor "Warehouse Employee" as WarehouseEmp <<User>>
+actor "Logistics Employee" as LogisticsEmp <<User>>
+actor "Finance Employee" as FinanceEmp <<User>>
+actor "HR Employee" as HREmp <<User>>
+actor "Planning Employee" as PlanningEmp <<User>>
+
+' System Boundary
+rectangle "SCOPE Dashboard System" {
+    
+    ' ===== AUTHENTICATION =====
+    package "Authentication Module" {
+        usecase "UC-001: Login via SSO" as UC001
+        usecase "UC-002: Validate Token" as UC002
+        usecase "UC-003: Identify User Role" as UC003
+        usecase "UC-004: Logout" as UC004
+    }
+    
+    ' ===== INVENTORY MANAGEMENT =====
+    package "Inventory Management" {
+        usecase "UC-101: View Inventory Dashboard" as UC101
+        usecase "UC-102: Filter & Search Inventory" as UC102
+        usecase "UC-103: Export Inventory Report" as UC103
+    }
+    
+    ' ===== WAREHOUSE OPERATIONS =====
+    package "Warehouse Operations" {
+        usecase "UC-201: View Warehouse Dashboard" as UC201
+        usecase "UC-202: Track Order Movement" as UC202
+        usecase "UC-203: Filter & Search Warehouse" as UC203
+        usecase "UC-204: Export Warehouse Report" as UC204
+    }
+    
+    ' ===== PRODUCTION MANAGEMENT =====
+    package "Production Management" {
+        usecase "UC-301: View Production Dashboard" as UC301
+        usecase "UC-302: Monitor Production Status" as UC302
+        usecase "UC-303: Filter & Search Production" as UC303
+        usecase "UC-304: Export Production Report" as UC304
+    }
+    
+    ' ===== SALES & FINANCE =====
+    package "Sales & Finance" {
+        usecase "UC-401: View Sales Dashboard" as UC401
+        usecase "UC-402: Analyze Sales Data" as UC402
+        usecase "UC-403: Filter & Search Sales" as UC403
+        usecase "UC-404: Export Sales Report" as UC404
+    }
+    
+    ' ===== LOGISTICS =====
+    package "Logistics Management" {
+        usecase "UC-501: View Logistics Dashboard" as UC501
+        usecase "UC-502: Monitor Shipment Status" as UC502
+        usecase "UC-503: Filter & Search Logistics" as UC503
+        usecase "UC-504: Export Logistics Report" as UC504
+    }
+    
+    ' ===== HR MANAGEMENT =====
+    package "HR Management" {
+        usecase "UC-601: View HR Dashboard" as UC601
+        usecase "UC-602: Monitor Employee Data" as UC602
+        usecase "UC-603: Filter & Search HR Data" as UC603
+        usecase "UC-604: Export HR Report" as UC604
+    }
+    
+    ' ===== PLANNING MANAGEMENT =====
+    package "Planning Management" {
+        usecase "UC-701: Access Planning Manage" as UC701
+        usecase "UC-702: Upload Planning Data" as UC702
+        usecase "UC-703: Manage Planning Data" as UC703
+        usecase "UC-704: Export Planning Report" as UC704
+    }
+    
+    ' ===== COMMON FEATURES =====
+    package "Common Features" {
+        usecase "UC-801: View Charts & Visualizations" as UC801
+        usecase "UC-802: Refresh Dashboard" as UC802
+        usecase "UC-803: Change Date Range" as UC803
+        usecase "UC-804: Sort Data" as UC804
+    }
+}
+
+' External Database
+database "Database\n(MySQL/PostgreSQL)" as DB
+
+' ===== RELATIONSHIPS =====
+
+' SPHERE SSO Connection
+SPHERE --> UC001 : Provides SSO Token
+UC001 ..> UC002 : <<include>>
+UC002 ..> UC003 : <<include>>
+
+' Superadmin Access (All Dashboards)
+SuperAdmin --> UC001
+SuperAdmin --> UC004
+SuperAdmin --> UC101
+SuperAdmin --> UC201
+SuperAdmin --> UC301
+SuperAdmin --> UC401
+SuperAdmin --> UC501
+SuperAdmin --> UC601
+SuperAdmin --> UC701
+
+' Warehouse Employee Access
+WarehouseEmp --> UC001
+WarehouseEmp --> UC004
+WarehouseEmp --> UC101
+WarehouseEmp --> UC201
+
+' Logistics Employee Access
+LogisticsEmp --> UC001
+LogisticsEmp --> UC004
+LogisticsEmp --> UC501
+
+' Finance Employee Access
+FinanceEmp --> UC001
+FinanceEmp --> UC004
+FinanceEmp --> UC401
+
+' HR Employee Access
+HREmp --> UC001
+HREmp --> UC004
+HREmp --> UC601
+
+' Planning Employee Access
+PlanningEmp --> UC001
+PlanningEmp --> UC004
+PlanningEmp --> UC701
+
+' Inventory Module Includes
+UC101 ..> UC102 : <<include>>
+UC101 ..> UC801 : <<include>>
+UC101 ..> UC103 : <<extend>>
+
+' Warehouse Module Includes
+UC201 ..> UC202 : <<include>>
+UC201 ..> UC203 : <<include>>
+UC201 ..> UC801 : <<include>>
+UC201 ..> UC204 : <<extend>>
+
+' Production Module Includes
+UC301 ..> UC302 : <<include>>
+UC301 ..> UC303 : <<include>>
+UC301 ..> UC801 : <<include>>
+UC301 ..> UC304 : <<extend>>
+
+' Sales Module Includes
+UC401 ..> UC402 : <<include>>
+UC401 ..> UC403 : <<include>>
+UC401 ..> UC801 : <<include>>
+UC401 ..> UC404 : <<extend>>
+
+' Logistics Module Includes
+UC501 ..> UC502 : <<include>>
+UC501 ..> UC503 : <<include>>
+UC501 ..> UC801 : <<include>>
+UC501 ..> UC504 : <<extend>>
+
+' HR Module Includes
+UC601 ..> UC602 : <<include>>
+UC601 ..> UC603 : <<include>>
+UC601 ..> UC801 : <<include>>
+UC601 ..> UC604 : <<extend>>
+
+' Planning Module Includes
+UC701 ..> UC702 : <<extend>>
+UC701 ..> UC703 : <<extend>>
+UC701 ..> UC704 : <<extend>>
+
+' Common Features Usage
+UC801 ..> UC802 : <<extend>>
+UC801 ..> UC803 : <<extend>>
+UC102 ..> UC804 : <<include>>
+UC203 ..> UC804 : <<include>>
+UC303 ..> UC804 : <<include>>
+UC403 ..> UC804 : <<include>>
+UC503 ..> UC804 : <<include>>
+UC603 ..> UC804 : <<include>>
+
+' Database Connection
+UC101 --> DB : Query Stock Data
+UC201 --> DB : Query Warehouse Data
+UC301 --> DB : Query Production Data
+UC401 --> DB : Query Sales Data
+UC501 --> DB : Query Logistics Data
+UC601 --> DB : Query HR Data
+UC701 --> DB : Query Planning Data
+
+' Notes
+note right of SPHERE
+  SPHERE Portal mengirimkan
+  SSO token untuk autentikasi
+  user ke sistem SCOPE
+end note
+
+note right of SuperAdmin
+  Superadmin memiliki akses
+  penuh ke semua dashboard
+  dan fitur dalam sistem
+end note
+
+note bottom of DB
+  Database menyimpan semua data:
+  - stockbywh
+  - view_warehouse_order
+  - view_prod_header
+  - so_invoice_line
+  - HR data
+  - Logistics data
+end note
+
+note left of UC701
+  Planning Employee hanya
+  dapat mengakses halaman
+  Planning Manage untuk
+  upload dan manage data
+end note
+
+@enduml

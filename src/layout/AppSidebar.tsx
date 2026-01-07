@@ -49,7 +49,7 @@ const navItems: NavItem[] = [
       { name: "Chassis", path: "/production/ch" },
       { name: "Nylon", path: "/production/nl" },
       { name: "Passthrough", path: "/production/ps" },
-      { name: "Subcount", path: "/production/sc" },
+      { name: "Subcontractor", path: "/production/sc" },
     ],
   },
   {

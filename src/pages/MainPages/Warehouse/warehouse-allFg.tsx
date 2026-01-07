@@ -5,7 +5,6 @@ import DeliveryPerformance from "../../../components/dashboard/warehouse/Extend/
 import OrderStatusDistribution from "../../../components/dashboard/warehouse/Extend/OrderStatusDistribution";
 import TopItemsMoved from "../../../components/dashboard/warehouse/Extend/TopItemsMoved";
 import DailyStockTrend from "../../../components/dashboard/warehouse/Extend/DailyStockTrend";
-import InventoryStockMovementTrend from "../../../components/dashboard/inventory/InventoryStockMovementTrend";
 import WarehouseFilterHeader from "../../../components/dashboard/warehouse/WarehouseFilterHeader";
 import { WarehouseFilterProvider, useWarehouseFilters } from "../../../context/WarehouseFilterContext";
 
@@ -23,8 +22,7 @@ export default function WarehouseAllFg() {
 }
 
 const WarehouseAllFgContent = () => {
-  const { requestParams, dateRange, rangeDescription, modeLabel, mode } = useWarehouseFilters();
-  const { from, to } = dateRange;
+  const { requestParams, rangeDescription, modeLabel, mode } = useWarehouseFilters();
 
   return (
     <div className="space-y-6">
@@ -56,20 +54,6 @@ const WarehouseAllFgContent = () => {
         <h1 className="mb-4 text-2xl font-semibold text-black dark:text-white">Balance WHFG02</h1>
         <LazyLoad height="360px">
           <DailyStockTrend warehouse="WHFG02" filters={requestParams} period={mode} rangeLabel={rangeDescription} modeLabel={modeLabel} />
-        </LazyLoad>
-      </div>
-
-      <div>
-        <h1 className="mb-4 text-2xl font-semibold text-black dark:text-white">Movement WHFG01</h1>
-        <LazyLoad height="450px">
-          <InventoryStockMovementTrend warehouse="WHFG01" filters={requestParams} dateFrom={from} dateTo={to} />
-        </LazyLoad>
-      </div>
-
-      <div>
-        <h1 className="mb-4 text-2xl font-semibold text-black dark:text-white">Movement WHFG02</h1>
-        <LazyLoad height="450px">
-          <InventoryStockMovementTrend warehouse="WHFG02" filters={requestParams} dateFrom={from} dateTo={to} />
         </LazyLoad>
       </div>
     </div>

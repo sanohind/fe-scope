@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { salesApi } from "../../../services/api/dashboardApi";
+import { useSalesFilters } from "../../../context/SalesFilterContext";
 
 interface FulfillmentData {
   period: string;
-  delivered_qty: number;
-  total_po: number;
+  delivered_qty: string | number;
+  invoice_qty: string | number;
 }
 
 interface FulfillmentResponse {
@@ -20,51 +21,17 @@ interface FulfillmentResponse {
 }
 
 const OrderFulfillment: React.FC = () => {
+  const { requestParams } = useSalesFilters();
   const [data, setData] = useState<FulfillmentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [metadata, setMetadata] = useState<FulfillmentResponse["filter_metadata"] | null>(null);
-  const [availableYears, setAvailableYears] = useState<number[]>([]);
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
-  // Fetch available years once on mount
-  useEffect(() => {
-    const fetchAvailableYears = async () => {
-      try {
-        // Fetch all data without year filter to get available years
-        const result = await salesApi.getOrderFulfillment();
-        if (result.data && result.data.length > 0) {
-          const years = result.data
-            .map((item: FulfillmentData) => {
-              const year = parseInt(item.period.split("-")[0]);
-              return isNaN(year) ? null : year;
-            })
-            .filter((year: number | null): year is number => year !== null);
-
-          const uniqueYears = Array.from(new Set<number>(years)).sort((a, b) => b - a);
-          setAvailableYears(uniqueYears);
-        }
-      } catch (err) {
-        console.error("Failed to fetch available years:", err);
-      }
-    };
-
-    fetchAvailableYears();
-  }, []);
-
-  // Fetch filtered data based on selected year
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
-        // Build API parameters based on selected year
-        const params: { period?: "monthly" | "yearly"; date_from?: string; date_to?: string } = {
-          date_from: `${selectedYear}-01-01`,
-          date_to: `${selectedYear}-12-31`,
-        };
-
-        const result = await salesApi.getOrderFulfillment(params);
+        const result = await salesApi.getOrderFulfillment(requestParams);
         // API returns { data: [...], filter_metadata: {...} }
         setData(result.data || []);
         setMetadata(result.filter_metadata || null);
@@ -77,7 +44,7 @@ const OrderFulfillment: React.FC = () => {
     };
 
     fetchData();
-  }, [selectedYear]);
+  }, [requestParams]);
 
   if (loading) {
     return (
@@ -101,9 +68,16 @@ const OrderFulfillment: React.FC = () => {
     );
   }
 
+  // Parse string values to numbers
   const categories = data.map((item) => item.period);
-  const deliveredData = data.map((item) => item.delivered_qty);
-  const totalPoData = data.map((item) => item.total_po);
+  const deliveredData = data.map((item) => {
+    const value = typeof item.delivered_qty === 'string' ? parseFloat(item.delivered_qty) : item.delivered_qty;
+    return value || 0;
+  });
+  const invoiceData = data.map((item) => {
+    const value = typeof item.invoice_qty === 'string' ? parseFloat(item.invoice_qty) : item.invoice_qty;
+    return value || 0;
+  });
 
   const options: ApexOptions = {
     chart: {
@@ -163,40 +137,18 @@ const OrderFulfillment: React.FC = () => {
       data: deliveredData,
     },
     {
-      name: "Total PO",
-      data: totalPoData,
+      name: "Invoice Qty",
+      data: invoiceData,
     },
   ];
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Sales Order Fulfillment</h3>
-
-          {/* Year Filter Dropdown */}
-          <div className="flex items-center gap-2">
-            <label htmlFor="year-filter" className="text-sm text-gray-600 dark:text-gray-400">
-              Year:
-            </label>
-            <select
-              id="year-filter"
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-            >
-              {availableYears.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Sales Order Fulfillment</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Delivered Quantity vs Total PO by Period
-          {metadata && ` (${metadata.period === "monthly" ? "Monthly" : "Yearly"} View)`}
+          Delivered Quantity vs Invoice Quantity by Period
+          {metadata && ` (${metadata.period.charAt(0).toUpperCase() + metadata.period.slice(1)} View)`}
         </p>
       </div>
 

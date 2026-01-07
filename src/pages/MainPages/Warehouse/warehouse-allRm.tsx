@@ -6,7 +6,6 @@ import OrderStatusDistribution from "../../../components/dashboard/warehouse/Ext
 import TopItemsMoved from "../../../components/dashboard/warehouse/Extend/TopItemsMoved";
 import DailyStockTrend from "../../../components/dashboard/warehouse/Extend/DailyStockTrend";
 import PlanReceiptChart from "../../../components/dashboard/warehouse/Extend/PlanReceiptChart";
-import InventoryStockMovementTrend from "../../../components/dashboard/inventory/InventoryStockMovementTrend";
 import WarehouseFilterHeader from "../../../components/dashboard/warehouse/WarehouseFilterHeader";
 import { WarehouseFilterProvider, useWarehouseFilters } from "../../../context/WarehouseFilterContext";
 
@@ -71,20 +70,6 @@ const WarehouseAllRmContent = () => {
         <h1 className="mb-4 text-2xl font-semibold text-black dark:text-white">Plan Receipt WHRM02</h1>
         <LazyLoad height="480px">
           <PlanReceiptChart warehouse="WHRM02" dateFrom={from} dateTo={to} />
-        </LazyLoad>
-      </div>
-
-      <div>
-        <h1 className="mb-4 text-2xl font-semibold text-black dark:text-white">Movement WHRM01</h1>
-        <LazyLoad height="450px">
-          <InventoryStockMovementTrend warehouse="WHRM01" filters={requestParams} dateFrom={from} dateTo={to} />
-        </LazyLoad>
-      </div>
-
-      <div>
-        <h1 className="mb-4 text-2xl font-semibold text-black dark:text-white">Movement WHRM02</h1>
-        <LazyLoad height="450px">
-          <InventoryStockMovementTrend warehouse="WHRM02" filters={requestParams} dateFrom={from} dateTo={to} />
         </LazyLoad>
       </div>
     </div>

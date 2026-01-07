@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { salesApi } from "../../../services/api/dashboardApi";
+import { useSalesFilters } from "../../../context/SalesFilterContext";
 
 interface CustomerData {
   bp_name: string;
@@ -14,6 +15,7 @@ interface CustomerData {
 }
 
 const TopCustomersByRevenue: React.FC = () => {
+  const { requestParams } = useSalesFilters();
   const [data, setData] = useState<CustomerData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +24,7 @@ const TopCustomersByRevenue: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await salesApi.getTopCustomers(20);
+        const result = await salesApi.getTopCustomers({ limit: 20, ...requestParams });
         // Handle if API returns wrapped data or direct array
         const dataArray = Array.isArray(result) ? result : result?.data || [];
         setData(dataArray);
@@ -35,7 +37,7 @@ const TopCustomersByRevenue: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [requestParams]);
 
   if (loading) {
     return (

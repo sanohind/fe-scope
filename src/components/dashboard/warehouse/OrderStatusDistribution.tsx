@@ -4,9 +4,9 @@ import { ApexOptions } from "apexcharts";
 import { warehouseApi } from "../../../services/api/dashboardApi";
 
 interface StatusItem {
-  trx_type: string;
-  line_status: string | null;
-  count: number;
+  order_origin: string;
+  status_desc: string;
+  count: string | number;
   percentage: number;
 }
 
@@ -50,7 +50,28 @@ const OrderStatusDistribution: React.FC = () => {
         });
         // Handle if API returns wrapped data { data: {...} } or direct object
         const dataObj = result?.data || result;
-        setData(dataObj);
+        
+        // Validate and normalize data structure
+        if (!dataObj || typeof dataObj !== 'object') {
+          throw new Error("Invalid data format received from API");
+        }
+        
+        // Ensure all values are arrays
+        const normalizedData: OrderStatusData = {};
+        Object.keys(dataObj).forEach((key) => {
+          const value = dataObj[key];
+          if (Array.isArray(value)) {
+            normalizedData[key] = value;
+          } else if (value && typeof value === 'object') {
+            // If it's an object but not an array, try to convert it
+            normalizedData[key] = [];
+          } else {
+            // Skip invalid entries
+            console.warn(`Skipping invalid data for key "${key}":`, value);
+          }
+        });
+        
+        setData(normalizedData);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data");
@@ -87,9 +108,14 @@ const OrderStatusDistribution: React.FC = () => {
   // Extract all unique statuses from data
   const allStatuses = new Set<string>();
   Object.values(data).forEach((items) => {
-    items.forEach((item) => {
-      allStatuses.add(item.line_status || "Unknown");
-    });
+    // Safety check: ensure items is an array
+    if (Array.isArray(items)) {
+      items.forEach((item) => {
+        if (item && typeof item === 'object') {
+          allStatuses.add(item.status_desc || "Unknown");
+        }
+      });
+    }
   });
 
   const statuses = Array.from(allStatuses);
@@ -102,6 +128,7 @@ const OrderStatusDistribution: React.FC = () => {
     Staged: "#6172F3",
     Adviced: "#8098F9",
     Released: "#36BFFA",
+    "Put Away": "#9B51E0",
     Unknown: "#98A2B3",
   };
 
@@ -112,7 +139,9 @@ const OrderStatusDistribution: React.FC = () => {
     return {
       name: status,
       data: trxTypes.map((trxType) => {
-        const item = data[trxType].find((d) => (d.line_status || "Unknown") === status);
+        const items = data[trxType];
+        if (!Array.isArray(items)) return 0;
+        const item = items.find((d) => (d.status_desc || "Unknown") === status);
         return item ? item.percentage : 0;
       }),
     };
@@ -190,6 +219,10 @@ const OrderStatusDistribution: React.FC = () => {
         const trxType = trxTypes[dataPointIndex];
         const statusItems = data[trxType];
 
+        if (!Array.isArray(statusItems) || statusItems.length === 0) {
+          return '<div style="padding: 12px;">No data available</div>';
+        }
+
         let tooltipContent = `
           <div style="padding: 12px; font-family: Outfit, sans-serif;">
             <div class="text-gray-800 dark:text-gray-200">
@@ -198,10 +231,10 @@ const OrderStatusDistribution: React.FC = () => {
         `;
 
         // Sort by percentage descending
-        const sortedItems = [...statusItems].sort((a, b) => b.percentage - a.percentage);
+        const sortedItems = [...statusItems].sort((a, b) => (b?.percentage || 0) - (a?.percentage || 0));
 
         sortedItems.forEach((item) => {
-          const statusName = item.line_status || "Unknown";
+          const statusName = item.status_desc || "Unknown";
           const statusIndex = statuses.indexOf(statusName);
           const color = colors[statusIndex] || "#D0D5DD";
 
@@ -217,7 +250,7 @@ const OrderStatusDistribution: React.FC = () => {
         });
 
         // Calculate total
-        const totalCount = statusItems.reduce((sum, item) => sum + item.count, 0);
+        const totalCount = statusItems.reduce((sum, item) => sum + (typeof item.count === 'string' ? parseInt(item.count) : item.count), 0);
 
         tooltipContent += `
             <div class="border-t border-gray-200 dark:border-gray-800">

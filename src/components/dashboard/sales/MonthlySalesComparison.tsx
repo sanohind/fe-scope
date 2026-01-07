@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { salesApi } from "../../../services/api/dashboardApi";
+import { useSalesFilters } from "../../../context/SalesFilterContext";
 
 interface SalesData {
   period: string;
@@ -11,31 +12,16 @@ interface SalesData {
 }
 
 const MonthlySalesComparison: React.FC = () => {
+  const { requestParams } = useSalesFilters();
   const [data, setData] = useState<SalesData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
-  // Generate available years (current year and 5 years back)
-  const currentYear = new Date().getFullYear();
-  const availableYears = Array.from({ length: 6 }, (_, i) => currentYear - i);
-
-  // Fetch data based on selected year
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
-        // Build date range for selected year
-        const dateFrom = `${selectedYear}-01-01`;
-        const dateToDate = new Date(selectedYear, 11, 31);
-        const dateTo = dateToDate.toISOString().split("T")[0];
-
-        const result = await salesApi.getMonthlySalesComparison({
-          date_from: dateFrom,
-          date_to: dateTo,
-        });
-
+        const result = await salesApi.getMonthlySalesComparison(requestParams);
         // Handle both wrapped and direct response
         const dataArray = result?.data || result || [];
         setData(dataArray);
@@ -48,7 +34,7 @@ const MonthlySalesComparison: React.FC = () => {
     };
 
     fetchData();
-  }, [selectedYear]);
+  }, [requestParams]);
 
   if (loading) {
     return (
@@ -213,18 +199,6 @@ const MonthlySalesComparison: React.FC = () => {
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Year-over-year monthly revenue comparison</p>
         </div>
         <div className="flex gap-4 flex-wrap items-end">
-          {/* Year Selector */}
-          <div>
-            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-2">Select Year</label>
-            <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-              {availableYears.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Summary Stats */}
           <div className="text-right">
             <p className="text-xs text-gray-500 dark:text-gray-400">Avg Revenue</p>

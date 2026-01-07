@@ -19,7 +19,7 @@ const InvoiceStatusDistribution: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await salesApi.getInvoiceStatusDistribution(groupBy);
+        const result = await salesApi.getInvoiceStatusDistribution({ group_by: groupBy });
         // Handle if API returns wrapped data or direct array
         const dataArray = Array.isArray(result) ? result : (result?.data || []);
         setData(dataArray);

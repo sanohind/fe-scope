@@ -5,7 +5,6 @@ import DeliveryPerformance from "../../../components/dashboard/warehouse/Extend/
 import OrderStatusDistribution from "../../../components/dashboard/warehouse/Extend/OrderStatusDistribution";
 import TopItemsMoved from "../../../components/dashboard/warehouse/Extend/TopItemsMoved";
 import DailyStockTrend from "../../../components/dashboard/warehouse/Extend/DailyStockTrend";
-import InventoryStockMovementTrend from "../../../components/dashboard/inventory/InventoryStockMovementTrend";
 import InventoryStockAndActivityByProductType from "../../../components/dashboard/inventory/InventoryStockAndActivityByProductType";
 import WarehouseFilterHeader from "../../../components/dashboard/warehouse/WarehouseFilterHeader";
 import { WarehouseFilterProvider, useWarehouseFilters } from "../../../context/WarehouseFilterContext";
@@ -49,12 +48,6 @@ const WarehouseWhfg02Content = () => {
       <LazyLoad height="360px">
         <DailyStockTrend warehouse={WAREHOUSE} filters={requestParams} period={mode} rangeLabel={rangeDescription} modeLabel={modeLabel} />
       </LazyLoad>
-
-      <div>
-        <LazyLoad height="450px">
-          <InventoryStockMovementTrend warehouse={WAREHOUSE} filters={requestParams} dateFrom={from} dateTo={to} period={mode} />
-        </LazyLoad>
-      </div>
 
       <LazyLoad height="450px">
         <InventoryStockAndActivityByProductType warehouse={WAREHOUSE} filters={requestParams} dateFrom={from} dateTo={to} />
