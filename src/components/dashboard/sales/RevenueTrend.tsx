@@ -12,13 +12,13 @@ const RevenueTrend: React.FC = () => {
   const [data, setData] = useState<RevenueTrendData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [groupBy, setGroupBy] = useState<"daily" | "weekly" | "monthly">("monthly");
+  const [groupBy, setGroupBy] = useState<"daily" | "monthly" | "yearly">("monthly");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await salesApi.getRevenueTrend({ group_by: groupBy });
+        const result = await salesApi.getRevenueTrend({ period: groupBy });
         // Handle if API returns wrapped data or direct array
         const dataArray = Array.isArray(result) ? result : result?.data || [];
         setData(dataArray);
@@ -93,7 +93,7 @@ const RevenueTrend: React.FC = () => {
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Revenue Trend</h3>
 
         <div className="flex gap-2">
-          {(["daily", "weekly", "monthly"] as const).map((period) => (
+          {(["daily", "monthly", "yearly"] as const).map((period) => (
             <button
               key={period}
               onClick={() => setGroupBy(period)}
