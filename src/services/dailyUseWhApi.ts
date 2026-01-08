@@ -85,6 +85,10 @@ export const dailyUseWhApi = {
 
   // Update record by ID
   update: async (id: number, data: Partial<DailyUseWhData>): Promise<DailyUseWhResponse> => {
+    console.log("📤 API UPDATE REQUEST:");
+    console.log("ID:", id);
+    console.log("Payload:", JSON.stringify(data, null, 2));
+    
     const response = await fetch(`${API_BASE}/${id}`, {
       method: "PUT",
       headers: {
@@ -92,8 +96,14 @@ export const dailyUseWhApi = {
       },
       body: JSON.stringify(data),
     });
+    
     if (!response.ok) throw new Error("Failed to update record");
-    return response.json();
+    const result = await response.json();
+    
+    console.log("📥 API UPDATE RESPONSE:");
+    console.log("Response:", JSON.stringify(result, null, 2));
+    
+    return result;
   },
 
   // Delete record by ID

@@ -35,7 +35,8 @@ interface InventoryLevelStockProps {
 const NUMBER_FORMATTER = new Intl.NumberFormat("id-ID");
 
 // Fungsi untuk menentukan status berdasarkan Estimated Consumption
-const getStatus = (estimatedConsumption: number): "critical" | "low" | "normal" | "overstock" => {
+const getStatus = (estimatedConsumption: number, dailyUse: number): "critical" | "low" | "normal" | "overstock" | "undefined" => {
+  if (dailyUse === 0 && estimatedConsumption === 0) return "undefined";
   if (estimatedConsumption <= 0) return "critical";
   if (estimatedConsumption <= 3) return "low";
   if (estimatedConsumption <= 9) return "normal";
@@ -45,6 +46,12 @@ const getStatus = (estimatedConsumption: number): "critical" | "low" | "normal" 
 // Fungsi untuk mendapatkan styling berdasarkan status
 const getStatusStyle = (status: string) => {
   switch (status) {
+    case "undefined":
+      return {
+        bg: "bg-gray-50 dark:bg-gray-800",
+        text: "text-gray-700 dark:text-gray-400",
+        label: "Undefined",
+      };
     case "critical":
       return {
         bg: "bg-red-50 dark:bg-red-900/20",
@@ -69,6 +76,7 @@ const getStatusStyle = (status: string) => {
         text: "text-blue-700 dark:text-blue-400",
         label: "Overstock",
       };
+
     default:
       return {
         bg: "bg-gray-50 dark:bg-gray-800",
@@ -231,7 +239,7 @@ const InventoryLevelStock: React.FC<InventoryLevelStockProps> = ({ warehouse, fi
                 </tr>
               ) : (
                 rows.map((row) => {
-                  const status = getStatus(row.estimatedConsumption);
+                  const status = getStatus(row.estimatedConsumption, row.daily_use);
                   const statusStyle = getStatusStyle(status);
 
                   return (
