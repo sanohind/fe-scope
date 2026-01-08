@@ -18,13 +18,38 @@ const ProductionPlanEditForm: React.FC<ProductionPlanEditFormProps> = ({ data, i
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
 
+  // Helper function to convert date to YYYY-MM-DD format without timezone issues
+  // Handles both ISO strings (UTC) and simple date strings
+  const formatDateForInput = (dateString: string): string => {
+    if (!dateString) return "";
+
+    // If it's already a simple date (YYYY-MM-DD)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      return dateString;
+    }
+
+    // Parse the date string (handles ISO UTC strings by converting to local browser time)
+    const date = new Date(dateString);
+
+    // Check if valid date
+    if (isNaN(date.getTime())) return "";
+
+    // Get the year, month, and day in LOCAL timezone
+    // This is crucial: 2026-01-08T17:00:00Z (prev day) -> 2026-01-09 00:00:00 (local)
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  };
+
   // Initialize form with data
   useEffect(() => {
     if (data) {
       setFormData({
         partno: data.partno,
         qty_plan: data.qty_plan,
-        plan_date: data.plan_date,
+        plan_date: formatDateForInput(data.plan_date),
       });
     } else {
       setFormData({

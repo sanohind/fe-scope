@@ -11,8 +11,8 @@ interface DailyUseWhEditFormProps {
 }
 
 const DailyUseWhEditForm: React.FC<DailyUseWhEditFormProps> = ({ data, isOpen, onClose, onSuccess }) => {
-  console.log("🚀 DailyUseWhEditForm LOADED - NEW VERSION WITH DATE FIX");
-  
+
+
   const [formData, setFormData] = useState<Partial<DailyUseWhData>>({
     partno: "",
     daily_use: 0,
@@ -20,51 +20,47 @@ const DailyUseWhEditForm: React.FC<DailyUseWhEditFormProps> = ({ data, isOpen, o
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  
-  // Store original plan_date to preserve it when user doesn't change the date
-  const [originalPlanDate, setOriginalPlanDate] = useState<string>("");
-  const [displayPlanDate, setDisplayPlanDate] = useState<string>("");
-  const [dateWasChanged, setDateWasChanged] = useState<boolean>(false); // Track if user changed date
+
+
 
   // Helper function to convert date to YYYY-MM-DD format without timezone issues
+  // Handles both ISO strings (UTC) and simple date strings
   const formatDateForInput = (dateString: string): string => {
     if (!dateString) return "";
-    
-    // Parse the date string and create a Date object
+
+    // If it's already a simple date (YYYY-MM-DD)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      return dateString;
+    }
+
+    // Parse the date string (handles ISO UTC strings by converting to local browser time)
     const date = new Date(dateString);
-    
-    // Get the year, month, and day in local timezone
+
+    // Check if valid date
+    if (isNaN(date.getTime())) return "";
+
+    // Get the year, month, and day in LOCAL timezone
+    // This is crucial: 2026-01-08T17:00:00Z (prev day) -> 2026-01-09 00:00:00 (local)
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    
+
     return `${year}-${month}-${day}`;
   };
 
   // Initialize form with data
   useEffect(() => {
-    console.log("📝 useEffect triggered - isOpen:", isOpen, "data:", data);
-    
+
+
     if (data) {
       const formattedDate = formatDateForInput(data.plan_date);
-      setOriginalPlanDate(data.plan_date); // Store original date from API
-      setDisplayPlanDate(formattedDate); // Store formatted date for comparison
-      setDateWasChanged(false); // Reset flag
-      
-      console.log("✅ Form initialized with data:");
-      console.log("  - Original plan_date:", data.plan_date);
-      console.log("  - Formatted plan_date:", formattedDate);
-      console.log("  - dateWasChanged reset to:", false);
-      
+
       setFormData({
         partno: data.partno,
         daily_use: data.daily_use,
         plan_date: formattedDate,
       });
     } else {
-      setOriginalPlanDate("");
-      setDisplayPlanDate("");
-      setDateWasChanged(false);
       setFormData({
         partno: "",
         daily_use: 0,
@@ -76,15 +72,7 @@ const DailyUseWhEditForm: React.FC<DailyUseWhEditFormProps> = ({ data, isOpen, o
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
-    console.log("🔄 handleChange called - field:", name, "value:", value);
-    
-    // Track if user interacted with the date field
-    if (name === "plan_date") {
-      setDateWasChanged(true);
-      console.log("📅 Date field changed! Setting dateWasChanged to TRUE");
-    }
-    
+
     setFormData((prev: Partial<DailyUseWhData>) => ({
       ...prev,
       [name]: name === "daily_use" ? (value ? parseInt(value) : 0) : value,
@@ -118,30 +106,12 @@ const DailyUseWhEditForm: React.FC<DailyUseWhEditFormProps> = ({ data, isOpen, o
       const dataToSend: Partial<DailyUseWhData> = {
         partno: formData.partno,
         daily_use: formData.daily_use,
+        plan_date: formData.plan_date,
       };
 
-      // Only include plan_date if user explicitly changed it
-      // Compare current value with the original display value
-      const currentDateValue = formData.plan_date || "";
-      const dateHasChanged = currentDateValue !== displayPlanDate;
-      
-      console.log("🔍 DEBUG INFO:");
-      console.log("Original Plan Date (from API):", originalPlanDate);
-      console.log("Display Plan Date (formatted):", displayPlanDate);
-      console.log("Current Form Plan Date:", formData.plan_date);
-      console.log("Date Was Changed by User (flag)?", dateWasChanged);
-      console.log("Date Has Changed (comparison)?", dateHasChanged);
-      console.log("Comparison:", `"${currentDateValue}" !== "${displayPlanDate}"`);
-      
-      if (dateHasChanged) {
-        dataToSend.plan_date = formData.plan_date;
-        console.log("✅ Including plan_date in payload:", formData.plan_date);
-      } else {
-        console.log("⛔ NOT including plan_date in payload (unchanged)");
-      }
-      
-      console.log("Plan Date to Send:", dataToSend.plan_date || "NOT SENT");
-      console.log("Data to Send:", dataToSend);
+      // console.log("Data to Send:", dataToSend);
+
+
 
       let response;
       if (data?.id) {
