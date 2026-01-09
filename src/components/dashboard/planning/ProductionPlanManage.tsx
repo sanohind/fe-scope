@@ -77,7 +77,7 @@ const ProductionPlanManage: React.FC = () => {
             <Download size={16} />
             Download Template
           </button>
-          <Link to="/daily-use-manage">
+          <Link to="/production-plan-manage">
             <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
               <SlidersVertical size={16} /> Manage Data
             </Button>

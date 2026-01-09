@@ -98,6 +98,7 @@ const ProductionPlanManageTable: React.FC = () => {
     setEditingData(row);
     setEditFormData({
       partno: row.partno,
+      divisi: row.divisi,
       qty_plan: row.qty_plan,
       plan_date: row.plan_date,
     });
@@ -318,6 +319,7 @@ const ProductionPlanManageTable: React.FC = () => {
                     />
                   </th>
                   <th className="px-4 py-3">Part Number</th>
+                  <th className="px-4 py-3">Division</th>
                   <th className="px-4 py-3 text-right">Production Qty</th>
                   <th className="px-4 py-3">Plan Date</th>
                   <th className="px-4 py-3">Created At</th>
@@ -328,7 +330,7 @@ const ProductionPlanManageTable: React.FC = () => {
               <tbody className="divide-y divide-gray-100 bg-white text-sm dark:divide-gray-800 dark:bg-gray-950/40">
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={8} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
                       No data available
                     </td>
                   </tr>
@@ -344,6 +346,7 @@ const ProductionPlanManageTable: React.FC = () => {
                         />
                       </td>
                       <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{row.partno || "-"}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{row.divisi || "-"}</td>
                       <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(row.qty_plan)}</td>
                       <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{formatDate(row.plan_date)}</td>
                       <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{row.created_at ? formatDate(row.created_at) : "-"}</td>
@@ -413,6 +416,10 @@ const ProductionPlanManageTable: React.FC = () => {
                 <div className="lg:col-span-2">
                   <Label>Part Number</Label>
                   <Input type="text" name="partno" value={editFormData.partno || ""} onChange={(e) => setEditFormData({ ...editFormData, partno: e.target.value })} required />
+                </div>
+                <div>
+                  <Label>Division</Label>
+                  <Input type="text" name="divisi" value={editFormData.divisi || ""} onChange={(e) => setEditFormData({ ...editFormData, divisi: e.target.value })} required />
                 </div>
                 <div>
                   <Label>Production Qty</Label>
