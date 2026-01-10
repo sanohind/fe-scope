@@ -24,43 +24,9 @@ const LogisticsPerformance: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(currentDate.getFullYear());
   const [selectedPeriod, setSelectedPeriod] = useState<number>(currentDate.getMonth() + 1);
-  const [availableYears, setAvailableYears] = useState<number[]>([]);
-
-  // Fetch available years on component mount
-  useEffect(() => {
-    const fetchAvailableYears = async () => {
-      try {
-        const result = await SupplyChainApi.getLogisticsDeliveryPerformance({});
-
-        let responseData: DeliveryPerformanceData[] = [];
-
-        if (result && typeof result === "object" && "data" in result) {
-          const apiResponse = result as ApiResponse;
-          if (Array.isArray(apiResponse.data)) {
-            responseData = apiResponse.data;
-          }
-        }
-
-        if (responseData.length > 0) {
-          // Extract unique years and sort them in descending order
-          const years = Array.from(new Set(responseData.map((item) => parseInt(item.year)))).sort((a, b) => b - a);
-          setAvailableYears(years);
-
-          // If current year exists in available years, keep it selected
-          // Otherwise, don't change the selected year (it will remain as current year)
-          const currentYear = currentDate.getFullYear();
-          if (!years.includes(currentYear) && years.length > 0) {
-            // Only update if current year is not available in the data
-            // Keep the current year as selected to trigger the fetch
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching available years:", err);
-      }
-    };
-
-    fetchAvailableYears();
-  }, []);
+  
+  // Hardcoded available years from 2021 to 2028
+  const availableYears = [2028, 2027, 2026, 2025, 2024, 2023, 2022, 2021];
 
   // Fetch data based on selected year and period
   useEffect(() => {

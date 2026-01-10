@@ -105,154 +105,170 @@ const OrderStatusDistribution: React.FC = () => {
     );
   }
 
-  // Extract all unique statuses from data
-  const allStatuses = new Set<string>();
-  Object.values(data).forEach((items) => {
-    // Safety check: ensure items is an array
-    if (Array.isArray(items)) {
-      items.forEach((item) => {
-        if (item && typeof item === 'object') {
-          allStatuses.add(item.status_desc || "Unknown");
-        }
-      });
-    }
-  });
+  // Extract all unique statuses from data with error handling
+  let statuses: string[] = [];
+  let trxTypes: string[] = [];
+  let seriesData: any[] = [];
+  let options: ApexOptions = {};
+  let renderError: string | null = null;
+  let colors: string[] = [];
 
-  const statuses = Array.from(allStatuses);
-  const trxTypes = Object.keys(data);
+  try {
+    const allStatuses = new Set<string>();
+    Object.values(data).forEach((items) => {
+      // Safety check: ensure items is an array
+      if (Array.isArray(items)) {
+        items.forEach((item) => {
+          if (item && typeof item === 'object') {
+            allStatuses.add(item.status_desc || "Unknown");
+          }
+        });
+      }
+    });
 
-  // Define color mapping for common statuses
-  const statusColors: { [key: string]: string } = {
-    Shipped: "#12B76A",
-    Open: "#FDB022",
-    Staged: "#6172F3",
-    Adviced: "#8098F9",
-    Released: "#36BFFA",
-    "Put Away": "#9B51E0",
-    Unknown: "#98A2B3",
-  };
+    statuses = Array.from(allStatuses);
+    trxTypes = Object.keys(data);
 
-  // Generate colors for all statuses
-  const colors = statuses.map((status) => statusColors[status] || "#D0D5DD");
-
-  const seriesData = statuses.map((status) => {
-    return {
-      name: status,
-      data: trxTypes.map((trxType) => {
-        const items = data[trxType];
-        if (!Array.isArray(items)) return 0;
-        const item = items.find((d) => (d.status_desc || "Unknown") === status);
-        return item ? item.percentage : 0;
-      }),
+    // Define color mapping for common statuses
+    const statusColors: { [key: string]: string } = {
+      Shipped: "#12B76A",
+      Open: "#FDB022",
+      Staged: "#6172F3",
+      Adviced: "#8098F9",
+      Released: "#36BFFA",
+      "Put Away": "#9B51E0",
+      Unknown: "#98A2B3",
     };
-  });
 
-  const options: ApexOptions = {
-    colors: colors,
-    chart: {
-      fontFamily: "Outfit, sans-serif",
-      type: "bar",
-      height: 350,
-      stacked: true,
-      stackType: "100%",
-      toolbar: {
-        show: false,
-      },
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "55%",
-        borderRadius: 5,
-        borderRadiusApplication: "end",
-      },
-    },
-    dataLabels: {
-      enabled: true,
-      formatter: (val: number) => {
-        // Only show label if percentage is >= 5%
-        return val >= 5 ? `${val.toFixed(0)}%` : "";
-      },
-      style: {
-        fontSize: "12px",
-        fontFamily: "Outfit",
-        fontWeight: 600,
-      },
-    },
-    xaxis: {
-      categories: trxTypes,
-      axisBorder: {
-        show: false,
-      },
-      axisTicks: {
-        show: false,
-      },
-    },
-    yaxis: {
-      title: {
-        text: "Percentage",
-      },
-      labels: {
-        formatter: (val: number) => `${val.toFixed(0)}%`,
-      },
-    },
-    legend: {
-      show: true,
-      position: "top",
-      horizontalAlign: "left",
-      fontFamily: "Outfit",
-    },
-    grid: {
-      yaxis: {
-        lines: {
-          show: true,
+    // Generate colors for all statuses
+    colors = statuses.map((status) => statusColors[status] || "#D0D5DD");
+
+    seriesData = statuses.map((status) => {
+      return {
+        name: status,
+        data: trxTypes.map((trxType) => {
+          const items = data[trxType];
+          if (!Array.isArray(items)) return 0;
+          const item = items.find((d) => d && (d.status_desc || "Unknown") === status);
+          return item && typeof item.percentage === 'number' ? item.percentage : 0;
+        }),
+      };
+    });
+
+    options = {
+      colors: colors,
+      chart: {
+        fontFamily: "Outfit, sans-serif",
+        type: "bar",
+        height: 350,
+        stacked: true,
+        stackType: "100%",
+        toolbar: {
+          show: false,
         },
       },
-    },
-    fill: {
-      opacity: 1,
-    },
-    tooltip: {
-      shared: true,
-      intersect: false,
-      custom: function ({ series: _series, seriesIndex: _seriesIndex, dataPointIndex, w: _w }) {
-        const trxType = trxTypes[dataPointIndex];
-        const statusItems = data[trxType];
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: "55%",
+          borderRadius: 5,
+          borderRadiusApplication: "end",
+        },
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: (val: number) => {
+          // Only show label if percentage is >= 5%
+          return val >= 5 ? `${val.toFixed(0)}%` : "";
+        },
+        style: {
+          fontSize: "12px",
+          fontFamily: "Outfit",
+          fontWeight: 600,
+        },
+      },
+      xaxis: {
+        categories: trxTypes,
+        axisBorder: {
+          show: false,
+        },
+        axisTicks: {
+          show: false,
+        },
+      },
+      yaxis: {
+        title: {
+          text: "Percentage",
+        },
+        labels: {
+          formatter: (val: number) => `${val.toFixed(0)}%`,
+        },
+      },
+      legend: {
+        show: true,
+        position: "top",
+        horizontalAlign: "left",
+        fontFamily: "Outfit",
+      },
+      grid: {
+        yaxis: {
+          lines: {
+            show: true,
+          },
+        },
+      },
+      fill: {
+        opacity: 1,
+      },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        custom: function ({ series: _series, seriesIndex: _seriesIndex, dataPointIndex, w: _w }) {
+          const trxType = trxTypes[dataPointIndex];
+          const statusItems = data[trxType];
 
-        if (!Array.isArray(statusItems) || statusItems.length === 0) {
-          return '<div style="padding: 12px;">No data available</div>';
-        }
+          if (!Array.isArray(statusItems) || statusItems.length === 0) {
+            return '<div style="padding: 12px;">No data available</div>';
+          }
 
-        let tooltipContent = `
+          let tooltipContent = `
           <div style="padding: 12px; font-family: Outfit, sans-serif;">
             <div class="text-gray-800 dark:text-gray-200">
               ${trxType}
             </div>
         `;
 
-        // Sort by percentage descending
-        const sortedItems = [...statusItems].sort((a, b) => (b?.percentage || 0) - (a?.percentage || 0));
+          // Sort by percentage descending
+          const sortedItems = [...statusItems].filter(item => item != null).sort((a, b) => (b?.percentage || 0) - (a?.percentage || 0));
 
-        sortedItems.forEach((item) => {
-          const statusName = item.status_desc || "Unknown";
-          const statusIndex = statuses.indexOf(statusName);
-          const color = colors[statusIndex] || "#D0D5DD";
+          sortedItems.forEach((item) => {
+            if (!item) return;
+            
+            const statusName = item.status_desc || "Unknown";
+            const statusIndex = statuses.indexOf(statusName);
+            const color = colors[statusIndex] || "#D0D5DD";
+            const percentage = typeof item.percentage === 'number' ? item.percentage : 0;
+            const count = typeof item.count === 'string' ? parseInt(item.count) || 0 : (typeof item.count === 'number' ? item.count : 0);
 
-          tooltipContent += `
+            tooltipContent += `
             <div style="display: flex; align-items: center; margin-bottom: 6px;">
               <span style="display: inline-block; width: 10px; height: 10px; background-color: ${color}; border-radius: 2px; margin-right: 8px;"></span>
               <span class="text-gray-500 dark:text-gray-500">${statusName}:</span>
               <span class="text-gray-800 dark:text-gray-200 ml-2">
-                 ${item.percentage.toFixed(2)}% (${item.count.toLocaleString()})
+                 ${percentage.toFixed(2)}% (${count.toLocaleString()})
               </span>
             </div>
           `;
-        });
+          });
 
-        // Calculate total
-        const totalCount = statusItems.reduce((sum, item) => sum + (typeof item.count === 'string' ? parseInt(item.count) : item.count), 0);
+          // Calculate total
+          const totalCount = statusItems.reduce((sum, item) => {
+            if (!item) return sum;
+            const count = typeof item.count === 'string' ? parseInt(item.count) || 0 : (typeof item.count === 'number' ? item.count : 0);
+            return sum + count;
+          }, 0);
 
-        tooltipContent += `
+          tooltipContent += `
             <div class="border-t border-gray-200 dark:border-gray-800">
               <div class="flex justify-between mt-2">
                 <span class="text-gray-500 dark:text-gray-500">Total:</span>
@@ -262,10 +278,26 @@ const OrderStatusDistribution: React.FC = () => {
           </div>
         `;
 
-        return tooltipContent;
+          return tooltipContent;
+        },
       },
-    },
-  };
+    };
+  } catch (err) {
+    renderError = err instanceof Error ? err.message : "Failed to render chart";
+    console.error("Chart rendering error:", err);
+  }
+
+  // If there was a rendering error, show error message
+  if (renderError) {
+    return (
+      <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Order Status Distribution</h3>
+        <div className="rounded-lg border border-error-200 bg-error-50 p-4 dark:border-error-800 dark:bg-error-900/20">
+          <p className="text-error-600 dark:text-error-400">{renderError}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">

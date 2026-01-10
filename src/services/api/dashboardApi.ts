@@ -732,6 +732,24 @@ export const SupplyChainApi = {
     if (!response.ok) throw new Error("Failed to fetch Logistics Delivery Performance data");
     return response.json();
   },
+
+  // Daily Delivery Performance - Daily Bar Chart
+  getDailyDeliveryPerformance: async (params?: { date_from?: string; date_to?: string }) => {
+    // Filter out undefined and null values before creating query params
+    const cleanParams: Record<string, string> = {};
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "undefined" && value !== "null") {
+          cleanParams[key] = value;
+        }
+      });
+    }
+    const queryParams = new URLSearchParams(cleanParams).toString();
+    const url = `${BASE_URL}/api/dashboard/sales-analytics/daily-bar-chart${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch daily delivery performance data");
+    return response.json();
+  },
 };
 
 // Dashboard 2 Revision: Warehouse Operations by Warehouse

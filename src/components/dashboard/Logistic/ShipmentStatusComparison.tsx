@@ -75,8 +75,11 @@ const ShipmentStatusBarChart: React.FC = () => {
 
           params.date_from = formatDate(firstDay); // Format: YYYY-MM-DD
           params.date_to = formatDate(lastDay); // Format: YYYY-MM-DD
+        } else if (period === "monthly") {
+          // For monthly period, set date range for the entire selected year
+          params.date_from = `${selectedYear}-01-01`;
+          params.date_to = `${selectedYear}-12-31`;
         }
-        // For monthly period, date_from and date_to are not included in params
 
         const result = await SupplyChainApi.getShipmentStatusComparison(params);
 
@@ -131,7 +134,7 @@ const ShipmentStatusBarChart: React.FC = () => {
     { value: 12, label: "December" },
   ];
 
-  const years = [currentDate.getFullYear() - 1, currentDate.getFullYear()];
+  const years = [2028, 2027, 2026, 2025, 2024, 2023, 2022, 2021];
 
   // Format period for display
   const formatPeriod = (periodStr: string): string => {
@@ -274,6 +277,20 @@ const ShipmentStatusBarChart: React.FC = () => {
                 ))}
               </select>
             </>
+          )}
+
+          {period === "monthly" && (
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
+            >
+              {years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
           )}
         </div>
       </div>

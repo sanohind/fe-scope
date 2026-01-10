@@ -10,6 +10,7 @@ interface DailyStockPoint {
   onhand: number;
   receipt?: number;
   issue?: number;
+  adjustment?: number;
 }
 
 interface StockDataItem {
@@ -20,6 +21,7 @@ interface StockDataItem {
   onhand: number | string;
   receipt: number | string;
   issue: number | string;
+  adjustment: number | string;
 }
 
 interface WarehouseDataEntry {
@@ -101,6 +103,7 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse, period = "
             onhand: typeof item.onhand === "number" ? item.onhand : Number(item.onhand ?? 0),
             receipt: typeof item.receipt === "number" ? item.receipt : Number(item.receipt ?? 0),
             issue: typeof item.issue === "number" ? item.issue : Number(item.issue ?? 0),
+            adjustment: typeof item.adjustment === "number" ? item.adjustment : Number(item.adjustment ?? 0),
           };
         });
 
@@ -116,6 +119,7 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse, period = "
               onhand: existing.onhand + item.onhand,
               receipt: (existing.receipt ?? 0) + (item.receipt ?? 0),
               issue: (existing.issue ?? 0) + (item.issue ?? 0),
+              adjustment: (existing.adjustment ?? 0) + (item.adjustment ?? 0),
             });
           } else {
             groupedByDate.set(item.date, item);
@@ -194,6 +198,12 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse, period = "
                 <p className="text-sm font-semibold text-error-600 dark:text-error-300">{dataPoint.issue.toLocaleString()}</p>
               </div>
             )}
+            {dataPoint.adjustment !== undefined && (
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm text-gray-500 dark:text-gray-300">Adjustment:</p>
+                <p className="text-sm font-semibold text-warning-600 dark:text-warning-300">{dataPoint.adjustment.toLocaleString()}</p>
+              </div>
+            )}
           </div>
         </div>
       );
@@ -266,6 +276,7 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse, period = "
               <Legend />
               <Line type="monotone" dataKey="receipt" name="Receipt" stroke="#12B76A" strokeWidth={2} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
               <Line type="monotone" dataKey="issue" name="Issue" stroke="#F04438" strokeWidth={2} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="adjustment" name="Adjustment" stroke="#F79009" strokeWidth={2} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
               <Line type="monotone" dataKey="onhand" name="On-hand" stroke="#465fff" strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>

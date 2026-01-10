@@ -5,10 +5,18 @@ import { InventoryFilterRequestParams, inventoryFiltersToQuery } from "../../../
 
 interface StockLevelData {
   total_onhand: string | number;
-  items_below_safety_stock: number;
+  critical_items: number;
   items_above_max_stock: number;
   total_items: number;
   average_stock_level: number;
+  snapshot_date?: string | null;
+  date_range?: {
+    date_from: string;
+    date_to: string;
+    date_from_carbon: string;
+    date_to_carbon: string;
+  };
+  period?: string;
 }
 
 // Helper function to format numbers with comma separators
@@ -86,11 +94,11 @@ const StockLevelOverview: React.FC<StockLevelOverviewProps> = ({ warehouse, filt
     },
     {
       id: 2,
-      title: "Below Safety Stock",
-      value: data.items_below_safety_stock.toLocaleString(),
+      title: "Critical Items",
+      value: data.critical_items.toLocaleString(),
       icon: AlertIcon,
-      bgColor: "bg-warning-50 dark:bg-warning-500/10",
-      iconColor: "text-warning-500",
+      bgColor: "bg-error-50 dark:bg-error-500/10",
+      iconColor: "text-error-500",
     },
     {
       id: 3,
