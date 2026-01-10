@@ -5,6 +5,7 @@ const BASE_URL = API_CONFIG.BASE_URL;
 export interface DailyUseWhData {
   id?: number;
   partno: string;
+  warehouse: string;
   daily_use: number;
   plan_date: string;
   created_at?: string;

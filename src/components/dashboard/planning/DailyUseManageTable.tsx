@@ -98,6 +98,7 @@ const DailyUseManageTable: React.FC = () => {
     setEditingData(row);
     setEditFormData({
       partno: row.partno,
+      warehouse: row.warehouse,
       daily_use: row.daily_use,
       plan_date: row.plan_date,
     });
@@ -318,6 +319,7 @@ const DailyUseManageTable: React.FC = () => {
                     />
                   </th>
                   <th className="px-4 py-3">Part Number</th>
+                  <th className="px-4 py-3">Warehouse</th>
                   <th className="px-4 py-3 text-right">Daily Use</th>
                   <th className="px-4 py-3">Plan Date</th>
                   <th className="px-4 py-3">Created At</th>
@@ -328,7 +330,7 @@ const DailyUseManageTable: React.FC = () => {
               <tbody className="divide-y divide-gray-100 bg-white text-sm dark:divide-gray-800 dark:bg-gray-950/40">
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={8} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
                       No data available
                     </td>
                   </tr>
@@ -344,6 +346,11 @@ const DailyUseManageTable: React.FC = () => {
                         />
                       </td>
                       <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{row.partno || "-"}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                        <span className="inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/10 dark:text-brand-400">
+                          {row.warehouse?.toUpperCase() || "-"}
+                        </span>
+                      </td>
                       <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(row.daily_use)}</td>
                       <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{formatDate(row.plan_date)}</td>
                       <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{row.created_at ? formatDate(row.created_at) : "-"}</td>
@@ -415,10 +422,14 @@ const DailyUseManageTable: React.FC = () => {
                   <Input type="text" name="partno" value={editFormData.partno || ""} onChange={(e) => setEditFormData({ ...editFormData, partno: e.target.value })} required />
                 </div>
                 <div>
+                  <Label>Warehouse</Label>
+                  <Input type="text" name="warehouse" value={editFormData.warehouse || ""} onChange={(e) => setEditFormData({ ...editFormData, warehouse: e.target.value })} required />
+                </div>
+                <div>
                   <Label>Daily Use</Label>
                   <Input type="number" name="daily_use" value={editFormData.daily_use || 0} onChange={(e) => setEditFormData({ ...editFormData, daily_use: parseInt(e.target.value) || 0 })} min="0" required />
                 </div>
-                <div>
+                <div className="lg:col-span-2">
                   <DatePicker
                     id="edit-plan-date"
                     label="Plan Date"
