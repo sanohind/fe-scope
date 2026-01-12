@@ -177,6 +177,7 @@ const InventoryStockHealthDistributionBarChart: React.FC<InventoryStockHealthDis
   const transformChartData = () => {
     const chartData: Array<{
       period: string;
+      Undefined: number;
       Critical: number;
       "Low Stock": number;
       Normal: number;
@@ -187,12 +188,14 @@ const InventoryStockHealthDistributionBarChart: React.FC<InventoryStockHealthDis
       const periodKey = groupItem.date || groupItem.month || groupItem.year || "";
       const chartItem: {
         period: string;
+        Undefined: number;
         Critical: number;
         "Low Stock": number;
         Normal: number;
         Overstock: number;
       } = {
         period: periodKey,
+        Undefined: 0,
         Critical: 0,
         "Low Stock": 0,
         Normal: 0,
@@ -201,7 +204,9 @@ const InventoryStockHealthDistributionBarChart: React.FC<InventoryStockHealthDis
 
       groupItem.data.forEach((statusItem) => {
         const status = statusItem.stock_status;
-        if (status === "Critical") {
+        if (status === "Undefined") {
+          chartItem.Undefined = statusItem.item_count;
+        } else if (status === "Critical") {
           chartItem.Critical = statusItem.item_count;
         } else if (status === "Low Stock") {
           chartItem["Low Stock"] = statusItem.item_count;
@@ -398,6 +403,7 @@ const InventoryStockHealthDistributionBarChart: React.FC<InventoryStockHealthDis
                 }}
                 iconType="rect"
               />
+              <Bar dataKey="Undefined" fill="#6C757D" name="Undefined" stackId="health" radius={[4, 4, 0, 0]} />
               <Bar dataKey="Critical" fill="#DC3545" name="Critical" stackId="health" radius={[4, 4, 0, 0]} />
               <Bar dataKey="Low Stock" fill="#FD7E14" name="Low Stock" stackId="health" radius={[4, 4, 0, 0]} />
               <Bar dataKey="Normal" fill="#28A745" name="Normal" stackId="health" radius={[4, 4, 0, 0]} />
