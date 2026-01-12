@@ -225,7 +225,7 @@ const DailyUseManageTable: React.FC = () => {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 bg-white text-sm dark:divide-gray-800 dark:bg-gray-950/40">
+            <tbody className="divide-y divide-gray-100 bg-white text-sm dark:divide-gray-800 dark:bg-gray-950">
               {rows.length === 0 ? (
                 <tr>
                   <td colSpan={35} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
@@ -235,10 +235,10 @@ const DailyUseManageTable: React.FC = () => {
               ) : (
                 rows.map((row, idx) => (
                   <tr key={row.id || idx} className="hover:bg-gray-50 dark:hover:bg-white/5">
-                    <td className="sticky left-0 z-10 bg-white px-4 py-3 font-medium text-gray-900 dark:bg-gray-950/40 dark:text-white">
+                    <td className="sticky left-0 z-10 bg-white px-4 py-3 font-medium text-gray-900 dark:bg-gray-950 dark:text-white">
                       {row.partno || "-"}
                     </td>
-                    <td className="sticky left-[200px] z-10 bg-white px-4 py-3 text-gray-600 dark:bg-gray-950/40 dark:text-gray-300">
+                    <td className="sticky left-[200px] z-10 bg-white px-4 py-3 text-gray-600 dark:bg-gray-950 dark:text-gray-300">
                       <span className="inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/10 dark:text-brand-400">
                         {row.warehouse?.toUpperCase() || "-"}
                       </span>
