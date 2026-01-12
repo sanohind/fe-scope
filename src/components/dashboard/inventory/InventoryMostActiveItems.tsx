@@ -3,6 +3,7 @@ import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { inventoryRevApi } from "../../../services/api/dashboardApi";
 import { InventoryFilterRequestParams, inventoryFiltersToQuery } from "../../../context/InventoryFilterContext";
+import { useTheme } from "../../../context/ThemeContext";
 
 interface ActiveItem {
   partno: string;
@@ -29,6 +30,8 @@ interface InventoryMostActiveItemsProps {
 }
 
 const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ warehouse, dateFrom, dateTo, filters }) => {
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
   const [activeData, setActiveData] = useState<ActiveItem[]>([]);
   const [nonActiveData, setNonActiveData] = useState<NonActiveItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -118,7 +121,10 @@ const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ war
     dataLabels: {
       enabled: true,
       formatter: (val: number) => val.toString(),
-      style: { fontSize: "11px" },
+      style: {
+        fontSize: "11px",
+        colors: [isDarkMode ? "#ffffff" : "#000000"],
+      },
     },
     legend: { show: false },
     xaxis: {
@@ -171,9 +177,12 @@ const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ war
       },
     },
     dataLabels: {
-      enabled: true,
+    enabled: true,
       formatter: (val: number) => `${val} days`,
-      style: { fontSize: "11px" },
+      style: {
+        fontSize: "11px",
+        colors: [isDarkMode ? "#ffffff" : "#000000"],
+      },
     },
     legend: { show: false },
     xaxis: {

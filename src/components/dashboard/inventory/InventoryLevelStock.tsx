@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { inventoryRevApi } from "../../../services/api/dashboardApi";
 import { InventoryFilterRequestParams, inventoryFiltersToQuery } from "../../../context/InventoryFilterContext";
+import { useNavigate } from "react-router-dom";
 
 interface StockLevelRow {
   group_type_desc: string;
@@ -87,6 +88,7 @@ const getStatusStyle = (status: string) => {
 };
 
 const InventoryLevelStock: React.FC<InventoryLevelStockProps> = ({ warehouse, filters }) => {
+  const navigate = useNavigate();
   const [rows, setRows] = useState<StockLevelRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -193,6 +195,12 @@ const InventoryLevelStock: React.FC<InventoryLevelStockProps> = ({ warehouse, fi
           <p className="text-sm text-gray-500 dark:text-gray-400">Warehouse {warehouse}</p>
         </div>
         <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => navigate(`/inventory/${warehouse.toLowerCase()}/stock-detail`)}
+            className="rounded-lg border border-brand-500 bg-brand-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-600 dark:border-brand-600 dark:bg-brand-600 dark:hover:bg-brand-700"
+          >
+            Stock Detail
+          </button>
           <input
             type="text"
             value={searchInput}

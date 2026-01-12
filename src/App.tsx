@@ -79,6 +79,9 @@ import DailyUseUpload from "./pages/MainPages/PlanningManage/daily-use-upload";
 import DailyUseManage from "./pages/MainPages/PlanningManage/daily-use-manage";
 import ProductionPlanUpload from "./pages/MainPages/PlanningManage/production-plan-upload";
 import ProductionPlanManage from "./pages/MainPages/PlanningManage/production-plan-manage";
+import InventoryWhrm01StockDetail from "./pages/MainPages/Inventory/inventory-whrm01-stock-detail";
+import InventoryWhrm02StockDetail from "./pages/MainPages/Inventory/inventory-whrm02-stock-detail";
+import InventoryWhmt01StockDetail from "./pages/MainPages/Inventory/inventory-whmt01-stock-detail";
 
 // Lazy load dashboard pages for better performance
 const WarehouseAllRm = lazy(() => import("./pages/MainPages/Warehouse/warehouse-allRm"));
@@ -124,6 +127,9 @@ export default function App() {
             <Route path="/inventory/whrm01" element={<InventoryWhrm01 />} />
             <Route path="/inventory/whrm02" element={<InventoryWhrm02 />} />
             <Route path="/inventory/whmt01" element={<InventoryWhmt01 />} />
+            <Route path="/inventory/whrm01/stock-detail" element={<InventoryWhrm01StockDetail />} />
+            <Route path="/inventory/whrm02/stock-detail" element={<InventoryWhrm02StockDetail />} />
+            <Route path="/inventory/whmt01/stock-detail" element={<InventoryWhmt01StockDetail />} />
             <Route path="/warehouse/whfg01" element={<WarehouseWhfg01 />} />
             <Route path="/warehouse/whfg02" element={<WarehouseWhfg02 />} />
             <Route path="/warehouse/whrm01" element={<WarehouseWhrm01 />} />

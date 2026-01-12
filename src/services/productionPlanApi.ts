@@ -6,8 +6,11 @@ export interface ProductionPlanData {
   id?: number;
   partno: string;
   divisi: string;
-  qty_plan: number;
-  plan_date: string;
+  year: number;
+  period: number;
+  days: {
+    [key: string]: number; // "1": 100, "2": 150, etc.
+  };
   created_at?: string;
   updated_at?: string;
 }

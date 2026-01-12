@@ -243,6 +243,15 @@ export const inventoryRevApi = {
     return response.json();
   },
 
+  // Table: Raw Material Stock Level Detail
+  getRmStockLevelDetail: async (warehouse: string, params?: InventoryRevParams) => {
+    const queryParams = new URLSearchParams({ warehouse, ...cleanParams(params) } as any).toString();
+    const url = `${BASE_URL}/api/dashboard/inventory-rev/rm-stock-level-detail?${queryParams}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch raw material stock level detail");
+    return response.json();
+  },
+
   // Bulk endpoint: Get all data (Chart 1-11)
   getAllData: async (warehouse: string, params?: InventoryRevParams) => {
     const queryParams = new URLSearchParams({ warehouse, ...cleanParams(params) } as any).toString();

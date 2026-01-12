@@ -80,7 +80,7 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL", dateF
       height: 400,
       type: "line",
     },
-    colors: ["#465FFF", "#10B981"],
+    colors: ["#10B981", "#465FFF"],
     plotOptions: {
       bar: {
         horizontal: false,
@@ -125,11 +125,11 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL", dateF
         return `<div class="px-3 py-2">
           <div class="font-semibold mb-2 text-gray-800 dark:text-gray-300">${period}</div>
           <div class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full" style="background-color: #465FFF"></span>
+            <span class="w-3 h-3 rounded-full" style="background-color: #10B981"></span>
             <span class="text-sm text-gray-700 dark:text-gray-400">Qty Pelaporan: <strong>${qtyPelaporan.toLocaleString("en-US", { maximumFractionDigits: 0 })} units</strong></span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full" style="background-color: #10B981"></span>
+            <span class="w-3 h-3 rounded-full" style="background-color: #465FFF"></span>
             <span class="text-sm text-gray-700 dark:text-gray-400">Qty Plan: <strong>${qtyPlan.toLocaleString("en-US", { maximumFractionDigits: 0 })} units</strong></span>
           </div>
         </div>`;
