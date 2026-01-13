@@ -16,12 +16,10 @@ interface ItemWithoutIssue {
 
 interface InventoryTopItemsWithoutIssueProps {
   warehouse: string;
-  dateFrom?: string;
-  dateTo?: string;
   filters?: InventoryFilterRequestParams;
 }
 
-const InventoryTopItemsWithoutIssue: React.FC<InventoryTopItemsWithoutIssueProps> = ({ warehouse, dateFrom, dateTo, filters }) => {
+const InventoryTopItemsWithoutIssue: React.FC<InventoryTopItemsWithoutIssueProps> = ({ warehouse, filters }) => {
   const [data, setData] = useState<ItemWithoutIssue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,10 +29,7 @@ const InventoryTopItemsWithoutIssue: React.FC<InventoryTopItemsWithoutIssueProps
     const fetchData = async () => {
       try {
         setLoading(true);
-        const params: Record<string, string> = {};
-        if (dateFrom) params.date_from = dateFrom;
-        if (dateTo) params.date_to = dateTo;
-        Object.assign(params, inventoryFiltersToQuery(filters));
+        const params = inventoryFiltersToQuery(filters);
         const result = await inventoryRevApi.getTopCriticalItems(warehouse, params);
         setData(result.data || []);
         setDateRange(result.date_range || null);
@@ -47,7 +42,7 @@ const InventoryTopItemsWithoutIssue: React.FC<InventoryTopItemsWithoutIssueProps
     };
 
     fetchData();
-  }, [warehouse, dateFrom, dateTo, filters]);
+  }, [warehouse, filters]);
 
   const getActivityColor = (flag: string) => {
     switch (flag) {

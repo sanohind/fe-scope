@@ -24,12 +24,10 @@ interface NonActiveItem extends ActiveItem {
 
 interface InventoryMostActiveItemsProps {
   warehouse: string;
-  dateFrom?: string;
-  dateTo?: string;
   filters?: InventoryFilterRequestParams;
 }
 
-const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ warehouse, dateFrom, dateTo, filters }) => {
+const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ warehouse, filters }) => {
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
   const [activeData, setActiveData] = useState<ActiveItem[]>([]);
@@ -42,10 +40,7 @@ const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ war
     const fetchData = async () => {
       try {
         setLoading(true);
-        const params: Record<string, string> = {};
-        if (dateFrom) params.date_from = dateFrom;
-        if (dateTo) params.date_to = dateTo;
-        Object.assign(params, inventoryFiltersToQuery(filters));
+        const params = inventoryFiltersToQuery(filters);
         const result = await inventoryRevApi.getMostActiveItems(warehouse, params);
         setActiveData(result.most_active_items || result.data || []);
         setNonActiveData(result.most_non_active_items || []);
@@ -58,7 +53,7 @@ const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ war
       }
     };
     fetchData();
-  }, [warehouse, dateFrom, dateTo, filters]);
+  }, [warehouse, filters]);
 
   if (loading) {
     return (
@@ -115,7 +110,6 @@ const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ war
         borderRadius: 5,
         borderRadiusApplication: "end",
         distributed: true,
-        dataLabels: { position: "right" },
       },
     },
     dataLabels: {
@@ -123,7 +117,7 @@ const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ war
       formatter: (val: number) => val.toString(),
       style: {
         fontSize: "11px",
-        colors: [isDarkMode ? "#ffffff" : "#000000"],
+        colors: [isDarkMode ? "#ffffff" : "#ffffff"],
       },
     },
     legend: { show: false },
@@ -173,7 +167,6 @@ const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ war
         horizontal: true,
         borderRadius: 5,
         borderRadiusApplication: "end",
-        dataLabels: { position: "right" },
       },
     },
     dataLabels: {
@@ -181,7 +174,7 @@ const InventoryMostActiveItems: React.FC<InventoryMostActiveItemsProps> = ({ war
       formatter: (val: number) => `${val} days`,
       style: {
         fontSize: "11px",
-        colors: [isDarkMode ? "#ffffff" : "#000000"],
+        colors: [isDarkMode ? "#ffffff" : "#ffffff"],
       },
     },
     legend: { show: false },
