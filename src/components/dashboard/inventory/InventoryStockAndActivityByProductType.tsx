@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ReactApexChart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { inventoryRevApi } from "../../../services/api/dashboardApi";
 import { WarehouseFilterRequestParams } from "../../../context/WarehouseFilterContext";
 
@@ -20,6 +19,20 @@ interface InventoryStockAndActivityByProductTypeProps {
   dateFrom?: string;
   dateTo?: string;
   filters?: WarehouseFilterRequestParams;
+}
+
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: number;
+    color: string;
+    dataKey: string;
+    payload: {
+      product_type: string;
+      [key: string]: unknown;
+    };
+  }>;
 }
 
 const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivityByProductTypeProps> = ({ warehouse, dateFrom, dateTo, filters }) => {
@@ -54,6 +67,37 @@ const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivity
     fetchData();
   }, [warehouse, dateFrom, dateTo, filters]);
 
+  // Prepare chart data
+  const chartData = data.map((item: ProductTypeData) => ({
+    product_type: item.product_type,
+    Onhand: item.total_onhand,
+    "Safety Stock": item.total_safety_stock,
+    "Trans Count": item.trans_count,
+  }));
+
+  // Custom tooltip component
+  const CustomTooltip = ({ active, payload }: TooltipProps) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
+          <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">{payload[0].payload.product_type}</p>
+          {payload.map((entry, index: number) => (
+            <div key={index} className="flex items-center justify-between gap-4 text-sm mb-1">
+              <span className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></span>
+                <span className="text-gray-600 dark:text-gray-400">{entry.name}:</span>
+              </span>
+              <span className="font-medium text-gray-800 dark:text-gray-200">
+                {typeof entry.value === "number" ? entry.value.toLocaleString() : entry.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   if (loading) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
@@ -65,7 +109,7 @@ const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivity
     );
   }
 
-  if (error || !data || data.length === 0) {
+  if (error || !chartData || chartData.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Stock & Activity by Product Type</h3>
@@ -75,250 +119,6 @@ const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivity
       </div>
     );
   }
-
-  const categories = data.map((item) => item.product_type);
-  const onhandData = data.map((item) => Number(item.total_onhand));
-  const safetyStockData = data.map((item) => Number(item.total_safety_stock));
-  const transCountData = data.map((item) => Number(item.trans_count));
-  const turnoverData = data.map((item) => Number(item.turnover_rate));
-
-  const options: ApexOptions = {
-    chart: {
-      type: "line",
-      fontFamily: "Outfit, sans-serif",
-      toolbar: {
-        show: true,
-        tools: {
-          download: true,
-          selection: false,
-          zoom: true,
-          zoomin: true,
-          zoomout: true,
-          pan: false,
-          reset: true,
-        },
-      },
-      zoom: {
-        enabled: true,
-      },
-    },
-    colors: ["#465FFF", "#F79009", "#12B76A", "#F04438", "#8B5CF6"],
-    stroke: {
-      width: [0, 0, 0, 3, 3],
-      curve: "smooth",
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "70%",
-        borderRadius: 6,
-        borderRadiusApplication: "end",
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    xaxis: {
-      categories: categories,
-      labels: {
-        style: {
-          fontSize: "12px",
-          fontWeight: 500,
-          colors: "#667085",
-        },
-        rotate: -45,
-        rotateAlways: categories.length > 6,
-        hideOverlappingLabels: true,
-        trim: true,
-        maxHeight: 80,
-      },
-      axisBorder: {
-        show: true,
-        color: "#E4E7EC",
-      },
-      axisTicks: {
-        show: true,
-        color: "#E4E7EC",
-      },
-    },
-    yaxis: [
-      {
-        seriesName: "Onhand",
-        title: {
-          text: "Stock Quantity",
-          style: {
-            fontSize: "13px",
-            fontWeight: 600,
-            color: "#344054",
-          },
-        },
-        labels: {
-          style: {
-            fontSize: "12px",
-            colors: "#667085",
-          },
-          formatter: (val) => {
-            if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
-            if (val >= 1000) return `${(val / 1000).toFixed(1)}K`;
-            return val.toFixed(0);
-          },
-        },
-        min: 0,
-      },
-      {
-        seriesName: "Onhand",
-        show: false,
-      },
-      {
-        seriesName: "Onhand",
-        show: false,
-      },
-      {
-        opposite: true,
-        seriesName: "Trans Count",
-        title: {
-          text: "Activity Metrics",
-          style: {
-            fontSize: "13px",
-            fontWeight: 600,
-            color: "#344054",
-          },
-        },
-        labels: {
-          style: {
-            fontSize: "12px",
-            colors: "#667085",
-          },
-          formatter: (val) => {
-            if (val >= 1000) return `${(val / 1000).toFixed(1)}K`;
-            return val.toFixed(0);
-          },
-        },
-        min: 0,
-      },
-      {
-        opposite: true,
-        seriesName: "Trans Count",
-        show: false,
-      },
-    ],
-    fill: {
-      opacity: [1, 1, 1, 0.3, 0.3],
-      type: ["solid", "solid", "solid", "gradient", "gradient"],
-      gradient: {
-        shade: "light",
-        type: "vertical",
-        shadeIntensity: 0.5,
-        gradientToColors: undefined,
-        inverseColors: true,
-        opacityFrom: 0.7,
-        opacityTo: 0.3,
-        stops: [0, 100],
-      },
-    },
-    tooltip: {
-      shared: true,
-      intersect: false,
-      followCursor: true,
-      theme: "light",
-      style: {
-        fontSize: "12px",
-      },
-      x: {
-        show: true,
-        formatter: (_val, opts) => {
-          return `<strong>${categories[opts.dataPointIndex]}</strong>`;
-        },
-      },
-      y: {
-        formatter: (val: number, opts) => {
-          const seriesName = opts.w.globals.seriesNames[opts.seriesIndex];
-          if (seriesName === "Turnover Rate") {
-            return `${val.toFixed(2)}x`;
-          }
-          return val.toLocaleString();
-        },
-      },
-      marker: {
-        show: true,
-      },
-    },
-    legend: {
-      position: "top",
-      horizontalAlign: "right",
-      fontSize: "13px",
-      fontWeight: 500,
-      offsetY: 0,
-      markers: {
-        size: 12,
-      },
-      itemMargin: {
-        horizontal: 12,
-        vertical: 8,
-      },
-    },
-    grid: {
-      borderColor: "#F2F4F7",
-      strokeDashArray: 3,
-      xaxis: {
-        lines: {
-          show: false,
-        },
-      },
-      yaxis: {
-        lines: {
-          show: true,
-        },
-      },
-      padding: {
-        top: 0,
-        right: 20,
-        bottom: 0,
-        left: 10,
-      },
-    },
-    responsive: [
-      {
-        breakpoint: 1024,
-        options: {
-          plotOptions: {
-            bar: {
-              columnWidth: "80%",
-            },
-          },
-          xaxis: {
-            labels: {
-              rotate: -45,
-              rotateAlways: true,
-            },
-          },
-        },
-      },
-    ],
-  };
-
-  const series = [
-    {
-      name: "Onhand",
-      type: "column",
-      data: onhandData,
-    },
-    {
-      name: "Safety Stock",
-      type: "column",
-      data: safetyStockData,
-    },
-    {
-      name: "Trans Count",
-      type: "line",
-      data: transCountData,
-    },
-    {
-      name: "Turnover Rate",
-      type: "line",
-      data: turnoverData,
-    },
-  ];
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
@@ -346,8 +146,72 @@ const InventoryStockAndActivityByProductType: React.FC<InventoryStockAndActivity
         )}
       </div>
 
-      <div className="mt-4">
-        <ReactApexChart options={options} series={series} type="line" height={450} />
+      <div className="max-w-full overflow-x-auto custom-scrollbar">
+        <div className="min-w-[600px]">
+          <ResponsiveContainer width="100%" height={460}>
+            <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+              <XAxis 
+                dataKey="product_type" 
+                stroke="#9ca3af" 
+                tick={{ fill: "#6b7280", fontSize: 12 }} 
+                tickLine={false} 
+                axisLine={false} 
+                angle={-45} 
+                textAnchor="end" 
+                height={80} 
+              />
+              <YAxis
+                yAxisId="left"
+                stroke="#9ca3af"
+                tick={{ fill: "#6b7280", fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => {
+                  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+                  if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+                  return value.toLocaleString();
+                }}
+                label={{
+                  value: "Stock Quantity",
+                  angle: -90,
+                  position: "insideLeft",
+                  style: { fill: "#6b7280", fontSize: 12 },
+                }}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                stroke="#9ca3af"
+                tick={{ fill: "#6b7280", fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => {
+                  if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+                  return value.toLocaleString();
+                }}
+                label={{
+                  value: "Activity Metrics",
+                  angle: 90,
+                  position: "insideRight",
+                  style: { fill: "#6b7280", fontSize: 12 },
+                }}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend
+                wrapperStyle={{
+                  fontSize: "14px",
+                  paddingTop: "10px",
+                }}
+                iconType="rect"
+              />
+              <Bar yAxisId="left" dataKey="Onhand" fill="#10B981" name="Onhand" radius={[4, 4, 0, 0]} />
+              <Bar yAxisId="left" dataKey="Safety Stock" fill="#F59E0B" name="Safety Stock" radius={[4, 4, 0, 0]} />
+              <Line yAxisId="right" dataKey="Trans Count" stroke="#465fff" name="Trans Count" strokeWidth={2} dot={false} />
+
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

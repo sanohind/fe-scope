@@ -33,9 +33,18 @@ const DailyUseManageTable: React.FC = () => {
 
   // Helper function to generate date range from year and period
   const getDateRange = (year: string, period: string): { from: string; to: string } | null => {
-    if (!year || !period) return null;
+    if (!year) return null;
 
     const yearNum = parseInt(year);
+    
+    // If only year is selected (no period), return full year range
+    if (!period) {
+      const from = `${year}-01-01`;
+      const to = `${year}-12-31`;
+      return { from, to };
+    }
+
+    // If both year and period are selected, return specific month range
     const periodNum = parseInt(period);
     const daysInMonth = getDaysInMonth(yearNum, periodNum);
 
@@ -212,10 +221,10 @@ const DailyUseManageTable: React.FC = () => {
       <div className="overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800">
         <div className="max-h-[520px] overflow-auto" style={{ scrollbarWidth: "thin" }}>
           <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-800">
-            <thead className="bg-gray-50 text-left text-xs font-medium text-gray-500 dark:bg-gray-900 dark:text-gray-400">
+            <thead className="sticky top-0 z-20 bg-gray-50 text-left text-xs font-medium text-gray-500 dark:bg-gray-900 dark:text-gray-400">
               <tr>
-                <th className="sticky left-0 z-10 bg-gray-50 px-4 py-3 dark:bg-gray-900">Part Number</th>
-                <th className="sticky left-[200px] z-10 bg-gray-50 px-4 py-3 dark:bg-gray-900">Warehouse</th>
+                <th className="sticky left-0 z-30 bg-gray-50 px-4 py-3 dark:bg-gray-900">Part Number</th>
+                <th className="sticky left-[200px] z-30 bg-gray-50 px-4 py-3 dark:bg-gray-900">Warehouse</th>
                 <th className="px-4 py-3 whitespace-nowrap">Year</th>
                 <th className="px-4 py-3 whitespace-nowrap">Period</th>
                 {dayColumns.map((day) => (

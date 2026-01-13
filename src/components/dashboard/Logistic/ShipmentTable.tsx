@@ -306,7 +306,7 @@ const ShipmentTable: React.FC = () => {
                   </th>
                   <th className="cursor-pointer px-4 py-3 transition hover:bg-gray-100 dark:hover:bg-gray-800" onClick={() => handleSort("lead_time")}>
                     <div className="flex items-center justify-center">
-                      Lead Time (Days)
+                      Lead Time
                       {renderSortIcon("lead_time")}
                     </div>
                   </th>
@@ -330,7 +330,7 @@ const ShipmentTable: React.FC = () => {
                       <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{row.product_type ?? "-"}</td>
                       <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{row.shipment_reference ?? "-"}</td>
                       <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{formatDate(row.delivery_date)}</td>
-                      <td className={`px-4 py-3 text-center font-semibold ${getLeadTimeColor(row.lead_time)}`}>{formatNumber(row.lead_time)}</td>
+                      <td className={`px-4 py-3 text-center font-semibold ${getLeadTimeColor(row.lead_time)}`}>{formatNumber(row.lead_time)} days</td>
                     </tr>
                   ))
                 )}

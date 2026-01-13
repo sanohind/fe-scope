@@ -184,8 +184,8 @@ const OvertimePerDay: React.FC = () => {
     { value: 12, label: "December" },
   ];
 
-  const currentYear = new Date().getFullYear();
-  const availableYears = [currentYear - 1, currentYear, currentYear + 1];
+  // const currentYear = new Date().getFullYear();
+  const availableYears = [2028, 2027, 2026, 2025, 2024, 2023, 2022, 2021];
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">

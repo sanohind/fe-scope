@@ -33,7 +33,7 @@ const ShipmentAnalyticsChart: React.FC = () => {
   const [data, setData] = useState<BarChartData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedYear, setSelectedYear] = useState<number>(2025);
+  const [selectedYear, setSelectedYear] = useState<number>(2026);
 
   // Hardcoded available years
   const availableYears = [2028, 2027, 2026, 2025, 2024, 2023, 2022, 2021];

@@ -119,7 +119,7 @@ const DailyDeliveryPerformance: React.FC = () => {
   const years = [2028, 2027, 2026, 2025, 2024, 2023, 2022, 2021];
 
   // Format date for display
-  const formatDate = (dateStr: string): string => {
+  const formatDateDisplay = (dateStr: string): string => {
     try {
       const date = new Date(dateStr);
       if (!isNaN(date.getTime())) {
@@ -131,17 +131,19 @@ const DailyDeliveryPerformance: React.FC = () => {
     return dateStr;
   };
 
+  // Prepare chart data
+  const chartData = data.map((item: DailyDeliveryData) => ({
+    date: formatDateDisplay(item.date),
+    "Total Delivery": item.total_delivery,
+    "Total PO": item.total_po,
+  }));
+
   // Custom tooltip component
   const CustomTooltip = ({ active, payload }: TooltipProps) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      const dateStr = data.date || "";
-
       return (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3">
-          <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-            {new Date(dateStr).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
-          </p>
+          <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">{payload[0].payload.date}</p>
           {payload.map((entry, index: number) => (
             <div key={index} className="flex items-center justify-between gap-4 text-sm mb-1">
               <span className="flex items-center gap-2">
@@ -181,7 +183,7 @@ const DailyDeliveryPerformance: React.FC = () => {
     );
   }
 
-  if (!data || data.length === 0) {
+  if (!chartData || chartData.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
@@ -193,13 +195,6 @@ const DailyDeliveryPerformance: React.FC = () => {
       </div>
     );
   }
-
-  // Prepare chart data
-  const chartData = data.map((item) => ({
-    date: item.date,
-    "Total Delivery": item.total_delivery,
-    "Total PO": item.total_po,
-  }));
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
@@ -235,10 +230,10 @@ const DailyDeliveryPerformance: React.FC = () => {
 
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[600px]">
-          <ResponsiveContainer width="100%" height={450}>
-            <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
+          <ResponsiveContainer width="100%" height={460}>
+            <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-              <XAxis dataKey="date" stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} tickFormatter={formatDate} angle={-45} textAnchor="end" height={60} />
+              <XAxis dataKey="date" stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12 }} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={50} />
               <YAxis
                 stroke="#9ca3af"
                 tick={{ fill: "#6b7280", fontSize: 12 }}
@@ -261,7 +256,7 @@ const DailyDeliveryPerformance: React.FC = () => {
                 iconType="rect"
               />
               <Bar dataKey="Total Delivery" fill="#10B981" name="Total Delivery" radius={[4, 4, 0, 0]} />
-              <Line dataKey="Total PO" stroke="#F59E0B" name="Total PO" strokeWidth={2} dot={{ fill: "#F59E0B", r: 4 }} />
+              <Line dataKey="Total PO" stroke="#465fff" name="Total PO" strokeWidth={2} dot={false} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
