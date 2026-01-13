@@ -26,32 +26,13 @@ const DailyUseManageTable: React.FC = () => {
   const [yearFilter, setYearFilter] = useState("");
   const [periodFilter, setPeriodFilter] = useState("");
 
-  // Helper function to get days in month
-  const getDaysInMonth = (year: number, month: number): number => {
-    return new Date(year, month, 0).getDate();
-  };
-
-  // Helper function to generate date range from year and period
-  const getDateRange = (year: string, period: string): { from: string; to: string } | null => {
-    if (!year) return null;
-
-    const yearNum = parseInt(year);
-    
-    // If only year is selected (no period), return full year range
-    if (!period) {
-      const from = `${year}-01-01`;
-      const to = `${year}-12-31`;
-      return { from, to };
-    }
-
-    // If both year and period are selected, return specific month range
-    const periodNum = parseInt(period);
-    const daysInMonth = getDaysInMonth(yearNum, periodNum);
-
-    const from = `${year}-${period.padStart(2, "0")}-01`;
-    const to = `${year}-${period.padStart(2, "0")}-${daysInMonth}`;
-
-    return { from, to };
+  // Helper to get month name
+  const getMonthName = (period: number): string => {
+    const months = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    return months[period - 1] || `Period ${period}`;
   };
 
   useEffect(() => {
@@ -78,13 +59,8 @@ const DailyUseManageTable: React.FC = () => {
       };
 
       if (searchTerm) params.partno = searchTerm;
-
-      // Generate date range from year and period
-      const dateRange = getDateRange(yearFilter, periodFilter);
-      if (dateRange) {
-        params.plan_date_from = dateRange.from;
-        params.plan_date_to = dateRange.to;
-      }
+      if (yearFilter) params.year = yearFilter;
+      if (periodFilter) params.period = periodFilter;
 
       const result = await dailyUseWhApi.getAll(params);
 
@@ -120,9 +96,6 @@ const DailyUseManageTable: React.FC = () => {
   };
 
   const hasActiveFilters = searchInput || yearFilter || periodFilter;
-
-  // Generate array of day numbers (1-31)
-  const dayColumns = Array.from({ length: 31 }, (_, i) => i + 1);
 
   // Get unique years from data for dropdown (or use predefined range)
   const availableYears = [2024, 2025, 2026, 2027, 2028];
@@ -223,42 +196,38 @@ const DailyUseManageTable: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-800">
             <thead className="sticky top-0 z-20 bg-gray-50 text-left text-xs font-medium text-gray-500 dark:bg-gray-900 dark:text-gray-400">
               <tr>
-                <th className="sticky left-0 z-30 bg-gray-50 px-4 py-3 dark:bg-gray-900">Part Number</th>
-                <th className="sticky left-[200px] z-30 bg-gray-50 px-4 py-3 dark:bg-gray-900">Warehouse</th>
+                <th className="px-4 py-3">Part Number</th>
+                <th className="px-4 py-3">Warehouse</th>
                 <th className="px-4 py-3 whitespace-nowrap">Year</th>
                 <th className="px-4 py-3 whitespace-nowrap">Period</th>
-                {dayColumns.map((day) => (
-                  <th key={day} className="px-4 py-3 text-right whitespace-nowrap">
-                    Day {day}
-                  </th>
-                ))}
+                <th className="px-4 py-3 text-right whitespace-nowrap">Monthly Qty</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white text-sm dark:divide-gray-800 dark:bg-gray-950">
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={35} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={5} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
                     No data available
                   </td>
                 </tr>
               ) : (
                 rows.map((row, idx) => (
                   <tr key={row.id || idx} className="hover:bg-gray-50 dark:hover:bg-white/5">
-                    <td className="sticky left-0 z-10 bg-white px-4 py-3 font-medium text-gray-900 dark:bg-gray-950 dark:text-white">
+                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
                       {row.partno || "-"}
                     </td>
-                    <td className="sticky left-[200px] z-10 bg-white px-4 py-3 text-gray-600 dark:bg-gray-950 dark:text-gray-300">
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
                       <span className="inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/10 dark:text-brand-400">
                         {row.warehouse?.toUpperCase() || "-"}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{row.year}</td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{row.period}</td>
-                    {dayColumns.map((day) => (
-                      <td key={day} className="px-4 py-3 text-right text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                        {formatNumber(row.days?.[day.toString()])}
-                      </td>
-                    ))}
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                      {getMonthName(row.period)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                      {formatNumber(row.qty)}
+                    </td>
                   </tr>
                 ))
               )}

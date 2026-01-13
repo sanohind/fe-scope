@@ -24,7 +24,7 @@ const PlanningManage: React.FC = () => {
       if (response.success) {
         setUploadStatus("success");
         const data = response.data as { inserted?: number; updated?: number };
-        setSuccessMessage(`✓ Import berhasil! ${data.inserted || 0} baris data ditambahkan`);
+        setSuccessMessage(`✓ Import berhasil! ${data.inserted || 0} record ditambahkan, ${data.updated || 0} record diupdate`);
         // Reset after 3 seconds
         setTimeout(() => {
           setUploadStatus("idle");

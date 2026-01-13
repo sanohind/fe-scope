@@ -8,9 +8,7 @@ export interface DailyUseWhData {
   warehouse: string;
   year: number;
   period: number;
-  days: {
-    [key: string]: number; // "1": 100, "2": 150, etc.
-  };
+  qty: number; // Quantity for the entire month
   created_at?: string;
   updated_at?: string;
 }
