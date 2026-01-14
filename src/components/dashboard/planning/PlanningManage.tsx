@@ -69,7 +69,7 @@ const PlanningManage: React.FC = () => {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Planning Manage</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Daily Use Manage</h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">Manage daily use warehouse data with import, edit, and delete capabilities</p>
         </div>
         <div className="flex gap-2">
