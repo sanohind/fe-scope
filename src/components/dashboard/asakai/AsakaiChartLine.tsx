@@ -105,7 +105,16 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
     fetchData();
   }, [titleId, filters]);
 
-  const latestValue = data.length ? data[data.length - 1].qty : null;
+  /* const latestValue = data.length ? data[data.length - 1].qty : null; */
+  
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const todayStr = `${year}-${month}-${day}`;
+
+  const todayData = data.find((item) => item.date === todayStr);
+  const todayValue = todayData ? todayData.qty : 0;
 
   const handleShowReasons = () => {
     navigate(`/asakai-reasons/${titleId}/${encodeURIComponent(titleName)}`);
@@ -220,11 +229,9 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
           <p className="text-sm text-gray-500 dark:text-gray-400">{category}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          {latestValue !== null && (
-            <div className="rounded-xl bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-300">
-              Latest: <span className="text-brand-600 dark:text-brand-300">{latestValue.toLocaleString()}</span>
-            </div>
-          )}
+          <div className="rounded-xl bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-300">
+            Today: <span className="text-brand-600 dark:text-brand-300">{todayValue.toLocaleString()}</span>
+          </div>
           <button
             onClick={handleShowReasons}
             className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors"
