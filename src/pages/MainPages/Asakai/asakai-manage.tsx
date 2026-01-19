@@ -285,7 +285,7 @@ export default function AsakaiManage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Quantity</label>
                 <input
-                  type="textarea"
+                  type="number"
                   value={formData.qty}
                   onChange={(e) => setFormData({ ...formData, qty: Number(e.target.value) })}
                   className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"

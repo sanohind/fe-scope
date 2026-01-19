@@ -129,4 +129,68 @@ export const dailyUseWhApi = {
     if (!response.ok) throw new Error("Failed to delete records");
     return response.json();
   },
+
+  // --- MIN MAX STOCK API ---
+
+  // Get Min/Max data
+  getMinMax: async (params?: { page?: number; per_page?: number; warehouse?: string; year?: number; period?: number }): Promise<DailyUseWhMinMaxListResponse> => {
+    const queryParams = new URLSearchParams(params as any).toString();
+    const url = `${API_BASE}/min-max${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch Min/Max data");
+    return response.json();
+  },
+
+  // Create or Update Min/Max data
+  createOrUpdateMinMax: async (data: DailyUseWhMinMaxData): Promise<DailyUseWhMinMaxResponse> => {
+    const response = await fetch(`${API_BASE}/min-max`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to save Min/Max data");
+    }
+    return response.json();
+  },
 };
+
+export interface DailyUseWhMinMaxData {
+  id?: number;
+  warehouse: string;
+  year: number;
+  period: number;
+  min_onhand: number;
+  max_onhand: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface DailyUseWhMinMaxResponse {
+  success: boolean;
+  message: string;
+  data: DailyUseWhMinMaxData;
+}
+
+export interface DailyUseWhMinMaxListResponse {
+  success: boolean;
+  message: string;
+  data: {
+    current_page: number;
+    data: DailyUseWhMinMaxData[];
+    first_page_url: string;
+    from: number;
+    last_page: number;
+    last_page_url: string;
+    links: Array<{ url: string | null; label: string; active: boolean }>;
+    next_page_url: string | null;
+    path: string;
+    per_page: number;
+    prev_page_url: string | null;
+    to: number;
+    total: number;
+  };
+}

@@ -2,6 +2,7 @@ import { DailyUseManageTable } from "../../../components/dashboard/planning";
 import PageMeta from "../../../components/common/PageMeta";
 
 export default function DailyUseManage() {
+
   return (
     <>
       <PageMeta title="Daily Use Manage | Daily Use Warehouse Management" description="Manage daily use warehouse data with edit and delete capabilities" />

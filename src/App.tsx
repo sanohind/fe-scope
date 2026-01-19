@@ -77,6 +77,7 @@ import ProductionPs from "./pages/MainPages/Production/psProd";
 import ProductionSc from "./pages/MainPages/Production/psProd";
 import DailyUseUpload from "./pages/MainPages/PlanningManage/daily-use-upload";
 import DailyUseManage from "./pages/MainPages/PlanningManage/daily-use-manage";
+import DailyUseMinMax from "./pages/MainPages/PlanningManage/daily-use-min-max";
 import ProductionPlanUpload from "./pages/MainPages/PlanningManage/production-plan-upload";
 import ProductionPlanManage from "./pages/MainPages/PlanningManage/production-plan-manage";
 import InventoryWhrm01StockDetail from "./pages/MainPages/Inventory/inventory-whrm01-stock-detail";
@@ -210,6 +211,7 @@ export default function App() {
             />
             <Route path="/daily-use-upload" element={<DailyUseUpload />} />
             <Route path="/daily-use-manage" element={<DailyUseManage />} />
+            <Route path="/daily-use-min-max" element={<DailyUseMinMax />} />
             <Route path="/production-plan-upload" element={<ProductionPlanUpload />} />
             <Route path="/production-plan-manage" element={<ProductionPlanManage />} />
             <Route path="/asakai-board" element={<AsakaiBoard />} />

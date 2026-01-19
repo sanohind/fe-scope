@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
 import { warehouseRevApi } from "../../../../services/api/dashboardApi";
+import { dailyUseWhApi, DailyUseWhMinMaxData } from "../../../../services/dailyUseWhApi";
 import { WarehouseFilterRequestParams } from "../../../../context/WarehouseFilterContext";
 
 interface DailyStockPoint {
@@ -11,6 +12,8 @@ interface DailyStockPoint {
   receipt?: number;
   issue?: number;
   adjustment?: number;
+  min_stock?: number;
+  max_stock?: number;
 }
 
 interface StockDataItem {
@@ -71,6 +74,8 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse, period = "
       try {
         setLoading(true);
         const params = filters ? { period: filters.period, date_from: filters.date_from, date_to: filters.date_to } : { period };
+        
+        // Fetch stock trend data
         const result: DailyStockTrendResponse = await warehouseRevApi.getDailyStockTrend(warehouse, params);
 
         // Extract data from the new nested structure or fallback to old format
@@ -91,10 +96,8 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse, period = "
           responseData = result.data;
         }
 
-        // Normalize all data from both granularities
-        const normalizedData: DailyStockPoint[] = responseData.map((item) => {
-          // Use period field for grouping (more reliable across granularities)
-          // For daily: "2025-12-01", monthly: "2025-01", yearly: "2025"
+        // Normalize all data first
+        const basicData = responseData.map((item) => {
           const periodStr = (item as any).period || item.period_start.split(" ")[0];
           return {
             date: periodStr,
@@ -107,11 +110,65 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse, period = "
           };
         });
 
-        // Group by date and sum the values
+        // Determine years involved to fetch Min/Max data
+        const years = new Set<number>();
+        basicData.forEach(item => {
+          const d = new Date(item.date);
+          if (!isNaN(d.getTime())) {
+            years.add(d.getFullYear());
+          }
+        });
+
+        // Fetch Min/Max data for each year found
+        const minMaxMap = new Map<string, DailyUseWhMinMaxData>();
+        
+        // Only fetch min/max if we have a specific warehouse (not ALL)
+        if (normalizedWarehouse && normalizedWarehouse !== "ALL" && years.size > 0) {
+          const uniqueYears = Array.from(years);
+          const minMaxPromises = uniqueYears.map(year => 
+            dailyUseWhApi.getMinMax({ warehouse, year, per_page: 100 })
+          );
+          
+          try {
+            const minMaxResults = await Promise.all(minMaxPromises);
+            minMaxResults.forEach(res => {
+              if(res.success && res.data?.data) {
+                res.data.data.forEach(mm => {
+                  // Key: "YEAR-PERIOD" e.g., "2026-1"
+                  minMaxMap.set(`${mm.year}-${mm.period}`, mm);
+                });
+              }
+            });
+          } catch (err) {
+            console.error("Failed to fetch Min/Max data:", err);
+            // Continue without min/max data if it fails
+          }
+        }
+
+        // Group by date and merge Min/Max
         const groupedByDate = new Map<string, DailyStockPoint>();
-        normalizedData.forEach((item) => {
+        basicData.forEach((item) => {
+          // Determine Min/Max for this date
+          let minStock: number | undefined;
+          let maxStock: number | undefined;
+          
+          const d = new Date(item.date);
+          if (!isNaN(d.getTime())) {
+            const year = d.getFullYear();
+            const month = d.getMonth() + 1; // 1-12
+            const key = `${year}-${month}`;
+            const mm = minMaxMap.get(key);
+            if (mm) {
+              minStock = mm.min_onhand;
+              maxStock = mm.max_onhand;
+            }
+          }
+
           const existing = groupedByDate.get(item.date);
           if (existing) {
+            // If strictly grouping by date, min/max should be the same for the same date.
+            // If aggregating multiple warehouses (ALL), min/max might not simple sum, 
+            // but we skipped fetching min/max if warehouse is ALL above.
             groupedByDate.set(item.date, {
               date: item.date,
               period: item.period,
@@ -120,9 +177,15 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse, period = "
               receipt: (existing.receipt ?? 0) + (item.receipt ?? 0),
               issue: (existing.issue ?? 0) + (item.issue ?? 0),
               adjustment: (existing.adjustment ?? 0) + (item.adjustment ?? 0),
+              min_stock: minStock, // Keep the last found or existing? Usually same per date
+              max_stock: maxStock,
             });
           } else {
-            groupedByDate.set(item.date, item);
+            groupedByDate.set(item.date, {
+              ...item,
+              min_stock: minStock,
+              max_stock: maxStock
+            });
           }
         });
 
@@ -186,19 +249,31 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse, period = "
               <p className="text-sm text-gray-500 dark:text-gray-300">On-hand:</p>
               <p className="text-sm font-semibold text-brand-600 dark:text-brand-300">{dataPoint.onhand.toLocaleString()}</p>
             </div>
-            {dataPoint.receipt !== undefined && (
+            {dataPoint.min_stock !== undefined && (
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm text-gray-500 dark:text-gray-300">Min Stock:</p>
+                <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">{dataPoint.min_stock.toLocaleString()}</p>
+              </div>
+            )}
+            {dataPoint.max_stock !== undefined && (
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm text-gray-500 dark:text-gray-300">Max Stock:</p>
+                <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">{dataPoint.max_stock.toLocaleString()}</p>
+              </div>
+            )}
+            {dataPoint.receipt !== undefined && dataPoint.receipt !== 0 && (
               <div className="flex items-center justify-between gap-4">
                 <p className="text-sm text-gray-500 dark:text-gray-300">Receipt:</p>
                 <p className="text-sm font-semibold text-success-600 dark:text-success-300">{dataPoint.receipt.toLocaleString()}</p>
               </div>
             )}
-            {dataPoint.issue !== undefined && (
+            {dataPoint.issue !== undefined && dataPoint.issue !== 0 && (
               <div className="flex items-center justify-between gap-4">
                 <p className="text-sm text-gray-500 dark:text-gray-300">Issue:</p>
                 <p className="text-sm font-semibold text-error-600 dark:text-error-300">{dataPoint.issue.toLocaleString()}</p>
               </div>
             )}
-            {dataPoint.adjustment !== undefined && (
+            {dataPoint.adjustment !== undefined && dataPoint.adjustment !== 0 && (
               <div className="flex items-center justify-between gap-4">
                 <p className="text-sm text-gray-500 dark:text-gray-300">Adjustment:</p>
                 <p className="text-sm font-semibold text-warning-600 dark:text-warning-300">{dataPoint.adjustment.toLocaleString()}</p>
@@ -274,6 +349,10 @@ const DailyStockTrend: React.FC<DailyStockTrendProps> = ({ warehouse, period = "
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
+              {/* Reference Lines for Min/Max - Using Line component to show in legend and tooltip properly */}
+              <Line type="step" dataKey="min_stock" name="Min Stock" stroke="#ea580c" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={false} connectNulls />
+              <Line type="step" dataKey="max_stock" name="Max Stock" stroke="#0284c7" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={false} connectNulls />
+              
               <Line type="monotone" dataKey="receipt" name="Receipt" stroke="#12B76A" strokeWidth={2} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
               <Line type="monotone" dataKey="issue" name="Issue" stroke="#F04438" strokeWidth={2} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
               <Line type="monotone" dataKey="adjustment" name="Adjustment" stroke="#F79009" strokeWidth={2} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
