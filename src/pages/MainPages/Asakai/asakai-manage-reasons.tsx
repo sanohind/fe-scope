@@ -4,7 +4,7 @@ import { asakaiApi, AsakaiReason, AsakaiChartWithReasons } from "../../../servic
 import { Plus, Edit, Trash2, ArrowLeft } from "lucide-react";
 import PageMeta from "../../../components/common/PageMeta";
 
-const SECTION_OPTIONS = ["brazzing", "chassis", "nylon", "subcon", "passthrough"];
+const SECTION_OPTIONS = ["no_section", "brazzing", "chassis", "nylon", "subcon", "passthrough"];
 
 export default function AsakaiManageReasons() {
   const { chartId } = useParams<{ chartId: string }>();
@@ -21,7 +21,7 @@ export default function AsakaiManageReasons() {
     part_name: "",
     problem: "",
     qty: 0,
-    section: "brazzing",
+    section: "no_section",
     line: "",
     penyebab: "",
     perbaikan: "",
