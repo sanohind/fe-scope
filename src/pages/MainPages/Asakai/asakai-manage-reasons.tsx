@@ -217,7 +217,6 @@ export default function AsakaiManageReasons() {
                     value={formData.part_no}
                     onChange={(e) => setFormData({ ...formData, part_no: e.target.value })}
                     className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                    required
                   />
                 </div>
                 <div>
@@ -227,7 +226,6 @@ export default function AsakaiManageReasons() {
                     value={formData.part_name}
                     onChange={(e) => setFormData({ ...formData, part_name: e.target.value })}
                     className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                    required
                   />
                 </div>
               </div>
@@ -246,10 +244,10 @@ export default function AsakaiManageReasons() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Quantity</label>
                   <input
                     type="number"
+                    min="0"
                     value={formData.qty}
                     onChange={(e) => setFormData({ ...formData, qty: Number(e.target.value) })}
                     className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                    required
                   />
                 </div>
                 <div>
@@ -258,7 +256,6 @@ export default function AsakaiManageReasons() {
                     value={formData.section}
                     onChange={(e) => setFormData({ ...formData, section: e.target.value })}
                     className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                    required
                   >
                     {SECTION_OPTIONS.map((section) => (
                       <option key={section} value={section}>
@@ -274,7 +271,6 @@ export default function AsakaiManageReasons() {
                     value={formData.line}
                     onChange={(e) => setFormData({ ...formData, line: e.target.value })}
                     className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                    required
                   />
                 </div>
               </div>
@@ -285,7 +281,6 @@ export default function AsakaiManageReasons() {
                   onChange={(e) => setFormData({ ...formData, penyebab: e.target.value })}
                   className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                   rows={3}
-                  required
                 />
               </div>
               <div>
@@ -295,7 +290,6 @@ export default function AsakaiManageReasons() {
                   onChange={(e) => setFormData({ ...formData, perbaikan: e.target.value })}
                   className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                   rows={3}
-                  required
                 />
               </div>
               <div className="flex gap-2 justify-end">

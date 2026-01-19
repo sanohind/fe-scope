@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { asakaiApi, AsakaiChart, AsakaiTitle } from "../../../services/asakaiApi";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, MessageSquareQuote, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageMeta from "../../../components/common/PageMeta";
 import DatePicker from "../../../components/form/date-picker";
@@ -11,12 +11,6 @@ const formatDateToDisplay = (dateStr: string): string => {
   const [year, month, day] = dateStr.split("-");
   return `${day}-${month}-${year}`;
 };
-
-// const formatDateToAPI = (dateStr: string): string => {
-//   if (!dateStr) return "";
-//   const [day, month, year] = dateStr.split("-");
-//   return `${year}-${month}-${day}`;
-// };
 
 export default function AsakaiManage() {
   const [charts, setCharts] = useState<AsakaiChart[]>([]);
@@ -31,12 +25,27 @@ export default function AsakaiManage() {
   });
   const [filterTitle, setFilterTitle] = useState<number>(0);
   const [searchDate, setSearchDate] = useState("");
+  
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    last_page: 1,
+    from: 0,
+    to: 0,
+    current_page: 1
+  });
+
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchTitles();
-    fetchCharts();
   }, []);
+
+  useEffect(() => {
+    fetchCharts();
+  }, [filterTitle, searchDate, page, perPage]);
 
   const fetchTitles = async () => {
     try {
@@ -52,13 +61,37 @@ export default function AsakaiManage() {
   const fetchCharts = async () => {
     try {
       setLoading(true);
-      const params: any = {};
+      const params: any = {
+        page: page,
+        per_page: perPage
+      };
       if (filterTitle > 0) params.asakai_title_id = filterTitle;
       if (searchDate) params.date = searchDate;
 
       const response = await asakaiApi.getCharts(params);
       if (response.success) {
-        setCharts(response.data);
+        // Handle both paginated and non-paginated responses
+        if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+           // Paginated response
+           setCharts(response.data.data);
+           setPagination({
+             total: response.data.total,
+             last_page: response.data.last_page,
+             from: response.data.from,
+             to: response.data.to,
+             current_page: response.data.current_page
+           });
+        } else if (Array.isArray(response.data)) {
+            // Non-paginated response (fallback)
+            setCharts(response.data);
+            setPagination({
+              total: response.data.length,
+              last_page: 1,
+              from: 1,
+              to: response.data.length,
+              current_page: 1
+            });
+        }
       }
     } catch (error) {
       console.error("Failed to fetch charts:", error);
@@ -66,10 +99,6 @@ export default function AsakaiManage() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchCharts();
-  }, [filterTitle, searchDate]);
 
   const handleOpenModal = (chart?: AsakaiChart) => {
     if (chart) {
@@ -100,11 +129,18 @@ export default function AsakaiManage() {
     try {
       if (editingChart) {
         await asakaiApi.updateChart(editingChart.id, formData);
+        handleCloseModal();
+        fetchCharts();
       } else {
-        await asakaiApi.createChart(formData);
+        const response = await asakaiApi.createChart(formData);
+        if (response.success && response.data?.id) {
+          // Redirect to manage reasons after creating new chart
+          navigate(`/asakai-manage-reasons/${response.data.id}`);
+        } else {
+           handleCloseModal();
+           fetchCharts(); 
+        }
       }
-      handleCloseModal();
-      fetchCharts();
     } catch (error) {
       alert(error instanceof Error ? error.message : "Failed to save chart");
     }
@@ -123,6 +159,12 @@ export default function AsakaiManage() {
 
   const handleManageReasons = (chartId: number) => {
     navigate(`/asakai-manage-reasons/${chartId}`);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= pagination.last_page) {
+      setPage(newPage);
+    }
   };
 
   return (
@@ -148,7 +190,10 @@ export default function AsakaiManage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Filter by Title</label>
               <select
                 value={filterTitle}
-                onChange={(e) => setFilterTitle(Number(e.target.value))}
+                onChange={(e) => {
+                    setFilterTitle(Number(e.target.value));
+                    setPage(1); // Reset to page 1 on filter change
+                }}
                 className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               >
                 <option value={0}>All Titles</option>
@@ -175,6 +220,7 @@ export default function AsakaiManage() {
                   } else {
                     setSearchDate("");
                   }
+                  setPage(1); // Reset to page 1 on filter change
                 }}
               />
             </div>
@@ -225,7 +271,7 @@ export default function AsakaiManage() {
                       <td className="px-6 py-4 text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
                           <button onClick={() => handleManageReasons(chart.id)} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" title="Manage Reasons">
-                            <Eye size={18} />
+                            <MessageSquareQuote size={18} />
                           </button>
                           <button onClick={() => handleOpenModal(chart)} className="text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300" title="Edit">
                             <Edit size={18} />
@@ -241,10 +287,55 @@ export default function AsakaiManage() {
               </tbody>
             </table>
           </div>
+          
+          {/* Pagination Controls */}
+          {charts.length > 0 && (
+            <div className="flex items-center justify-between border-t border-gray-200 px-6 py-4 dark:border-gray-800">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-700 dark:text-gray-400">Show</span>
+                <select
+                  value={perPage}
+                  onChange={(e) => {
+                    setPerPage(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span className="text-sm text-gray-700 dark:text-gray-400">entries</span>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-700 dark:text-gray-400">
+                  Showing {pagination.from} to {pagination.to} of {pagination.total} entries
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page <= 1}
+                    className="rounded-lg border border-gray-200 p-1 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                  >
+                    <ChevronLeft size={20} className="text-gray-600 dark:text-gray-400" />
+                  </button>
+                  <button
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page >= pagination.last_page}
+                    className="rounded-lg border border-gray-200 p-1 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                  >
+                    <ChevronRight size={20} className="text-gray-600 dark:text-gray-400" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal - Same as before */}
       {showModal && (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
@@ -286,6 +377,7 @@ export default function AsakaiManage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Quantity</label>
                 <input
                   type="number"
+                  min="0"
                   value={formData.qty}
                   onChange={(e) => setFormData({ ...formData, qty: Number(e.target.value) })}
                   className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
