@@ -24,7 +24,7 @@ export default function DatePicker({ id, mode, onChange, label, defaultDate, pla
       mode: mode || "single",
       static: true,
       monthSelectorType: "static",
-      dateFormat: "Y-m-d",
+      dateFormat: "d-m-Y",
       defaultDate,
       onChange,
     });

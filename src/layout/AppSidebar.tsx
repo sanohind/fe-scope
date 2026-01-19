@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 // Assume these icons are imported from an icon library
 import { ChevronDownIcon, HorizontaLDots} from "../icons";
 import { useSidebar } from "../context/SidebarContext";
-import { Boxes, BadgeDollarSign, HousePlug, Van, Handshake, Waypoints, ChartNetwork } from 'lucide-react';
+import { Boxes, BadgeDollarSign, HousePlug, Van, Handshake, Waypoints, ChartNetwork, Castle } from 'lucide-react';
 
 type NavItem = {
   name: string;
@@ -14,6 +14,14 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
+  {
+    icon: <Castle size={12} strokeWidth={0.7} absoluteStrokeWidth />,
+    name: "Asakai Board",
+    subItems: [
+      { name: "Dashboard", path: "/asakai-board" },
+      { name: "Manage Charts", path: "/asakai-manage" },
+    ],
+  },
   {
     icon: <Boxes size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Inventory",

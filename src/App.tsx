@@ -82,6 +82,10 @@ import ProductionPlanManage from "./pages/MainPages/PlanningManage/production-pl
 import InventoryWhrm01StockDetail from "./pages/MainPages/Inventory/inventory-whrm01-stock-detail";
 import InventoryWhrm02StockDetail from "./pages/MainPages/Inventory/inventory-whrm02-stock-detail";
 import InventoryWhmt01StockDetail from "./pages/MainPages/Inventory/inventory-whmt01-stock-detail";
+import AsakaiBoard from "./pages/MainPages/Asakai/asakai-board";
+import AsakaiManage from "./pages/MainPages/Asakai/asakai-manage";
+import AsakaiManageReasons from "./pages/MainPages/Asakai/asakai-manage-reasons";
+import AsakaiReasonsList from "./pages/MainPages/Asakai/asakai-reasons-list";
 
 // Lazy load dashboard pages for better performance
 const WarehouseAllRm = lazy(() => import("./pages/MainPages/Warehouse/warehouse-allRm"));
@@ -208,6 +212,10 @@ export default function App() {
             <Route path="/daily-use-manage" element={<DailyUseManage />} />
             <Route path="/production-plan-upload" element={<ProductionPlanUpload />} />
             <Route path="/production-plan-manage" element={<ProductionPlanManage />} />
+            <Route path="/asakai-board" element={<AsakaiBoard />} />
+            <Route path="/asakai-manage" element={<AsakaiManage />} />
+            <Route path="/asakai-manage-reasons/:chartId" element={<AsakaiManageReasons />} />
+            <Route path="/asakai-reasons/:titleId/:titleName" element={<AsakaiReasonsList />} />
             <Route path="/saas" element={<Saas />} />
 
             {/* Others Page */}
