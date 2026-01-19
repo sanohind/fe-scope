@@ -40,7 +40,7 @@ export interface AsakaiReason {
   part_name: string;
   problem: string;
   qty: number;
-  section: "brazzing" | "chassis" | "nylon" | "subcon" | "passthrough";
+  section: "brazzing" | "chassis" | "nylon" | "subcon" | "passthrough" | "no_section";
   line: string;
   penyebab: string;
   perbaikan: string;

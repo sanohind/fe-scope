@@ -21,7 +21,7 @@ export default function AsakaiManageReasons() {
     part_name: "",
     problem: "",
     qty: 0,
-    section: "no_section",
+    section: "brazzing",
     line: "",
     penyebab: "",
     perbaikan: "",
@@ -73,7 +73,7 @@ export default function AsakaiManageReasons() {
         part_name: "",
         problem: "",
         qty: 0,
-        section: "brazzing",
+        section: "no_section",
         line: "",
         penyebab: "",
         perbaikan: "",
@@ -93,12 +93,12 @@ export default function AsakaiManageReasons() {
       if (editingReason) {
         await asakaiApi.updateReason(editingReason.id, {
           ...formData,
-          section: formData.section as "brazzing" | "chassis" | "nylon" | "subcon" | "passthrough",
+          section: formData.section as "brazzing" | "chassis" | "nylon" | "subcon" | "passthrough" | "no_section",
         });
       } else {
         await asakaiApi.createReason({
           ...formData,
-          section: formData.section as "brazzing" | "chassis" | "nylon" | "subcon" | "passthrough",
+          section: formData.section as "brazzing" | "chassis" | "nylon" | "subcon" | "passthrough" | "no_section",
         });
       }
       handleCloseModal();
