@@ -129,7 +129,7 @@ export default function AsakaiManageReasons() {
 
   return (
     <>
-      <PageMeta title="Manage Reasons | SCOPE - Sanoh Indonesia" description="Manage Asakai reasons" />
+      <PageMeta title="BIRA Problem List | SCOPE - Sanoh Indonesia" description="Manage Asakai reasons" />
       <div className="space-y-6">
         {/* Page Header */}
         <div className="flex items-center justify-between">
@@ -138,7 +138,7 @@ export default function AsakaiManageReasons() {
               <ArrowLeft size={16} />
               Back to Charts
             </button>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Reasons</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">BIRA Problem List</h1>
             {chart && (
               <p className="mt-2 text-gray-600 dark:text-gray-400">
                 {chart.asakai_title} - {chart.date} (Qty: {chart.qty})
@@ -147,7 +147,7 @@ export default function AsakaiManageReasons() {
           </div>
           <button onClick={() => handleOpenModal()} className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
             <Plus size={16} />
-            Add Reason
+            Add BIRA
           </button>
         </div>
 
@@ -178,7 +178,7 @@ export default function AsakaiManageReasons() {
                 ) : reasons.length === 0 ? (
                   <tr>
                     <td colSpan={9} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                      No reasons available. Click "Add Reason" to create one.
+                      No reasons available. Click "Add BIRA" to create one.
                     </td>
                   </tr>
                 ) : (
@@ -215,7 +215,7 @@ export default function AsakaiManageReasons() {
       {showModal && (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
           <div className="w-full max-w-2xl rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900 my-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{editingReason ? "Edit Reason" : "Add Reason"}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{editingReason ? "Edit BIRA" : "Add BIRA"}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

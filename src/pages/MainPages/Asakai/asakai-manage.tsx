@@ -154,7 +154,7 @@ export default function AsakaiManage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this chart? This will also delete all associated reasons.")) {
+    if (window.confirm("Are you sure you want to delete this chart? This will also delete all associated BIRA.")) {
       try {
         await asakaiApi.deleteChart(id);
         fetchCharts();
@@ -246,7 +246,7 @@ export default function AsakaiManage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reasons</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">BIRA</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -273,12 +273,12 @@ export default function AsakaiManage() {
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{chart.user}</td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                         <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                          {chart.reasons_count || 0} reasons
+                          {chart.reasons_count || 0} BIRA
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => handleManageReasons(chart.id)} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" title="Manage Reasons">
+                          <button onClick={() => handleManageReasons(chart.id)} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" title="Manage BIRA">
                             <MessageSquareQuote size={18} />
                           </button>
                           <button onClick={() => handleOpenModal(chart)} className="text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300" title="Edit">
