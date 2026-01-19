@@ -95,10 +95,10 @@ export default function AsakaiReasonsList() {
           </button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              {decodeURIComponent(titleName || "")} - Reasons
+              {decodeURIComponent(titleName || "")} - BIRA
             </h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
-              View all reasons for this Asakai title
+              View all BIRA for this Asakai title
             </p>
           </div>
         </div>

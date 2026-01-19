@@ -237,7 +237,7 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
             className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors"
           >
             <List size={16} />
-            Show Reasons
+            Show BIRA
           </button>
         </div>
       </div>
