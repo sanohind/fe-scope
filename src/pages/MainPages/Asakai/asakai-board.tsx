@@ -7,7 +7,7 @@ import { AsakaiFilterProvider, useAsakaiFilters } from "../../../context/AsakaiF
 // 13 Asakai Titles based on the image provided
 const ASAKAI_TITLES = [
   { id: 1, title: "Safety - Fatal Accident", category: "Safety" },
-  { id: 2, title: "Safety - LOST Working Day", category: "Safety" },
+  { id: 2, title: "Safety - Lost Working Day", category: "Safety" },
   { id: 3, title: "Quality - Customer Claim", category: "Quality" },
   { id: 4, title: "Quality - Warranty Claim", category: "Quality" },
   { id: 5, title: "Quality - Service Part", category: "Quality" },

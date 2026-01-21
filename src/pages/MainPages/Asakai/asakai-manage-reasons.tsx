@@ -4,6 +4,7 @@ import { asakaiApi, AsakaiReason, AsakaiChartWithReasons } from "../../../servic
 import { Plus, Edit, Trash2, ArrowLeft } from "lucide-react";
 import PageMeta from "../../../components/common/PageMeta";
 import { Modal } from "../../../components/ui/modal";
+import { ConfirmationModal } from "../../../components/ui/modal/ConfirmationModal";
 
 const SECTION_OPTIONS = ["no_section", "brazzing", "chassis", "nylon", "subcon", "passthrough"];
 
@@ -19,6 +20,10 @@ export default function AsakaiManageReasons() {
   // Custom Error Modal State
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  
+  // Delete Confirmation State
+  const [reasonToDelete, setReasonToDelete] = useState<number | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     asakai_chart_id: Number(chartId),
@@ -115,15 +120,23 @@ export default function AsakaiManageReasons() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this reason?")) {
-      try {
-        await asakaiApi.deleteReason(id);
-        fetchChartAndReasons();
-      } catch (error) {
-        setErrorMessage("Failed to delete reason");
-        setErrorModalOpen(true);
-      }
+  const handleDelete = (id: number) => {
+    setReasonToDelete(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!reasonToDelete) return;
+    
+    setDeleteLoading(true);
+    try {
+      await asakaiApi.deleteReason(reasonToDelete);
+      fetchChartAndReasons();
+    } catch (error) {
+      setErrorMessage("Failed to delete reason");
+      setErrorModalOpen(true);
+    } finally {
+      setDeleteLoading(false);
+      setReasonToDelete(null);
     }
   };
 
@@ -362,6 +375,18 @@ export default function AsakaiManageReasons() {
           </button>
         </div>
       </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={!!reasonToDelete}
+        onClose={() => setReasonToDelete(null)}
+        onConfirm={confirmDelete}
+        title="Delete Reason"
+        message="Are you sure you want to delete this reason?"
+        confirmText="Delete"
+        isLoading={deleteLoading}
+        variant="danger"
+      />
     </>
   );
 }

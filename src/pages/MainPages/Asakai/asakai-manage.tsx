@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import PageMeta from "../../../components/common/PageMeta";
 import DatePicker from "../../../components/form/date-picker";
 import { Modal } from "../../../components/ui/modal";
+import { ConfirmationModal } from "../../../components/ui/modal/ConfirmationModal";
 
 // Helper functions to convert between DD-MM-YYYY and YYYY-MM-DD
 const formatDateToDisplay = (dateStr: string): string => {
@@ -22,6 +23,10 @@ export default function AsakaiManage() {
   // Custom Error Modal State
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  
+  // Delete Confirmation State
+  const [chartToDelete, setChartToDelete] = useState<number | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   
   const [editingChart, setEditingChart] = useState<AsakaiChart | null>(null);
   const [formData, setFormData] = useState({
@@ -153,15 +158,23 @@ export default function AsakaiManage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this chart? This will also delete all associated BIRA.")) {
-      try {
-        await asakaiApi.deleteChart(id);
-        fetchCharts();
-      } catch (error) {
-        setErrorMessage("Failed to delete chart");
-        setErrorModalOpen(true);
-      }
+  const handleDelete = (id: number) => {
+    setChartToDelete(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!chartToDelete) return;
+    
+    setDeleteLoading(true);
+    try {
+      await asakaiApi.deleteChart(chartToDelete);
+      fetchCharts();
+    } catch (error) {
+      setErrorMessage("Failed to delete chart");
+      setErrorModalOpen(true);
+    } finally {
+      setDeleteLoading(false);
+      setChartToDelete(null);
     }
   };
 
@@ -454,6 +467,18 @@ export default function AsakaiManage() {
           </button>
         </div>
       </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={!!chartToDelete}
+        onClose={() => setChartToDelete(null)}
+        onConfirm={confirmDelete}
+        title="Delete Chart"
+        message="Are you sure you want to delete this chart? This will also delete all associated BIRA."
+        confirmText="Delete"
+        isLoading={deleteLoading}
+        variant="danger"
+      />
     </>
   );
 }
