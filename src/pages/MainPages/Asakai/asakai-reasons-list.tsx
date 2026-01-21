@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { asakaiApi, AsakaiReason } from "../../../services/asakaiApi";
 import { ArrowLeft, Search } from "lucide-react";
 import PageMeta from "../../../components/common/PageMeta";
-import DatePicker from "../../../components/form/date-picker";
 
 // Helper function to convert between DD-MM-YYYY and YYYY-MM-DD
 const formatDateToDisplay = (dateStr: string): string => {
@@ -22,13 +21,12 @@ export default function AsakaiReasonsList() {
   const [total, setTotal] = useState(0);
 
   // Filters
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  /* Filters removed in favor of global filter */
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchReasons();
-  }, [titleId, currentPage, dateFrom, dateTo, searchQuery]);
+  }, [titleId, currentPage, searchQuery]);
 
   const fetchReasons = async () => {
     try {
@@ -37,8 +35,17 @@ export default function AsakaiReasonsList() {
         per_page: 100, // Get more results to filter client-side
       };
 
-      if (dateFrom) params.date_from = dateFrom;
-      if (dateTo) params.date_to = dateTo;
+      const storedParamsStr = localStorage.getItem("asakai_filter_params");
+      if (storedParamsStr) {
+        try {
+          const storedParams = JSON.parse(storedParamsStr);
+          if (storedParams.date_from) params.date_from = storedParams.date_from;
+          if (storedParams.date_to) params.date_to = storedParams.date_to;
+        } catch (e) {
+          console.error("Failed to parse stored filter params", e);
+        }
+      }
+
       if (searchQuery) params.search = searchQuery;
 
       const response = await asakaiApi.getReasons(params);
@@ -106,54 +113,8 @@ export default function AsakaiReasonsList() {
         {/* Filters */}
         <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {/* Date From */}
-            <div>
-              <DatePicker
-                id="date-from-filter"
-                label="Date From"
-                placeholder="Select start date"
-                value={dateFrom ? formatDateToDisplay(dateFrom) : ""}
-                onChange={(selectedDates) => {
-                  if (selectedDates.length > 0) {
-                    const date = selectedDates[0];
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, "0");
-                    const day = String(date.getDate()).padStart(2, "0");
-                    setDateFrom(`${year}-${month}-${day}`);
-                    setCurrentPage(1);
-                  } else {
-                    setDateFrom("");
-                  }
-                }}
-              />
-            </div>
-
-            {/* Date To */}
-            <div>
-              <DatePicker
-                id="date-to-filter"
-                label="Date To"
-                placeholder="Select end date"
-                value={dateTo ? formatDateToDisplay(dateTo) : ""}
-                onChange={(selectedDates) => {
-                  if (selectedDates.length > 0) {
-                    const date = selectedDates[0];
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, "0");
-                    const day = String(date.getDate()).padStart(2, "0");
-                    setDateTo(`${year}-${month}-${day}`);
-                    setCurrentPage(1);
-                  } else {
-                    setDateTo("");
-                  }
-                }}
-              />
-            </div>
-
-
-
             {/* Search */}
-            <div>
+            <div className="md:col-span-2 lg:col-span-3">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 Search Part No
               </label>

@@ -4,3 +4,6 @@ export { default as DailyUseManageTable } from "./DailyUseManageTable";
 export { default as ProductionPlanManage } from "./ProductionPlanManage";
 export { default as ProductionPlanDropZone } from "./ProductionPlanDropZone";
 export { default as ProductionPlanManageTable } from "./ProductionPlanManageTable";
+export { default as DeliveryPlanManage } from "./DeliveryPlanManage";
+export { default as DeliveryPlanDropZone } from "./DeliveryPlanDropZone";
+export { default as DeliveryPlanManageTable } from "./DeliveryPlanManageTable";

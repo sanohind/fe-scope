@@ -227,7 +227,7 @@ const LogisticsPerformance: React.FC = () => {
           <p className="mt-1 text-xl font-bold text-blue-600 dark:text-blue-400">{data.total_delivery.toLocaleString()}</p>
         </div>
         <div className="text-center p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Total PO</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Planning Delivery</p>
           <p className="mt-1 text-xl font-bold text-purple-600 dark:text-purple-400">{data.total_po.toLocaleString()}</p>
         </div>
         <div className="text-center p-4 rounded-lg bg-green-50 dark:bg-green-900/20">

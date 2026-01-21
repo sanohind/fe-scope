@@ -197,7 +197,7 @@ const ShipmentAnalyticsChart: React.FC = () => {
                 iconType="rect"
               />
               <Bar dataKey="Total Delivery" fill="#10B981" name="Total Delivery" radius={[4, 4, 0, 0]} />
-              <Line dataKey="Total PO" stroke="#465fff" name="Total PO" strokeWidth={2} dot={false} />
+              <Line dataKey="Total PO" stroke="#465fff" name="Planning Delivery" strokeWidth={2} dot={false} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

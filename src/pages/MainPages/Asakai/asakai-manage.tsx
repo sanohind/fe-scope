@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { asakaiApi, AsakaiChart, AsakaiTitle } from "../../../services/asakaiApi";
-import { Plus, Edit, Trash2, MessageSquareQuote, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Edit, Trash2, MessageSquareQuote, ChevronLeft, ChevronRight, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageMeta from "../../../components/common/PageMeta";
 import DatePicker from "../../../components/form/date-picker";
@@ -198,10 +198,19 @@ export default function AsakaiManage() {
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Asakai Charts</h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">Create, edit, and delete Asakai chart data</p>
           </div>
-          <button onClick={() => handleOpenModal()} className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
-            <Plus size={16} />
-            Add Chart Data
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate("/asakai-manage-target")}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
+              <Target size={16} />
+              Manage Target
+            </button>
+            <button onClick={() => handleOpenModal()} className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
+              <Plus size={16} />
+              Add Content
+            </button>
+          </div>
         </div>
 
         {/* Filters */}

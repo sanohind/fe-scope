@@ -80,6 +80,8 @@ import DailyUseManage from "./pages/MainPages/PlanningManage/daily-use-manage";
 import DailyUseMinMax from "./pages/MainPages/PlanningManage/daily-use-min-max";
 import ProductionPlanUpload from "./pages/MainPages/PlanningManage/production-plan-upload";
 import ProductionPlanManage from "./pages/MainPages/PlanningManage/production-plan-manage";
+import DeliveryPlanUpload from "./pages/MainPages/PlanningManage/delivery-plan-upload";
+import DeliveryPlanManage from "./pages/MainPages/PlanningManage/delivery-plan-manage";
 import InventoryWhrm01StockDetail from "./pages/MainPages/Inventory/inventory-whrm01-stock-detail";
 import InventoryWhrm02StockDetail from "./pages/MainPages/Inventory/inventory-whrm02-stock-detail";
 import InventoryWhmt01StockDetail from "./pages/MainPages/Inventory/inventory-whmt01-stock-detail";
@@ -87,6 +89,7 @@ import AsakaiBoard from "./pages/MainPages/Asakai/asakai-board";
 import AsakaiManage from "./pages/MainPages/Asakai/asakai-manage";
 import AsakaiManageReasons from "./pages/MainPages/Asakai/asakai-manage-reasons";
 import AsakaiReasonsList from "./pages/MainPages/Asakai/asakai-reasons-list";
+import AsakaiManageTarget from "./pages/MainPages/Asakai/asakai-manage-target";
 
 // Lazy load dashboard pages for better performance
 const WarehouseAllRm = lazy(() => import("./pages/MainPages/Warehouse/warehouse-allRm"));
@@ -214,7 +217,10 @@ export default function App() {
             <Route path="/daily-use-min-max" element={<DailyUseMinMax />} />
             <Route path="/production-plan-upload" element={<ProductionPlanUpload />} />
             <Route path="/production-plan-manage" element={<ProductionPlanManage />} />
+            <Route path="/delivery-plan-upload" element={<DeliveryPlanUpload />} />
+            <Route path="/delivery-plan-manage" element={<DeliveryPlanManage />} />
             <Route path="/asakai-board" element={<AsakaiBoard />} />
+            <Route path="/asakai-manage-target" element={<AsakaiManageTarget />} />
             <Route path="/asakai-manage" element={<AsakaiManage />} />
             <Route path="/asakai-manage-reasons/:chartId" element={<AsakaiManageReasons />} />
             <Route path="/asakai-reasons/:titleId/:titleName" element={<AsakaiReasonsList />} />

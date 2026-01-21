@@ -54,6 +54,17 @@ export interface AsakaiChartWithReasons extends AsakaiChart {
   reasons: AsakaiReason[];
 }
 
+export interface AsakaiTarget {
+  id: number;
+  asakai_title_id: number;
+  asakai_title?: string;
+  year: number;
+  period: number;
+  target: number;
+  created_at: string;
+  updated_at: string;
+}
+
 type AsakaiFilterParams = {
   period?: string;
   date_from?: string;
@@ -218,6 +229,38 @@ export const asakaiApi = {
     const url = `${BASE_URL}/api/asakai/charts/${chartId}/reasons`;
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch reasons by chart");
+    return response.json();
+  },
+
+  // Targets
+  getTargets: async (params?: { asakai_title_id?: number; year?: number; period?: number; per_page?: number; page?: number }) => {
+    const queryParams = new URLSearchParams(cleanParams(params) as any).toString();
+    const url = `${BASE_URL}/api/asakai/charts/target${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch asakai targets");
+    return response.json();
+  },
+
+  createOrUpdateTarget: async (data: { asakai_title_id: number; year: number; period: number; target: number }) => {
+    const url = `${BASE_URL}/api/asakai/charts/target`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to save asakai target");
+    }
+    return response.json();
+  },
+
+  deleteTarget: async (id: number) => {
+    const url = `${BASE_URL}/api/asakai/charts/target/${id}`;
+    const response = await fetch(url, {
+      method: "DELETE",
+    });
+    if (!response.ok) throw new Error("Failed to delete asakai target");
     return response.json();
   },
 };

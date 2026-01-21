@@ -9,6 +9,7 @@ interface ChartDataPoint {
   date: string;
   period: string;
   qty: number;
+  target?: number;
   label: string;
   formattedDate: string;
   has_data: boolean;
@@ -55,10 +56,25 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
           date_to: filters?.date_to,
         };
         
-        const result = await asakaiApi.getChartData(params);
+        // Fetch chart data and targets in parallel
+        // We fetch targets for the relevant period. If 'daily' or 'monthly', extracting year is useful.
+        const year = filters?.date_from ? new Date(filters.date_from).getFullYear() : new Date().getFullYear();
         
-        if (result.success && result.data) {
-          const chartData: ChartDataPoint[] = result.data.map((item: any) => {
+        const [chartRes, targetRes] = await Promise.all([
+            asakaiApi.getChartData(params),
+            asakaiApi.getTargets({ asakai_title_id: titleId, year, per_page: 100 })
+        ]);
+        
+        // Create a map for targets: "YEAR-MONTH" -> target value
+        const targetMap = new Map<string, number>();
+        if (targetRes.success && targetRes.data?.data) {
+            targetRes.data.data.forEach((t: any) => {
+                targetMap.set(`${t.year}-${t.period}`, t.target);
+            });
+        }
+
+        if (chartRes.success && chartRes.data) {
+          const chartData: ChartDataPoint[] = chartRes.data.map((item: any) => {
             const dateObj = new Date(item.date);
             let label = "";
             let formattedDate = "";
@@ -75,11 +91,27 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
               label = item.date.split("-")[0];
               formattedDate = label;
             }
+            
+            // Determine target
+            let targetVal: number | undefined = undefined;
+            // Determine Year-Month key
+            let key = "";
+            if (filters?.period === "daily") {
+                key = `${dateObj.getFullYear()}-${dateObj.getMonth() + 1}`;
+            } else if (filters?.period === "monthly") {
+                const [y, m] = item.date.split("-");
+                key = `${parseInt(y)}-${parseInt(m)}`;
+            }
+            
+            if (key) {
+                targetVal = targetMap.get(key);
+            }
 
             return {
               date: item.date,
               period: item.date,
               qty: item.qty,
+              target: targetVal,
               label,
               formattedDate,
               has_data: item.has_data,
@@ -131,6 +163,13 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
               <p className="text-sm text-gray-500 dark:text-gray-300">Quantity:</p>
               <p className="text-sm font-semibold text-brand-600 dark:text-brand-300">{dataPoint.qty.toLocaleString()}</p>
             </div>
+            
+            {dataPoint.target !== undefined && (
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm text-gray-500 dark:text-gray-300">Target:</p>
+                <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">{dataPoint.target.toLocaleString()}</p>
+              </div>
+            )}
             
             {dataPoint.reasons_count > 0 && (
               <div className="mt-3 border-t border-gray-200 dark:border-gray-700 pt-2">
@@ -263,7 +302,8 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
-              <Line type="monotone" dataKey="qty" name="Quantity" stroke={lineColor} strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="qty" name="Actual" stroke={lineColor} strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
+              <Line type="step" dataKey="target" name="Target" stroke="#ea580c" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={false} connectNulls />
             </LineChart>
           </ResponsiveContainer>
         </div>

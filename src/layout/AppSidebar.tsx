@@ -19,7 +19,7 @@ const navItems: NavItem[] = [
     name: "Asakai Board",
     subItems: [
       { name: "Dashboard", path: "/asakai-board" },
-      { name: "Manage Charts", path: "/asakai-manage" },
+      { name: "Asakai Content", path: "/asakai-manage" },
     ],
   },
   {
@@ -80,6 +80,7 @@ const navItems: NavItem[] = [
     name: "Planning Manage",
     subItems: [
       { name: "Daily Use", path: "/daily-use-upload" },
+      { name: "Delivery Plan", path: "/delivery-plan-upload" },
       { name: "Production Plan", path: "/production-plan-upload" },
     ],
   },

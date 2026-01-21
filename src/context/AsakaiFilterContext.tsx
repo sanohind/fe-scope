@@ -1,5 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { describeDateRange } from "../utils/dateRange";
 
 export type AsakaiDateMode = "daily" | "monthly" | "yearly";
@@ -76,13 +75,30 @@ interface AsakaiFilterProviderProps {
 }
 
 export const AsakaiFilterProvider = ({ children }: AsakaiFilterProviderProps) => {
+  // Helper to get initial state from local storage
+  const getInitialState = () => {
+    try {
+      const stored = localStorage.getItem("asakai_filter_state");
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (e) {
+      console.error("Failed to parse asakai filter state", e);
+    }
+    return null;
+  };
+
+  const initialState = getInitialState();
   const defaultStartYear = CURRENT_YEAR - 1;
-  const [mode, setMode] = useState<AsakaiDateMode>("daily");
-  const [section, setSection] = useState<AsakaiSection>("all");
-  const [dailyMonth, setDailyMonth] = useState<number>(new Date().getMonth() + 1);
-  const [dailyYear, setDailyYear] = useState<number>(CURRENT_YEAR);
-  const [monthlyYear, setMonthlyYear] = useState<number>(CURRENT_YEAR);
-  const [yearRange, setYearRange] = useState<{ startYear: number; endYear: number }>({ startYear: defaultStartYear, endYear: CURRENT_YEAR });
+
+  const [mode, setMode] = useState<AsakaiDateMode>(initialState?.mode || "daily");
+  const [section, setSection] = useState<AsakaiSection>(initialState?.section || "all");
+  const [dailyMonth, setDailyMonth] = useState<number>(initialState?.dailyMonth || new Date().getMonth() + 1);
+  const [dailyYear, setDailyYear] = useState<number>(initialState?.dailyYear || CURRENT_YEAR);
+  const [monthlyYear, setMonthlyYear] = useState<number>(initialState?.monthlyYear || CURRENT_YEAR);
+  const [yearRange, setYearRange] = useState<{ startYear: number; endYear: number }>(
+    initialState?.yearRange || { startYear: defaultStartYear, endYear: CURRENT_YEAR }
+  );
 
   const adjustYearRange = useCallback((updates: Partial<{ startYear: number; endYear: number }>) => {
     setYearRange((prev) => {
@@ -138,6 +154,21 @@ export const AsakaiFilterProvider = ({ children }: AsakaiFilterProviderProps) =>
     setYearRange({ startYear: defaultStartYear, endYear: CURRENT_YEAR });
   }, [defaultStartYear]);
 
+  /* Save state to local storage */
+  useEffect(() => {
+    localStorage.setItem(
+      "asakai_filter_state",
+      JSON.stringify({
+        mode,
+        section,
+        dailyMonth,
+        dailyYear,
+        monthlyYear,
+        yearRange,
+      })
+    );
+  }, [mode, section, dailyMonth, dailyYear, monthlyYear, yearRange]);
+
   const requestParams: AsakaiFilterRequestParams = useMemo(() => {
     return {
       period: mode,
@@ -146,6 +177,11 @@ export const AsakaiFilterProvider = ({ children }: AsakaiFilterProviderProps) =>
       section,
     };
   }, [dateDetails.dateRange.from, dateDetails.dateRange.to, mode, section]);
+
+  /* Save computed params to local storage for other pages */
+  useEffect(() => {
+    localStorage.setItem("asakai_filter_params", JSON.stringify(requestParams));
+  }, [requestParams]);
 
   const requestKey = useMemo(() => JSON.stringify(requestParams), [requestParams]);
 
