@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import PageMeta from "../../../components/common/PageMeta";
 import { dailyUseWhApi, DailyUseWhMinMaxData } from "../../../services/dailyUseWhApi";
 import Button from "../../../components/ui/button/Button";
+import { ConfirmationModal } from "../../../components/ui/modal/ConfirmationModal";
 
 interface PaginationInfo {
   total: number;
@@ -34,6 +35,10 @@ export default function DailyUseMinMax() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingData, setEditingData] = useState<Partial<DailyUseWhMinMaxData> | null>(null);
   const [saveLoading, setSaveLoading] = useState(false);
+
+  // Delete Confirmation State
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Helper to get month name
   const getMonthName = (period: number): string => {
@@ -134,6 +139,25 @@ export default function DailyUseMinMax() {
       alert(err instanceof Error ? err.message : "Failed to save data");
     } finally {
       setSaveLoading(false);
+    }
+  };
+
+  const handleDelete = (id: number) => {
+    setItemToDelete(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
+    setDeleteLoading(true);
+    try {
+      await dailyUseWhApi.deleteMinMax(itemToDelete);
+      fetchData();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete data");
+    } finally {
+      setDeleteLoading(false);
+      setItemToDelete(null);
     }
   };
 
@@ -259,12 +283,21 @@ export default function DailyUseMinMax() {
                       <td className="px-6 py-4 text-right text-sm text-gray-900 dark:text-white font-medium">{NUMBER_FORMATTER.format(row.min_onhand)}</td>
                       <td className="px-6 py-4 text-right text-sm text-gray-900 dark:text-white font-medium">{NUMBER_FORMATTER.format(row.max_onhand)}</td>
                       <td className="px-6 py-4 text-right text-sm">
-                        <button 
-                          onClick={() => handleOpenModal(row)}
-                          className="text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300 font-medium"
-                        >
-                          Edit
-                        </button>
+                        <div className="flex items-center justify-end gap-3">
+                          <button 
+                            onClick={() => handleOpenModal(row)}
+                            className="text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300 font-medium"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => row.id && handleDelete(row.id)}
+                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                            title="Delete"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -389,6 +422,18 @@ export default function DailyUseMinMax() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={confirmDelete}
+        title="Delete Min/Max Data"
+        message="Are you sure you want to delete this Min/Max stock data?"
+        confirmText="Delete"
+        isLoading={deleteLoading}
+        variant="danger"
+      />
     </>
   );
 }

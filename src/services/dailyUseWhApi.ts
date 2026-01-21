@@ -156,6 +156,22 @@ export const dailyUseWhApi = {
     }
     return response.json();
   },
+
+  // Delete Min/Max data
+  deleteMinMax: async (id: number): Promise<DailyUseWhMinMaxResponse> => {
+    const response = await fetch(`${API_BASE}/min-max/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to delete Min/Max data");
+    }
+    return response.json();
+  },
 };
 
 export interface DailyUseWhMinMaxData {
