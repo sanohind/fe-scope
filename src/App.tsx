@@ -64,11 +64,13 @@ import InventoryWhfg01 from "./pages/MainPages/Inventory/inventory-whfg01";
 import InventoryWhfg02 from "./pages/MainPages/Inventory/inventory-whfg02";
 import InventoryWhrm01 from "./pages/MainPages/Inventory/inventory-whrm01";
 import InventoryWhrm02 from "./pages/MainPages/Inventory/inventory-whrm02";
+import InventoryWhrm03 from "./pages/MainPages/Inventory/inventory-whrm03";
 import InventoryWhmt01 from "./pages/MainPages/Inventory/inventory-whmt01";
 import WarehouseWhfg01 from "./pages/MainPages/Warehouse/warehouse-whfg01";
 import WarehouseWhfg02 from "./pages/MainPages/Warehouse/warehouse-whfg02";
 import WarehouseWhrm01 from "./pages/MainPages/Warehouse/warehouse-whrm01";
 import WarehouseWhrm02 from "./pages/MainPages/Warehouse/warehouse-whrm02";
+import WarehouseWhrm03 from "./pages/MainPages/Warehouse/warehouse-whrm03";
 import WarehouseWhmt01 from "./pages/MainPages/Warehouse/warehouse-whmt01";
 import ProductionBz from "./pages/MainPages/Production/bzProd";
 import ProductionCh from "./pages/MainPages/Production/chProd";
@@ -86,6 +88,7 @@ import InventoryWhfg01StockDetail from "./pages/MainPages/Inventory/inventory-wh
 import InventoryWhfg02StockDetail from "./pages/MainPages/Inventory/inventory-whfg02-stock-detail";
 import InventoryWhrm01StockDetail from "./pages/MainPages/Inventory/inventory-whrm01-stock-detail";
 import InventoryWhrm02StockDetail from "./pages/MainPages/Inventory/inventory-whrm02-stock-detail";
+import InventoryWhrm03StockDetail from "./pages/MainPages/Inventory/inventory-whrm03-stock-detail";
 import InventoryWhmt01StockDetail from "./pages/MainPages/Inventory/inventory-whmt01-stock-detail";
 import AsakaiBoard from "./pages/MainPages/Asakai/asakai-board";
 import AsakaiManage from "./pages/MainPages/Asakai/asakai-manage";
@@ -136,16 +139,19 @@ export default function App() {
             <Route path="/inventory/whfg02" element={<InventoryWhfg02 />} />
             <Route path="/inventory/whrm01" element={<InventoryWhrm01 />} />
             <Route path="/inventory/whrm02" element={<InventoryWhrm02 />} />
+            <Route path="/inventory/whrm03" element={<InventoryWhrm03 />} />
             <Route path="/inventory/whmt01" element={<InventoryWhmt01 />} />
             <Route path="/inventory/whfg01/stock-detail" element={<InventoryWhfg01StockDetail />} />
             <Route path="/inventory/whfg02/stock-detail" element={<InventoryWhfg02StockDetail />} />
             <Route path="/inventory/whrm01/stock-detail" element={<InventoryWhrm01StockDetail />} />
             <Route path="/inventory/whrm02/stock-detail" element={<InventoryWhrm02StockDetail />} />
+            <Route path="/inventory/whrm03/stock-detail" element={<InventoryWhrm03StockDetail />} />
             <Route path="/inventory/whmt01/stock-detail" element={<InventoryWhmt01StockDetail />} />
             <Route path="/warehouse/whfg01" element={<WarehouseWhfg01 />} />
             <Route path="/warehouse/whfg02" element={<WarehouseWhfg02 />} />
             <Route path="/warehouse/whrm01" element={<WarehouseWhrm01 />} />
             <Route path="/warehouse/whrm02" element={<WarehouseWhrm02 />} />
+            <Route path="/warehouse/whrm03" element={<WarehouseWhrm03 />} />
             <Route path="/warehouse/whmt01" element={<WarehouseWhmt01 />} />
             <Route path="/production/bz" element={<ProductionBz />} />
             <Route path="/production/ch" element={<ProductionCh />} />

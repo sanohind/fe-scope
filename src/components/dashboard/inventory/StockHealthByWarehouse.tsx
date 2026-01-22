@@ -10,6 +10,8 @@ interface StockHealthData {
   low: number;
   normal: number;
   overstock: number;
+  no_daily_use?: number;
+  no_qty_delivery?: number;
 }
 
 interface StockHealthByWarehouseProps {
@@ -70,9 +72,11 @@ const StockHealthByWarehouse: React.FC<StockHealthByWarehouseProps> = ({ warehou
   const lowData = data.map((item) => item.low);
   const normalData = data.map((item) => item.normal);
   const overstockData = data.map((item) => item.overstock);
+  const noDailyUseData = data.map((item) => item.no_daily_use || 0);
+  const noQtyDeliveryData = data.map((item) => item.no_qty_delivery || 0);
 
   const options: ApexOptions = {
-    colors: ["#F04438", "#FDB022", "#12B76A", "#0BA5EC"],
+    colors: ["#F04438", "#FDB022", "#12B76A", "#0BA5EC", "#98A2B3", "#475467"],
     chart: {
       fontFamily: "Outfit, sans-serif",
       type: "bar",
@@ -154,6 +158,14 @@ const StockHealthByWarehouse: React.FC<StockHealthByWarehouseProps> = ({ warehou
       name: "Overstock",
       data: overstockData,
     },
+    {
+      name: "No Daily Use",
+      data: noDailyUseData,
+    },
+    {
+      name: "No Qty Delivery",
+      data: noQtyDeliveryData,
+    }
   ];
 
   return (
