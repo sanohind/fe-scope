@@ -471,8 +471,9 @@ export default function AsakaiManage() {
                 <input
                   type="number"
                   min="0"
+                  step="0.01"
                   value={formData.qty}
-                  onChange={(e) => setFormData({ ...formData, qty: Number(e.target.value) })}
+                  onChange={(e) => setFormData({ ...formData, qty: parseFloat(e.target.value) || 0 })}
                   className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                   required
                 />

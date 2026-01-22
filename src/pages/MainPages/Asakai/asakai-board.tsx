@@ -19,6 +19,14 @@ const ASAKAI_TITLES = [
   { id: 11, title: "Delivery - Line Stop", category: "Delivery" },
   { id: 12, title: "Delivery - On Time Delivery", category: "Delivery" },
   { id: 13, title: "Delivery - Criple", category: "Delivery" },
+  { id: 14, title: "Maintenance - Downtime", category: "Maintenance" },
+  { id: 15, title: "Maintenance - Mean Time to Repair", category: "Maintenance" },
+  { id: 16, title: "Productivity - Efficiency Nylon", category: "Productivity" },
+  { id: 17, title: "Productivity - Efficiency Chassis", category: "Productivity" },
+  { id: 18, title: "Productivity - Efficiency Brazzing", category: "Productivity" },
+  { id: 19, title: "Productivity - Pcs/WH Nylon", category: "Productivity" },
+  { id: 20, title: "Productivity - Pcs/WH Chassis", category: "Productivity" },
+  { id: 21, title: "Productivity - Pcs/WH Brazzing", category: "Productivity" },
 ];
 
 export default function AsakaiBoard() {
@@ -68,6 +76,30 @@ const AsakaiBoardContent = () => {
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Delivery</h2>
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           {ASAKAI_TITLES.filter((t) => t.category === "Delivery").map((title) => (
+            <LazyLoad key={title.id} height="450px">
+              <AsakaiChartLine titleId={title.id} titleName={title.title} category={title.category} filters={requestParams} />
+            </LazyLoad>
+          ))}
+        </div>
+      </div>
+
+      {/* Productivity Charts */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Productivity</h2>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          {ASAKAI_TITLES.filter((t) => t.category === "Productivity").map((title) => (
+            <LazyLoad key={title.id} height="450px">
+              <AsakaiChartLine titleId={title.id} titleName={title.title} category={title.category} filters={requestParams} />
+            </LazyLoad>
+          ))}
+        </div>
+      </div>
+
+      {/* Maintenance Charts */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Maintenance</h2>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          {ASAKAI_TITLES.filter((t) => t.category === "Maintenance").map((title) => (
             <LazyLoad key={title.id} height="450px">
               <AsakaiChartLine titleId={title.id} titleName={title.title} category={title.category} filters={requestParams} />
             </LazyLoad>
