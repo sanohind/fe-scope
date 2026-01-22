@@ -467,7 +467,7 @@ export default function AsakaiManage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Quantity</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Quantity/Case/Value/Score</label>
                 <input
                   type="number"
                   min="0"
