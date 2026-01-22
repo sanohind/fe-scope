@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { inventoryRevApi } from "../../../services/api/dashboardApi";
 import { useNavigate } from "react-router-dom";
+import DatePicker from "../../form/date-picker";
 
-interface RmStockItem {
+interface FgStockItem {
   partno: string;
   desc: string;
   location: string;
-  group_type_desc: string;
+  customer: string;
   warehouse: string;
   onhand: number;
   min_stock: number;
   max_stock: number;
-  daily_use: number;
+  qty_delivery: number;
   estimated_consumption: number;
   stock_status: string;
 }
@@ -25,22 +26,9 @@ interface PaginationInfo {
   to: number;
 }
 
-interface RawMaterialStockLevelTableProps {
+interface FinishGoodStockLevelTableProps {
   warehouse: string;
 }
-
-const GROUP_TYPES = [
-  "-",
-  "Bracket",
-  "Import Part/Component",
-  "Import Supplies",
-  "Import Tube",
-  "Local Part/Component",
-  "Local Supplies",
-  "Local Tube",
-  "Spare Parts",
-  "WTCU / CKD",
-];
 
 const NUMBER_FORMATTER = new Intl.NumberFormat("id-ID");
 
@@ -86,10 +74,10 @@ const getStatusStyle = (status: string) => {
   }
 };
 
-const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({ warehouse }) => {
+const FinishGoodStockLevelTable: React.FC<FinishGoodStockLevelTableProps> = ({ warehouse }) => {
   const navigate = useNavigate();
-  const [allRows, setAllRows] = useState<RmStockItem[]>([]); // Store all data from API
-  const [filteredRows, setFilteredRows] = useState<RmStockItem[]>([]); // Filtered data for display
+  const [allRows, setAllRows] = useState<FgStockItem[]>([]); // Store all data from API
+  const [filteredRows, setFilteredRows] = useState<FgStockItem[]>([]); // Filtered data for display
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
@@ -99,47 +87,19 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(25);
   
-  // Separate month and year filters
-  const [selectedMonth, setSelectedMonth] = useState("");
-  const [selectedYear, setSelectedYear] = useState("");
-  
-  // Group type filter
-  const [selectedGroupType, setSelectedGroupType] = useState("");
-
-  // Generate month options (1-12)
-  const monthOptions = [
-    { value: "01", label: "January" },
-    { value: "02", label: "February" },
-    { value: "03", label: "March" },
-    { value: "04", label: "April" },
-    { value: "05", label: "May" },
-    { value: "06", label: "June" },
-    { value: "07", label: "July" },
-    { value: "08", label: "August" },
-    { value: "09", label: "September" },
-    { value: "10", label: "October" },
-    { value: "11", label: "November" },
-    { value: "12", label: "December" },
-  ];
-
-  // Generate year options (current year and 2 years back)
-  const generateYearOptions = () => {
-    const currentYear = new Date().getFullYear();
-    const years = [];
-    for (let i = 0; i <= 2; i++) {
-      years.push((currentYear - i).toString());
-    }
-    return years;
-  };
-
-  const yearOptions = generateYearOptions();
-
-  // Set default to current month and year
-  useEffect(() => {
+  // Date filter (default to today)
+  const [selectedDate, setSelectedDate] = useState(() => {
+    // Return today's date in YYYY-MM-DD format
     const now = new Date();
-    setSelectedMonth((now.getMonth() + 1).toString().padStart(2, "0"));
-    setSelectedYear(now.getFullYear().toString());
-  }, []);
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  });
+
+  // Customer filter
+  const [selectedCustomer, setSelectedCustomer] = useState("");
+  const [availableCustomers, setAvailableCustomers] = useState<string[]>([]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -151,37 +111,38 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
   }, [searchInput]);
 
   useEffect(() => {
-    if (!selectedMonth || !selectedYear) return;
+    if (!selectedDate) return;
     fetchData();
-  }, [warehouse, searchTerm, selectedMonth, selectedYear]);
+  }, [warehouse, searchTerm, selectedDate]);
 
   // Apply frontend filters whenever allRows or filters change
   useEffect(() => {
     applyFilters();
-  }, [allRows, selectedGroupType, currentPage, perPage]);
+  }, [allRows, selectedCustomer, currentPage, perPage]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Calculate date_from and date_to from selected month and year
-      const firstDay = `${selectedYear}-${selectedMonth}-01`;
-      const lastDay = new Date(parseInt(selectedYear), parseInt(selectedMonth), 0).toISOString().split("T")[0];
-
+      // Use selectedDate for both from and to since it's a daily view
       const params: Record<string, string | number> = {
         page: 1,
         per_page: 9999, // Get all data for frontend filtering
-        date_from: firstDay,
-        date_to: lastDay,
+        date_from: selectedDate,
+        date_to: selectedDate,
       };
 
       if (searchTerm) params.search = searchTerm;
 
-      const result = await inventoryRevApi.getRmStockLevelDetail(warehouse, params);
+      const result = await inventoryRevApi.getFgStockLevelDetail(warehouse, params);
 
       if (result.data) {
         setAllRows(result.data || []);
+        
+        // Extract unique customers
+        const uniqueCustomers = Array.from(new Set(result.data.map((item: FgStockItem) => item.customer).filter(Boolean))) as string[];
+        setAvailableCustomers(uniqueCustomers.sort());
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch data");
@@ -193,13 +154,9 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
   const applyFilters = () => {
     let filtered = [...allRows];
 
-    // Apply group type filter
-    // Apply group type filter
-    if (selectedGroupType) {
-      filtered = filtered.filter((row) => {
-        if (selectedGroupType === "-") return !row.group_type_desc || row.group_type_desc === "-";
-        return row.group_type_desc === selectedGroupType;
-      });
+    // Apply customer filter
+    if (selectedCustomer) {
+      filtered = filtered.filter((row) => row.customer === selectedCustomer);
     }
 
     // Calculate pagination
@@ -257,7 +214,7 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
           Back
         </button>
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white/90">Raw Material Stock Level Detail</h2>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white/90">Finish Good Stock Level Detail</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">Warehouse {warehouse}</p>
         </div>
       </div>
@@ -266,7 +223,7 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Stock Level Data</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Detailed raw material stock information</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Detailed finish good stock information</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <input
@@ -276,46 +233,37 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
               onChange={(e) => setSearchInput(e.target.value)}
               className="w-64 rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
             />
+            <div className="w-64">
+              <DatePicker
+                id="date-picker-finish-good"
+                mode="single"
+                value={selectedDate.split("-").reverse().join("-")}
+                defaultDate={selectedDate.split("-").reverse().join("-")}
+                onChange={(selectedDates: Date[]) => {
+                  if (selectedDates && selectedDates.length > 0) {
+                     const date = selectedDates[0];
+                     const year = date.getFullYear();
+                     const month = String(date.getMonth() + 1).padStart(2, "0");
+                     const day = String(date.getDate()).padStart(2, "0");
+                     setSelectedDate(`${year}-${month}-${day}`);
+                     setCurrentPage(1);
+                  }
+                }}
+                placeholder="Select date"
+              />
+            </div>
             <select
-              value={selectedYear}
+              value={selectedCustomer}
               onChange={(e) => {
-                setSelectedYear(e.target.value);
+                setSelectedCustomer(e.target.value);
                 setCurrentPage(1);
               }}
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
             >
-              {yearOptions.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedMonth}
-              onChange={(e) => {
-                setSelectedMonth(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-            >
-              {monthOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedGroupType}
-              onChange={(e) => {
-                setSelectedGroupType(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-            >
-              <option value="">All Group Types</option>
-              {GROUP_TYPES.map((groupType) => (
-                <option key={groupType} value={groupType}>
-                  {groupType}
+              <option value="">All Customers</option>
+              {availableCustomers.map((customer) => (
+                <option key={customer} value={customer}>
+                  {customer}
                 </option>
               ))}
             </select>
@@ -350,11 +298,11 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
                   <th className="px-4 py-3">Part Number</th>
                   <th className="px-4 py-3">Description</th>
                   <th className="px-4 py-3">Location</th>
-                  <th className="px-4 py-3">Group Type</th>
+                  <th className="px-4 py-3">Customer</th>
                   <th className="px-4 py-3 text-right">Onhand</th>
                   <th className="px-4 py-3 text-right">Min Stock</th>
                   <th className="px-4 py-3 text-right">Max Stock</th>
-                  <th className="px-4 py-3 text-right">Daily Use</th>
+                  <th className="px-4 py-3 text-right">Qty Delivery</th>
                   <th className="px-4 py-3 text-right">Est. Consumption</th>
                   <th className="px-4 py-3 text-center">Status</th>
                 </tr>
@@ -374,11 +322,11 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
                         <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{row.partno || "-"}</td>
                         <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{row.desc || "-"}</td>
                         <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{row.location || "-"}</td>
-                        <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{row.group_type_desc || "-"}</td>
+                        <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{row.customer || "-"}</td>
                         <td className="px-4 py-3 text-right font-medium text-gray-900 dark:text-white">{formatNumber(row.onhand)}</td>
                         <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(row.min_stock)}</td>
                         <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(row.max_stock)}</td>
-                        <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(row.daily_use)}</td>
+                        <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(row.qty_delivery)}</td>
                         <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(row.estimated_consumption)} days</td>
                         <td className="px-4 py-3 text-center">
                           <span className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
@@ -425,4 +373,4 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
   );
 };
 
-export default RawMaterialStockLevelTable;
+export default FinishGoodStockLevelTable;

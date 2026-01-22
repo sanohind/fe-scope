@@ -82,6 +82,8 @@ import ProductionPlanUpload from "./pages/MainPages/PlanningManage/production-pl
 import ProductionPlanManage from "./pages/MainPages/PlanningManage/production-plan-manage";
 import DeliveryPlanUpload from "./pages/MainPages/PlanningManage/delivery-plan-upload";
 import DeliveryPlanManage from "./pages/MainPages/PlanningManage/delivery-plan-manage";
+import InventoryWhfg01StockDetail from "./pages/MainPages/Inventory/inventory-whfg01-stock-detail";
+import InventoryWhfg02StockDetail from "./pages/MainPages/Inventory/inventory-whfg02-stock-detail";
 import InventoryWhrm01StockDetail from "./pages/MainPages/Inventory/inventory-whrm01-stock-detail";
 import InventoryWhrm02StockDetail from "./pages/MainPages/Inventory/inventory-whrm02-stock-detail";
 import InventoryWhmt01StockDetail from "./pages/MainPages/Inventory/inventory-whmt01-stock-detail";
@@ -135,6 +137,8 @@ export default function App() {
             <Route path="/inventory/whrm01" element={<InventoryWhrm01 />} />
             <Route path="/inventory/whrm02" element={<InventoryWhrm02 />} />
             <Route path="/inventory/whmt01" element={<InventoryWhmt01 />} />
+            <Route path="/inventory/whfg01/stock-detail" element={<InventoryWhfg01StockDetail />} />
+            <Route path="/inventory/whfg02/stock-detail" element={<InventoryWhfg02StockDetail />} />
             <Route path="/inventory/whrm01/stock-detail" element={<InventoryWhrm01StockDetail />} />
             <Route path="/inventory/whrm02/stock-detail" element={<InventoryWhrm02StockDetail />} />
             <Route path="/inventory/whmt01/stock-detail" element={<InventoryWhmt01StockDetail />} />

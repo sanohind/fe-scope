@@ -40,7 +40,7 @@ const getStatus = (estimatedConsumption: number, dailyUse: number): "critical" |
   if (dailyUse === 0 && estimatedConsumption === 0) return "undefined";
   if (estimatedConsumption <= 0) return "critical";
   if (estimatedConsumption <= 3) return "low";
-  if (estimatedConsumption <= 9) return "normal";
+  if (estimatedConsumption <= 6) return "normal";
   return "overstock";
 };
 

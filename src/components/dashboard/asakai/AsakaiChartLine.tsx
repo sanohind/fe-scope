@@ -223,13 +223,13 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
   const getCategoryColor = (cat: string) => {
     switch (cat.toLowerCase()) {
       case "safety":
-        return "#F04438"; // Red
+        return "#12B76A"; 
       case "quality":
-        return "#F79009"; // Orange
+        return "#12B76A"; 
       case "delivery":
-        return "#12B76A"; // Green
+        return "#12B76A"; 
       default:
-        return "#465fff"; // Blue
+        return "#12B76A"; 
     }
   };
 
@@ -303,7 +303,7 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
               <Tooltip content={<CustomTooltip />} />
               <Legend />
               <Line type="monotone" dataKey="qty" name="Actual" stroke={lineColor} strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
-              <Line type="step" dataKey="target" name="Target" stroke="#ea580c" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={false} connectNulls />
+              <Line type="step" dataKey="target" name="Target" stroke="#d20000ff" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={false} connectNulls />
             </LineChart>
           </ResponsiveContainer>
         </div>

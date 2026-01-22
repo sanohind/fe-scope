@@ -4,11 +4,9 @@ import FixDropZone from "./FixDropZone";
 import { dailyUseWhApi } from "../../../services/dailyUseWhApi";
 import { API_CONFIG } from "../../../config/apiConfig";
 import Button from "../../ui/button/Button";
-import { SlidersVertical, Download, Diff } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { SlidersVertical, Download } from "lucide-react";
 
 const PlanningManage: React.FC = () => {
-  const navigate = useNavigate();
   const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle");
   const [uploadError, setUploadError] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
@@ -75,15 +73,6 @@ const PlanningManage: React.FC = () => {
           <p className="mt-2 text-gray-600 dark:text-gray-400">Manage daily use warehouse data with import, edit, and delete capabilities</p>
         </div>
         <div className="flex gap-2">
-          <div className="flex items-center justify-end">
-          <Button 
-            onClick={() => navigate("/daily-use-min-max")}
-            className="bg-orange-600 hover:bg-orange-700"
-          >
-            <Diff size={16} />
-            Manage Min/Max
-          </Button>
-        </div>
           <button onClick={handleDownload} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800">
             <Download size={16} />
             Download Template

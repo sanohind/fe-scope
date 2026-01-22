@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import PageMeta from "../../../components/common/PageMeta";
 import { dailyUseWhApi, DailyUseWhMinMaxData } from "../../../services/dailyUseWhApi";
 import Button from "../../../components/ui/button/Button";
@@ -18,7 +17,6 @@ interface PaginationInfo {
 const NUMBER_FORMATTER = new Intl.NumberFormat("id-ID");
 
 export default function DailyUseMinMax() {
-  const navigate = useNavigate();
   const [rows, setRows] = useState<DailyUseWhMinMaxData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -177,19 +175,12 @@ export default function DailyUseMinMax() {
 
   return (
     <>
-      <PageMeta title="Min/Max Stock Manage | SCOPE" description="Manage Min/Max Stock limits for warehouses" />
+      <PageMeta title="Safety Stock Range Manage | SCOPE" description="Manage Safety Stock Range limits for warehouses" />
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <button 
-              onClick={() => navigate("/daily-use-upload")} 
-              className="mb-2 inline-flex items-center gap-2 text-brand-600 hover:text-brand-700 dark:text-brand-400"
-            >
-              <ArrowLeft size={16} />
-              Back to Daily Use
-            </button>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Min/Max Stock Manager</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Safety Stock Range Manager</h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">Set minimum and maximum stock levels per warehouse per month</p>
           </div>
           <Button onClick={() => handleOpenModal()} className="inline-flex items-center gap-2">

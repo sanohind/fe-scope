@@ -35,8 +35,12 @@ export default function AsakaiManage() {
     qty: 0,
   });
   const [filterTitle, setFilterTitle] = useState<number>(0);
-  const [searchDate, setSearchDate] = useState("");
+  // const [searchDate, setSearchDate] = useState(""); // Removed
   
+  // Date Filter State
+  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedYear, setSelectedYear] = useState<string>("");
+
   // Pagination State
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -50,13 +54,33 @@ export default function AsakaiManage() {
 
   const navigate = useNavigate();
 
+  // Generate Year Options (current year - 2 to current year + 1)
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 4 }, (_, i) => (currentYear - 2 + i).toString());
+
+  // Month Options
+  const monthOptions = [
+    { value: "01", label: "January" },
+    { value: "02", label: "February" },
+    { value: "03", label: "March" },
+    { value: "04", label: "April" },
+    { value: "05", label: "May" },
+    { value: "06", label: "June" },
+    { value: "07", label: "July" },
+    { value: "08", label: "August" },
+    { value: "09", label: "September" },
+    { value: "10", label: "October" },
+    { value: "11", label: "November" },
+    { value: "12", label: "December" },
+  ];
+
   useEffect(() => {
     fetchTitles();
   }, []);
 
   useEffect(() => {
     fetchCharts();
-  }, [filterTitle, searchDate, page, perPage]);
+  }, [filterTitle, selectedYear, selectedMonth, page, perPage]);
 
   const fetchTitles = async () => {
     try {
@@ -77,7 +101,28 @@ export default function AsakaiManage() {
         per_page: perPage
       };
       if (filterTitle > 0) params.asakai_title_id = filterTitle;
-      if (searchDate) params.date = searchDate;
+      
+      // Calculate date range from selected month/year
+      if (selectedYear && selectedMonth) {
+        const startDate = `${selectedYear}-${selectedMonth}-01`;
+        // Get last day of the month
+        const lastDay = new Date(parseInt(selectedYear), parseInt(selectedMonth), 0).getDate();
+        const endDate = `${selectedYear}-${selectedMonth}-${lastDay}`;
+        
+        params.date_from = startDate;
+        params.date_to = endDate;
+      } else if (selectedYear) {
+         // If only year is selected, filter by that year
+         params.date_from = `${selectedYear}-01-01`;
+         params.date_to = `${selectedYear}-12-31`;
+      } else if (selectedMonth) {
+         // If only month is selected (assuming current year or invalid case), 
+         // it's safer to require year for specific month filtering, but we can default to current year
+         const year = new Date().getFullYear();
+         const lastDay = new Date(year, parseInt(selectedMonth), 0).getDate();
+         params.date_from = `${year}-${selectedMonth}-01`;
+         params.date_to = `${year}-${selectedMonth}-${lastDay}`;
+      }
 
       const response = await asakaiApi.getCharts(params);
       if (response.success) {
@@ -234,25 +279,43 @@ export default function AsakaiManage() {
                 ))}
               </select>
             </div>
-            <div>
-              <DatePicker
-                id="search-date"
-                label="Search by Date"
-                placeholder="Select date"
-                value={searchDate ? formatDateToDisplay(searchDate) : ""}
-                onChange={(selectedDates) => {
-                  if (selectedDates.length > 0) {
-                    const date = selectedDates[0];
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, "0");
-                    const day = String(date.getDate()).padStart(2, "0");
-                    setSearchDate(`${year}-${month}-${day}`);
-                  } else {
-                    setSearchDate("");
-                  }
-                  setPage(1); // Reset to page 1 on filter change
-                }}
-              />
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Filter by Month</label>
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => {
+                    setSelectedMonth(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                >
+                  <option value="">All Months</option>
+                  {monthOptions.map((month) => (
+                    <option key={month.value} value={month.value}>
+                      {month.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Filter by Year</label>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => {
+                    setSelectedYear(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                >
+                  <option value="">All Years</option>
+                  {yearOptions.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </div>

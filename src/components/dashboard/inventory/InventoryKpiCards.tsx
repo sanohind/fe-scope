@@ -42,13 +42,21 @@ const InventoryKpiCards: React.FC<InventoryKpiCardsProps> = ({ warehouse, dateFr
       try {
         setLoading(true);
         const params: Record<string, string> = {};
+        
+        // 1. Get base params from filters
+        const queryParams = inventoryFiltersToQuery(filters);
+        Object.assign(params, queryParams);
+
+        // 2. Apply specific logic for 'daily' period from Global Filter
+        if (filters?.period === "daily") {
+          const today = new Date().toISOString().split("T")[0];
+          params.date_from = today;
+          params.date_to = today;
+        }
+
+        // 3. Explicit props override (if provided)
         if (dateFrom) params.date_from = dateFrom;
         if (dateTo) params.date_to = dateTo;
-        if (!dateFrom && !dateTo) {
-          Object.assign(params, inventoryFiltersToQuery(filters));
-        } else {
-          Object.assign(params, inventoryFiltersToQuery(filters));
-        }
         const result = await inventoryRevApi.getKpi(warehouse, params);
         setData(result);
         setError(null);

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { inventoryRevApi } from "../../../services/api/dashboardApi";
 import { InventoryFilterRequestParams, inventoryFiltersToQuery } from "../../../context/InventoryFilterContext";
+import { useNavigate } from "react-router-dom";
 
 interface StockLevelByCustomerRow {
   customer: string;
@@ -14,6 +15,8 @@ interface StockLevelByCustomerRow {
   normal_count: number;
   overstock_count: number;
   gap_from_safety: number;
+  estimatedConsumption: number;
+  qty_delivery: number;
 }
 
 interface PaginationInfo {
@@ -32,7 +35,60 @@ interface StockLevelByCustomerProps {
 
 const NUMBER_FORMATTER = new Intl.NumberFormat("id-ID");
 
+// Fungsi untuk menentukan status berdasarkan Estimated Consumption
+const getStatus = (estimatedConsumption: number, deliveryQty: number): "critical" | "low" | "normal" | "overstock" | "undefined" => {
+  if (deliveryQty === 0 && estimatedConsumption === 0) return "undefined";
+  if (estimatedConsumption <= 0) return "critical";
+  if (estimatedConsumption <= 3) return "low";
+  if (estimatedConsumption <= 6) return "normal";
+  return "overstock";
+};
+
+// Fungsi untuk mendapatkan styling berdasarkan status
+const getStatusStyle = (status: string) => {
+  switch (status) {
+    case "undefined":
+      return {
+        bg: "bg-gray-50 dark:bg-gray-800",
+        text: "text-gray-700 dark:text-gray-400",
+        label: "Undefined",
+      };
+    case "critical":
+      return {
+        bg: "bg-red-50 dark:bg-red-900/20",
+        text: "text-red-700 dark:text-red-400",
+        label: "Critical",
+      };
+    case "low":
+      return {
+        bg: "bg-orange-50 dark:bg-orange-900/20",
+        text: "text-orange-700 dark:text-orange-400",
+        label: "Low",
+      };
+    case "normal":
+      return {
+        bg: "bg-green-50 dark:bg-green-900/20",
+        text: "text-green-700 dark:text-green-400",
+        label: "Normal",
+      };
+    case "overstock":
+      return {
+        bg: "bg-blue-50 dark:bg-blue-900/20",
+        text: "text-blue-700 dark:text-blue-400",
+        label: "Overstock",
+      };
+
+    default:
+      return {
+        bg: "bg-gray-50 dark:bg-gray-800",
+        text: "text-gray-700 dark:text-gray-400",
+        label: "Unknown",
+      };
+  }
+};
+
 const StockLevelByCustomer: React.FC<StockLevelByCustomerProps> = ({ warehouse, filters }) => {
+  const navigate = useNavigate();
   const [rows, setRows] = useState<StockLevelByCustomerRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,12 +112,32 @@ const StockLevelByCustomer: React.FC<StockLevelByCustomerProps> = ({ warehouse, 
     const fetchData = async () => {
       try {
         setLoading(true);
+        
+        // Adjust date range based on period - copied logic from InventoryLevelStock
+        const adjustedFilters: InventoryFilterRequestParams = filters || {
+          period: "daily",
+          date_from: new Date().toISOString().split("T")[0],
+          date_to: new Date().toISOString().split("T")[0],
+        };
+
+        if (adjustedFilters.period === "daily") {
+          const today = new Date().toISOString().split("T")[0];
+          adjustedFilters.date_from = today;
+          adjustedFilters.date_to = today;
+        } else if (adjustedFilters.period === "monthly") {
+          const now = new Date();
+          const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+          const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split("T")[0];
+          adjustedFilters.date_from = firstDay;
+          adjustedFilters.date_to = lastDay;
+        }
+
         const params: Record<string, string | number> = {
           page: currentPage,
           per_page: perPage,
         };
         if (searchTerm) params.search = searchTerm;
-        Object.assign(params, inventoryFiltersToQuery(filters));
+        Object.assign(params, inventoryFiltersToQuery(adjustedFilters));
 
         const result = await inventoryRevApi.getStockLevelByCustomer(warehouse, params);
 
@@ -73,6 +149,8 @@ const StockLevelByCustomer: React.FC<StockLevelByCustomerProps> = ({ warehouse, 
           total_safety_stock: typeof row.total_safety_stock === "string" ? parseFloat(row.total_safety_stock) : row.total_safety_stock,
           total_max_stock: typeof row.total_max_stock === "string" ? parseFloat(row.total_max_stock) : row.total_max_stock,
           gap_from_safety: typeof row.gap_from_safety === "string" ? parseFloat(row.gap_from_safety) : row.gap_from_safety,
+          estimatedConsumption: typeof row.estimatedConsumption === "string" ? parseFloat(row.estimatedConsumption) : row.estimatedConsumption,
+          qty_delivery: typeof row.qty_delivery === "string" ? parseFloat(row.qty_delivery) : row.qty_delivery,
         }));
 
         setRows(processedData);
@@ -126,6 +204,12 @@ const StockLevelByCustomer: React.FC<StockLevelByCustomerProps> = ({ warehouse, 
           <p className="text-sm text-gray-500 dark:text-gray-400">Warehouse {warehouse}</p>
         </div>
         <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => navigate(`/inventory/${warehouse.toLowerCase()}/stock-detail`)}
+            className="rounded-lg border border-brand-500 bg-brand-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-600 dark:border-brand-600 dark:bg-brand-600 dark:hover:bg-brand-700"
+          >
+            Stock Detail
+          </button>
           <input
             type="text"
             value={searchInput}
@@ -158,47 +242,36 @@ const StockLevelByCustomer: React.FC<StockLevelByCustomerProps> = ({ warehouse, 
                 <th className="px-4 py-3">Customer</th>
                 <th className="px-4 py-3 text-right">Total Items</th>
                 <th className="px-4 py-3 text-right">Onhand</th>
-                <th className="px-4 py-3 text-right">Min Stock</th>
-                <th className="px-4 py-3 text-right">Safety Stock</th>
-                <th className="px-4 py-3 text-right">Max Stock</th>
-                <th className="px-4 py-3 text-right">Gap from Safety</th>
-                <th className="px-4 py-3 text-center">Critical</th>
-                <th className="px-4 py-3 text-center">Low</th>
-                <th className="px-4 py-3 text-center">Normal</th>
-                <th className="px-4 py-3 text-center">Overstock</th>
+                <th className="px-4 py-3 text-right">Delivery Qty</th>
+                <th className="px-4 py-3 text-right">Estimated Consumption</th>
+                <th className="px-4 py-3 text-center">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white text-sm dark:divide-gray-800 dark:bg-gray-950/40">
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={6} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
                     No stock data available
                   </td>
                 </tr>
               ) : (
-                rows.map((row) => (
-                  <tr key={row.customer} className="hover:bg-gray-50 dark:hover:bg-white/5">
-                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{row.customer || "-"}</td>
-                    <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(row.total_items)}</td>
-                    <td className="px-4 py-3 text-right font-medium text-gray-900 dark:text-white">{formatNumber(row.total_onhand)}</td>
-                    <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(row.total_min_stock)}</td>
-                    <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(row.total_safety_stock)}</td>
-                    <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(row.total_max_stock)}</td>
-                    <td className={`px-4 py-3 text-right font-medium ${row.gap_from_safety > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>{formatNumber(row.gap_from_safety)}</td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center justify-center rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 dark:bg-red-900/20 dark:text-red-400">{row.critical_count}</span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center justify-center rounded-full bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700 dark:bg-orange-900/20 dark:text-orange-400">{row.low_count}</span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center justify-center rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-900/20 dark:text-green-400">{row.normal_count}</span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center justify-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">{row.overstock_count}</span>
-                    </td>
-                  </tr>
-                ))
+                rows.map((row) => {
+                  const status = getStatus(row.estimatedConsumption, row.qty_delivery);
+                  const statusStyle = getStatusStyle(status);
+
+                  return (
+                    <tr key={row.customer} className="hover:bg-gray-50 dark:hover:bg-white/5">
+                      <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{row.customer || "-"}</td>
+                      <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(row.total_items)}</td>
+                      <td className="px-4 py-3 text-right font-medium text-gray-900 dark:text-white">{formatNumber(row.total_onhand)}</td>
+                      <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(row.qty_delivery)}</td>
+                      <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-300">{formatNumber(row.estimatedConsumption)} days</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>{statusStyle.label}</span>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

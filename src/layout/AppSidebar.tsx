@@ -79,8 +79,9 @@ const navItems: NavItem[] = [
     icon: <ChartNetwork size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Planning Manage",
     subItems: [
-      { name: "Daily Use", path: "/daily-use-upload" },
-      { name: "Delivery Plan", path: "/delivery-plan-upload" },
+      { name: "Daily Use (WH RM)", path: "/daily-use-upload" },
+      { name: "Delivery Plan (WH FG)", path: "/delivery-plan-upload" },
+      { name: "Safety Stock Range", path: "/daily-use-min-max" },
       { name: "Production Plan", path: "/production-plan-upload" },
     ],
   },
