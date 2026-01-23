@@ -37,9 +37,10 @@ interface AsakaiChartLineProps {
   titleName: string;
   category: string;
   filters?: AsakaiFilterRequestParams;
+  descriptionLabel?: string;
 }
 
-const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, category, filters }) => {
+const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, category, filters, descriptionLabel = "Target" }) => {
   const [data, setData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -147,6 +148,17 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
 
   const todayData = data.find((item) => item.date === todayStr);
   const todayValue = todayData ? todayData.qty : 0;
+
+  // Calculate current target for description
+  let currentTarget: number | undefined = undefined;
+  if (filters?.period === "monthly") {
+    const currentMonthStr = `${year}-${month}`; // using year, month from above
+    const currentMonthData = data.find((d) => d.date === currentMonthStr);
+    currentTarget = currentMonthData?.target ?? (data.length > 0 ? data[data.length - 1].target : undefined);
+  } else {
+     // Daily
+     currentTarget = todayData?.target ?? (data.length > 0 ? data[data.length - 1].target : undefined);
+  }
 
   const handleShowReasons = () => {
     navigate(`/asakai-reasons/${titleId}/${encodeURIComponent(titleName)}`);
@@ -265,7 +277,9 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">{titleName}</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{category}</p>
+          <div className="flex flex-col gap-1">
+            <p className="text-sm text-gray-500 dark:text-gray-400">{descriptionLabel}: <span className="text-brand-600 dark:text-brand-400">{currentTarget !== undefined ? currentTarget.toLocaleString() : "0"}</span></p>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="rounded-xl bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-300">

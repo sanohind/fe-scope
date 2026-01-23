@@ -272,7 +272,7 @@ export default function AsakaiManageReasons() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Section</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Department</label>
                   <select
                     value={formData.section}
                     onChange={(e) => setFormData({ ...formData, section: e.target.value })}

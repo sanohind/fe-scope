@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { asakaiApi, AsakaiReason } from "../../../services/asakaiApi";
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft, Search, Printer } from "lucide-react";
 import PageMeta from "../../../components/common/PageMeta";
 
 // Helper function to convert between DD-MM-YYYY and YYYY-MM-DD
@@ -23,6 +23,47 @@ export default function AsakaiReasonsList() {
   // Filters
   /* Filters removed in favor of global filter */
   const [searchQuery, setSearchQuery] = useState("");
+
+  const handlePrintBIRA = () => {
+    // Get date range from localStorage (same as used in fetchReasons)
+    const storedParamsStr = localStorage.getItem("asakai_filter_params");
+    let dateFrom = "";
+    let dateTo = "";
+
+    if (storedParamsStr) {
+      try {
+        const storedParams = JSON.parse(storedParamsStr);
+        dateFrom = storedParams.date_from || "";
+        dateTo = storedParams.date_to || "";
+      } catch (e) {
+        console.error("Failed to parse stored filter params", e);
+      }
+    }
+
+    // Validate that we have the required parameters
+    if (!titleId) {
+      alert("Title ID is missing");
+      return;
+    }
+
+    if (!dateFrom || !dateTo) {
+      alert("Please select a date range from the filter");
+      return;
+    }
+
+    // Construct the PDF export URL
+    const baseUrl = "http://127.0.0.1:8000/api/asakai/reasons/export-pdf";
+    const params = new URLSearchParams({
+      asakai_title_id: titleId,
+      date_from: dateFrom,
+      date_to: dateTo,
+    });
+
+    const pdfUrl = `${baseUrl}?${params.toString()}`;
+
+    // Open PDF in new tab
+    window.open(pdfUrl, "_blank");
+  };
 
   useEffect(() => {
     fetchReasons();
@@ -92,22 +133,31 @@ export default function AsakaiReasonsList() {
       />
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate("/asakai-board")}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
-          >
-            <ArrowLeft size={16} />
-            Back to Board
-          </button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              {decodeURIComponent(titleName || "")} - BIRA
-            </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
-              View all BIRA for this Asakai title
-            </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/asakai-board")}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
+              <ArrowLeft size={16} />
+              Back to Board
+            </button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                {decodeURIComponent(titleName || "")} - BIRA
+              </h1>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                View all BIRA for this Asakai title
+              </p>
+            </div>
           </div>
+          <button
+            onClick={handlePrintBIRA}
+            className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+          >
+            <Printer size={16} />
+            Print BIRA
+          </button>
         </div>
 
         {/* Filters */}

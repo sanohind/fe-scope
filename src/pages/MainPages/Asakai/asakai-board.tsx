@@ -6,27 +6,30 @@ import { AsakaiFilterProvider, useAsakaiFilters } from "../../../context/AsakaiF
 
 // 13 Asakai Titles based on the image provided
 const ASAKAI_TITLES = [
-  { id: 1, title: "Safety - Fatal Accident", category: "Safety" },
-  { id: 2, title: "Safety - Lost Working Day", category: "Safety" },
-  { id: 3, title: "Quality - Customer Claim", category: "Quality" },
-  { id: 4, title: "Quality - Warranty Claim", category: "Quality" },
-  { id: 5, title: "Quality - Service Part", category: "Quality" },
-  { id: 6, title: "Quality - Export Part", category: "Quality" },
-  { id: 7, title: "Quality - Local Supplier", category: "Quality" },
-  { id: 8, title: "Quality - Overseas Supplier", category: "Quality" },
-  { id: 9, title: "Delivery - Shortage", category: "Delivery" },
-  { id: 10, title: "Delivery - Miss Part", category: "Delivery" },
-  { id: 11, title: "Delivery - Line Stop", category: "Delivery" },
-  { id: 12, title: "Delivery - On Time Delivery", category: "Delivery" },
-  { id: 13, title: "Delivery - Criple", category: "Delivery" },
-  { id: 14, title: "Maintenance - Downtime", category: "Maintenance" },
-  { id: 15, title: "Maintenance - Mean Time to Repair", category: "Maintenance" },
-  { id: 16, title: "Productivity - Efficiency Nylon", category: "Productivity" },
-  { id: 17, title: "Productivity - Efficiency Chassis", category: "Productivity" },
-  { id: 18, title: "Productivity - Efficiency Brazzing", category: "Productivity" },
-  { id: 19, title: "Productivity - Pcs/WH Nylon", category: "Productivity" },
-  { id: 20, title: "Productivity - Pcs/WH Chassis", category: "Productivity" },
-  { id: 21, title: "Productivity - Pcs/WH Brazzing", category: "Productivity" },
+  { id: 1, title: "Safety - Fatal Accident", category: "Safety", descriptionLabel: "Target Maximum" },
+  { id: 2, title: "Safety - Lost Working Day", category: "Safety", descriptionLabel: "Target Maximum" },
+  { id: 3, title: "Quality - Customer Claim", category: "Quality", descriptionLabel: "Target Maximum" },
+  { id: 4, title: "Quality - Warranty Claim", category: "Quality", descriptionLabel: "Target Maximum" },
+  { id: 5, title: "Quality - Service Part", category: "Quality", descriptionLabel: "Target Maximum" },
+  { id: 6, title: "Quality - Export Part", category: "Quality", descriptionLabel: "Target Maximum" },
+  { id: 7, title: "Quality - Local Supplier", category: "Quality", descriptionLabel: "Target Maximum" },
+  { id: 8, title: "Quality - Overseas Supplier", category: "Quality", descriptionLabel: "Target Maximum" },
+  { id: 9, title: "Delivery - Shortage", category: "Delivery", descriptionLabel: "Target Maximum" },
+  { id: 10, title: "Delivery - Miss Part", category: "Delivery", descriptionLabel: "Target Maximum" },
+  { id: 11, title: "Delivery - Line Stop", category: "Delivery", descriptionLabel: "Target Maximum" },
+  { id: 12, title: "Delivery - On Time Delivery", category: "Delivery", descriptionLabel: "Target Minimum" },
+  { id: 13, title: "Delivery - Criple", category: "Delivery", descriptionLabel: "Target Maximum" },
+  { id: 14, title: "Maintenance - Downtime", category: "Maintenance", descriptionLabel: "Target Maximum" },
+  { id: 15, title: "Maintenance - Mean Time to Repair", category: "Maintenance", descriptionLabel: "Target Maximum" },
+  { id: 16, title: "Production  - Efficiency Nylon", category: "Productivity", descriptionLabel: "Target Minimum" },
+  { id: 17, title: "Production  - Efficiency Chassis", category: "Productivity", descriptionLabel: "Target Minimum" },
+  { id: 18, title: "Production  - Efficiency Brazzing", category: "Productivity", descriptionLabel: "Target Minimum" },
+  { id: 19, title: "Production  - Productivity Nylon", category: "Productivity", descriptionLabel: "Target Minimum" },
+  { id: 20, title: "Production  - Productivity Chassis", category: "Productivity", descriptionLabel: "Target Minimum" },
+  { id: 21, title: "Production  - Productivity Brazzing", category: "Productivity", descriptionLabel: "Target Minimum" },
+  { id: 22, title: "Quality - InHouse Reject Nylon", category: "Quality", descriptionLabel: "Target Maximum" },
+  { id: 23, title: "Quality - InHouse Reject Brazing", category: "Quality", descriptionLabel: "Target Maximum" },
+  { id: 22, title: "Quality - InHouse Reject Chassis", category: "Quality", descriptionLabel: "Target Maximum" },
 ];
 
 export default function AsakaiBoard() {
@@ -53,7 +56,7 @@ const AsakaiBoardContent = () => {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           {ASAKAI_TITLES.filter((t) => t.category === "Safety").map((title) => (
             <LazyLoad key={title.id} height="450px">
-              <AsakaiChartLine titleId={title.id} titleName={title.title} category={title.category} filters={requestParams} />
+              <AsakaiChartLine titleId={title.id} titleName={title.title} category={title.category} filters={requestParams} descriptionLabel={title.descriptionLabel} />
             </LazyLoad>
           ))}
         </div>
@@ -65,7 +68,7 @@ const AsakaiBoardContent = () => {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           {ASAKAI_TITLES.filter((t) => t.category === "Quality").map((title) => (
             <LazyLoad key={title.id} height="450px">
-              <AsakaiChartLine titleId={title.id} titleName={title.title} category={title.category} filters={requestParams} />
+              <AsakaiChartLine titleId={title.id} titleName={title.title} category={title.category} filters={requestParams} descriptionLabel={title.descriptionLabel} />
             </LazyLoad>
           ))}
         </div>
@@ -77,19 +80,19 @@ const AsakaiBoardContent = () => {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           {ASAKAI_TITLES.filter((t) => t.category === "Delivery").map((title) => (
             <LazyLoad key={title.id} height="450px">
-              <AsakaiChartLine titleId={title.id} titleName={title.title} category={title.category} filters={requestParams} />
+              <AsakaiChartLine titleId={title.id} titleName={title.title} category={title.category} filters={requestParams} descriptionLabel={title.descriptionLabel} />
             </LazyLoad>
           ))}
         </div>
       </div>
 
-      {/* Productivity Charts */}
+      {/* Production Charts */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Productivity</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Production</h2>
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           {ASAKAI_TITLES.filter((t) => t.category === "Productivity").map((title) => (
             <LazyLoad key={title.id} height="450px">
-              <AsakaiChartLine titleId={title.id} titleName={title.title} category={title.category} filters={requestParams} />
+              <AsakaiChartLine titleId={title.id} titleName={title.title} category={title.category} filters={requestParams} descriptionLabel={title.descriptionLabel} />
             </LazyLoad>
           ))}
         </div>
@@ -101,7 +104,7 @@ const AsakaiBoardContent = () => {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           {ASAKAI_TITLES.filter((t) => t.category === "Maintenance").map((title) => (
             <LazyLoad key={title.id} height="450px">
-              <AsakaiChartLine titleId={title.id} titleName={title.title} category={title.category} filters={requestParams} />
+              <AsakaiChartLine titleId={title.id} titleName={title.title} category={title.category} filters={requestParams} descriptionLabel={title.descriptionLabel} />
             </LazyLoad>
           ))}
         </div>
