@@ -38,9 +38,10 @@ interface AsakaiChartLineProps {
   category: string;
   filters?: AsakaiFilterRequestParams;
   descriptionLabel?: string;
+  unit?: string;
 }
 
-const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, category, filters, descriptionLabel = "Target" }) => {
+const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, category, filters, descriptionLabel = "Target", unit = "" }) => {
   const [data, setData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -173,13 +174,17 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
           <div className="mt-2 space-y-1">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-gray-500 dark:text-gray-300">Quantity:</p>
-              <p className="text-sm font-semibold text-brand-600 dark:text-brand-300">{dataPoint.qty.toLocaleString()}</p>
+              <p className="text-sm font-semibold text-brand-600 dark:text-brand-300">
+                {dataPoint.qty.toLocaleString()} {unit}
+              </p>
             </div>
             
             {dataPoint.target !== undefined && (
               <div className="flex items-center justify-between gap-4">
                 <p className="text-sm text-gray-500 dark:text-gray-300">Target:</p>
-                <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">{dataPoint.target.toLocaleString()}</p>
+                <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                  {dataPoint.target.toLocaleString()} {unit}
+                </p>
               </div>
             )}
             
@@ -278,12 +283,12 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">{titleName}</h3>
           <div className="flex flex-col gap-1">
-            <p className="text-sm text-gray-500 dark:text-gray-400">{descriptionLabel}: <span className="text-brand-600 dark:text-brand-400">{currentTarget !== undefined ? currentTarget.toLocaleString() : "0"}</span></p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{descriptionLabel}: <span className="text-brand-600 dark:text-brand-400">{currentTarget !== undefined ? currentTarget.toLocaleString() : "0"} {unit}</span></p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="rounded-xl bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-300">
-            Today: <span className="text-brand-600 dark:text-brand-300">{todayValue.toLocaleString()}</span>
+            Today: <span className="text-brand-600 dark:text-brand-300">{todayValue.toLocaleString()} {unit}</span>
           </div>
           <button
             onClick={handleShowReasons}
