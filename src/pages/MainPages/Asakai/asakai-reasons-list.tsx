@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { asakaiApi, AsakaiReason } from "../../../services/asakaiApi";
 import { ArrowLeft, Search, Printer } from "lucide-react";
 import PageMeta from "../../../components/common/PageMeta";
+import { API_CONFIG } from "../../../config/apiConfig";
 
 // Helper function to convert between DD-MM-YYYY and YYYY-MM-DD
 const formatDateToDisplay = (dateStr: string): string => {
@@ -52,14 +53,11 @@ export default function AsakaiReasonsList() {
     }
 
     // Construct the PDF export URL
-    const baseUrl = "http://127.0.0.1:8000/api/asakai/reasons/export-pdf";
-    const params = new URLSearchParams({
+    const pdfUrl = `${API_CONFIG.BASE_URL}/api/asakai/reasons/export-pdf?${new URLSearchParams({
       asakai_title_id: titleId,
       date_from: dateFrom,
       date_to: dateTo,
-    });
-
-    const pdfUrl = `${baseUrl}?${params.toString()}`;
+    }).toString()}`;
 
     // Open PDF in new tab
     window.open(pdfUrl, "_blank");
