@@ -28,8 +28,8 @@ const ASAKAI_TITLES = [
   { id: 20, title: "Production  - Productivity Chassis", category: "Productivity", descriptionLabel: "Target Minimum" },
   { id: 21, title: "Production  - Productivity Brazzing", category: "Productivity", descriptionLabel: "Target Minimum" },
   { id: 22, title: "Quality - InHouse Reject Nylon", category: "Quality", descriptionLabel: "Target Maximum" },
-  { id: 23, title: "Quality - InHouse Reject Brazing", category: "Quality", descriptionLabel: "Target Maximum" },
-  { id: 22, title: "Quality - InHouse Reject Chassis", category: "Quality", descriptionLabel: "Target Maximum" },
+  { id: 23, title: "Quality - InHouse Reject Chassis", category: "Quality", descriptionLabel: "Target Maximum" },
+  { id: 24, title: "Quality - InHouse Reject Brazing", category: "Quality", descriptionLabel: "Target Maximum" },
 ];
 
 export default function AsakaiBoard() {
