@@ -160,11 +160,11 @@ const TopDepartmentsOvertimeTable: React.FC = () => {
 
         return `
           <div>
-            <div class="font-semibold mb-1">${dept}</div>
-            <div class="text-xs opacity-90">Cost Center: ${costCenter}</div>
-            ${employees > 0 ? `<div class="text-xs opacity-90">Employees: ${employees}</div>` : ""}
-            <div class="mt-1 pt-1 border-t border-gray-700">
-              <span class="font-medium">Overtime: ${formatted}</span>
+            <div class="font-semibold mb-1 text-gray-900 dark:text-gray-100">${dept}</div>
+            <div class="text-xs opacity-90 text-gray-500 dark:text-gray-400">Cost Center: ${costCenter}</div>
+            ${employees > 0 ? `<div class="text-xs opacity-90 text-gray-500 dark:text-gray-400">Employees: ${employees}</div>` : ""}
+            <div class="mt-1 pt-1 border-t border-gray-700 dark:border-gray-800">
+              <span class="font-medium text-gray-900 dark:text-gray-100">Overtime: ${formatted}</span>
             </div>
           </div>
         `;

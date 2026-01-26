@@ -161,10 +161,10 @@ const TopEmployeesOvertimeTable: React.FC = () => {
 
         return `
           <div>
-            <div class="font-semibold mb-1">${employee.full_name}</div>
-            <div class="text-xs opacity-90">${dept} - ${costCenter}</div>
-            <div class="mt-1 pt-1 border-t border-gray-700">
-              <span class="font-medium">Overtime: ${formatted}</span>
+            <div class="font-semibold mb-1 text-gray-900 dark:text-gray-100">${employee.full_name}</div>
+            <div class="text-xs opacity-90 text-gray-500 dark:text-gray-400">${dept} - ${costCenter}</div>
+            <div class="mt-1 pt-1 border-t border-gray-700 dark:border-gray-800">
+              <span class="font-medium text-gray-900 dark:text-gray-100">Overtime: ${formatted}</span>
             </div>
           </div>
         `;

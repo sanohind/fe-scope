@@ -161,7 +161,7 @@ const OvertimePerDay: React.FC = () => {
       intersect: false,
       custom: ({ dataPointIndex }: any) => {
         const formatted = sortedData[dataPointIndex]?.total_ot_formatted || "";
-        return `${formatted}`;
+        return `<div class="font-medium text-gray-900 dark:text-gray-100">${formatted}</div>`;
       },
     },
     fill: {
