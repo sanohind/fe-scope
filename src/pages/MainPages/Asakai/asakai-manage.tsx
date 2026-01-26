@@ -290,7 +290,7 @@ export default function AsakaiManage() {
                   }}
                   className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                 >
-                  <option value="">All Months</option>
+                  <option value="">Select Month</option>
                   {monthOptions.map((month) => (
                     <option key={month.value} value={month.value}>
                       {month.label}
@@ -308,7 +308,7 @@ export default function AsakaiManage() {
                   }}
                   className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
                 >
-                  <option value="">All Years</option>
+                  <option value="">Select Year</option>
                   {yearOptions.map((year) => (
                     <option key={year} value={year}>
                       {year}
