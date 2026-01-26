@@ -313,7 +313,7 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
                 axisLine={false}
                 tickFormatter={(value) => value.toLocaleString()}
                 label={{
-                  value: "Quantity",
+                  value: `${unit}`,
                   angle: -90,
                   position: "insideLeft",
                   style: { fill: "#6b7280", fontSize: 12, fontFamily: "Outfit, sans-serif" },
