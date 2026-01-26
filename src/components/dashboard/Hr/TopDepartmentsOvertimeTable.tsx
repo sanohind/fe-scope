@@ -159,7 +159,7 @@ const TopDepartmentsOvertimeTable: React.FC = () => {
         const employees = department.total_employees || 0;
 
         return `
-          <div class="px-3 py-2 bg-gray-900 text-white rounded text-sm">
+          <div>
             <div class="font-semibold mb-1">${dept}</div>
             <div class="text-xs opacity-90">Cost Center: ${costCenter}</div>
             ${employees > 0 ? `<div class="text-xs opacity-90">Employees: ${employees}</div>` : ""}

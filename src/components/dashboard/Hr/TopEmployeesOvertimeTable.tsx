@@ -160,7 +160,7 @@ const TopEmployeesOvertimeTable: React.FC = () => {
         const costCenter = employee.cost_center || "N/A";
 
         return `
-          <div class="px-3 py-2 bg-gray-900 text-white rounded text-sm">
+          <div>
             <div class="font-semibold mb-1">${employee.full_name}</div>
             <div class="text-xs opacity-90">${dept} - ${costCenter}</div>
             <div class="mt-1 pt-1 border-t border-gray-700">
