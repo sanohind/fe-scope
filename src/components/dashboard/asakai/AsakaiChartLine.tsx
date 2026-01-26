@@ -279,20 +279,22 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="flex-1 min-w-0">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">{titleName}</h3>
           <div className="flex flex-col gap-1">
-            <p className="text-sm text-gray-500 dark:text-gray-400">{descriptionLabel}: <span className="text-brand-600 dark:text-brand-400">{currentTarget !== undefined ? currentTarget.toLocaleString() : "0"} {unit}</span></p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+              {descriptionLabel}: <span className="text-brand-600 dark:text-brand-400">{currentTarget !== undefined ? currentTarget.toLocaleString() : "0"} {unit}</span>
+            </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="rounded-xl bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-300">
+        <div className="flex flex-wrap items-center gap-3 md:flex-nowrap md:shrink-0">
+          <div className="rounded-xl bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-300 whitespace-nowrap">
             Today: <span className="text-brand-600 dark:text-brand-300">{todayValue.toLocaleString()} {unit}</span>
           </div>
           <button
             onClick={handleShowReasons}
-            className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors whitespace-nowrap"
           >
             <List size={16} />
             Show BIRA
