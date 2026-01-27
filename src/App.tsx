@@ -95,6 +95,7 @@ import AsakaiManage from "./pages/MainPages/Asakai/asakai-manage";
 import AsakaiManageReasons from "./pages/MainPages/Asakai/asakai-manage-reasons";
 import AsakaiReasonsList from "./pages/MainPages/Asakai/asakai-reasons-list";
 import AsakaiManageTarget from "./pages/MainPages/Asakai/asakai-manage-target";
+import SSOCallback from "./pages/AuthPages/SSOCallback";
 
 // Lazy load dashboard pages for better performance
 const WarehouseAllRm = lazy(() => import("./pages/MainPages/Warehouse/warehouse-allRm"));
@@ -299,6 +300,7 @@ export default function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/two-step-verification" element={<TwoStepVerification />} />
+          <Route path="/sso/callback" element={<SSOCallback />} />
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />
