@@ -165,7 +165,7 @@ export default function AsakaiManageReasons() {
         </div>
 
         {/* Table */}
-        <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
+        <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden max-w-[1260px]">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-900">
@@ -203,8 +203,8 @@ export default function AsakaiManageReasons() {
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{reason.qty}</td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{reason.section}</td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{reason.line}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">{reason.penyebab}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">{reason.perbaikan}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-[100px] truncate">{reason.penyebab}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-[100px] truncate">{reason.perbaikan}</td>
                       <td className="px-6 py-4 text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
                           <button onClick={() => handleOpenModal(reason)} className="text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300" title="Edit">
