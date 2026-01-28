@@ -12,6 +12,11 @@ export default function ProtectedRoute({ children, requiredRoles }: ProtectedRou
   const { isAuthenticated, isLoading, hasRole } = useAuth();
   const location = useLocation();
 
+  // If SSO is disabled, bypass all authentication checks
+  if (!API_CONFIG.ENABLE_SSO) {
+    return <>{children}</>;
+  }
+
   // Show loading state while checking authentication
   if (isLoading) {
     return (
