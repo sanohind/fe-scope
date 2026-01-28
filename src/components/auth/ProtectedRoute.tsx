@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_CONFIG } from '../../config/apiConfig';
 
@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, user, hasRole } = useAuth();
+  const { isAuthenticated, isLoading, hasRole } = useAuth();
   const location = useLocation();
 
   // Show loading state while checking authentication
