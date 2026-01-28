@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { authApi } from '../../services/api/authApi';
+import { useAuth } from '../../context/AuthContext';
+import { API_CONFIG } from '../../config/apiConfig';
 
 export default function SSOCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Handle URL cleanup for Sphere redirect quirks
+  // Compatibility fallback for URL cleanup
   useEffect(() => {
     const pathname = window.location.pathname;
     const search = window.location.search;
@@ -16,18 +18,20 @@ export default function SSOCallback() {
     
     // Case 1: /sso/callback?token=... (without hash) - redirect to hash version
     if (pathname === '/sso/callback' && !hash) {
-      const cleanSearch = search.split('#')[0]; 
+      const cleanSearch = search.split('#')[0];
+      
       if (search.includes('#')) {
         const hashPart = search.split('#')[1];
         if (hashPart && hashPart.startsWith('/')) {
           sessionStorage.setItem('sso_redirect_path', hashPart);
         }
       }
+      
       window.location.replace('#' + pathname + cleanSearch);
       return;
     }
     
-    // Case 2: /sso/callback?token=...#/supplier-contacts (hash in URL after query)
+    // Case 2: /sso/callback?token=...#/some-path
     if (pathname === '/sso/callback' && hash && !hash.startsWith('#/sso/callback')) {
       const redirectPath = hash.replace('#', '');
       if (redirectPath && redirectPath !== '/sso/callback') {
@@ -38,7 +42,7 @@ export default function SSOCallback() {
       return;
     }
     
-    // Case 3: #/sso/callback?token=...#/supplier-contacts (hash contains both)
+    // Case 3: #/sso/callback?token=...#/some-path
     if (hash && hash.includes('/sso/callback') && hash.includes('?')) {
       const hashParts = hash.split('#').filter(p => p);
       const callbackPart = hashParts.find(part => part.includes('/sso/callback'));
@@ -61,78 +65,67 @@ export default function SSOCallback() {
         const token = searchParams.get('token');
         
         if (!token) {
-           // If no token in searchParams, check if we are in a state where useEffect above is redirecting
-           // We can just wait or show error if reasonable time passed.
-           // For now, if clean URL logic is working, we might get token in next render or via hash params parsing if needed.
-           // But useSearchParams should work with HashRouter if ?token= is after #/route?token=.
-           // If it is before #, useSearchParams might not catch it in HashRouter depending on config.
-           // Let's rely on standard searchParams for now.
-           
-           // Fallback: check window.location.href for token if searchParams is empty (sometimes happens with hybrid routing)
-           const url = new URL(window.location.href);
-           const tokenFromUrl = url.searchParams.get('token');
-           if (!tokenFromUrl) {
-               setError('No token provided');
-               setLoading(false);
-               return;
-           }
-           // Use found token
-           // continue...
-           return; 
+          setError('No token provided');
+          setLoading(false);
+          return;
         }
 
-        // Verify token with backend
-        const response = await authApi.verifyToken(token);
+        // Set token and fetch user
+        await login(token);
         
-        if (response.success) {
-          // Store token and user
-          localStorage.setItem('token', token);
-          localStorage.setItem('user', JSON.stringify(response.user));
-          
-          // Redirect
-          const redirectPath = sessionStorage.getItem('sso_redirect_path');
+        // Check for redirect path
+        const redirectPath = sessionStorage.getItem('sso_redirect_path');
+        if (redirectPath) {
           sessionStorage.removeItem('sso_redirect_path');
-          navigate(redirectPath || '/');
+          navigate(redirectPath);
         } else {
-          throw new Error('Verification failed');
+          navigate('/');
         }
 
       } catch (err: any) {
-        console.error(err);
-        setError(err.message || 'SSO callback failed');
+        const errorMsg = err.message || 'SSO callback failed';
+        setError(errorMsg);
+      } finally {
         setLoading(false);
       }
     };
-    
-    // Only run if we are in the correct route/hash state to avoid running during redirect ops
-    if (window.location.hash.includes('/sso/callback')) {
-        handleSSOCallback();
-    }
-  }, [searchParams, navigate]);
+
+    handleSSOCallback();
+  }, [searchParams, navigate, login]);
 
   if (loading) {
-     return (
-        <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
-           <div className="text-center">
-              <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
-              <p className="mt-4 text-lg font-medium text-gray-600 dark:text-gray-400">Verifying access...</p>
-           </div>
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Authenticating...</p>
         </div>
-     );
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="w-full max-w-md rounded-lg bg-white p-6 text-center shadow-lg dark:bg-gray-800">
-           <h3 className="mb-2 text-xl font-bold text-red-500">Authentication Failed</h3>
-           <p className="text-gray-600 dark:text-gray-400">{error}</p>
-           <button 
-             onClick={() => navigate('/signin')}
-             className="mt-6 rounded-lg bg-primary px-6 py-2 text-white hover:bg-opacity-90"
-           >
-             Back to Login
-           </button>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md">
+            <h3 className="text-lg font-medium text-red-800 dark:text-red-200 mb-2">
+              Authentication Failed
+            </h3>
+            <p className="text-sm text-red-700 dark:text-red-300 mb-4">
+              {error}
+            </p>
+            <button
+              onClick={() => {
+                const appOrigin = window.location.origin;
+                const callback = `${appOrigin}/#/sso/callback`;
+                window.location.href = `${API_CONFIG.SPHERE_SSO_URL}?redirect=${encodeURIComponent(callback)}`;
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            >
+              Back to Login
+            </button>
+          </div>
         </div>
       </div>
     );

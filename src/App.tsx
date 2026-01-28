@@ -1,5 +1,6 @@
 import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import { AuthProvider } from "./context/AuthContext";
 import Ecommerce from "./pages/Dashboard/Ecommerce";
 import Stocks from "./pages/Dashboard/Stocks";
 import Crm from "./pages/Dashboard/Crm";
@@ -96,6 +97,7 @@ import AsakaiManageReasons from "./pages/MainPages/Asakai/asakai-manage-reasons"
 import AsakaiReasonsList from "./pages/MainPages/Asakai/asakai-reasons-list";
 import AsakaiManageTarget from "./pages/MainPages/Asakai/asakai-manage-target";
 import SSOCallback from "./pages/AuthPages/SSOCallback";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // Lazy load dashboard pages for better performance
 const WarehouseAllRm = lazy(() => import("./pages/MainPages/Warehouse/warehouse-allRm"));
@@ -124,12 +126,16 @@ const DashboardLoading = () => (
 
 export default function App() {
   return (
-    <>
+    <AuthProvider>
       <Router>
         <ScrollToTop />
         <Routes>
-          {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
+          {/* Dashboard Layout - All routes protected */}
+          <Route element={
+            <ProtectedRoute requiredRoles={['admin', 'superadmin', 'operator']}>
+              <AppLayout />
+            </ProtectedRoute>
+          }>
             <Route index path="/" element={<Navigate to="/inventory-rm" replace />} />
             <Route path="/ecommerce" element={<Ecommerce />} />
             <Route path="/analytics" element={<Analytics />} />
@@ -311,6 +317,6 @@ export default function App() {
           <Route path="/coming-soon" element={<ComingSoon />} />
         </Routes>
       </Router>
-    </>
+    </AuthProvider>
   );
 }
