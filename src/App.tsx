@@ -97,6 +97,7 @@ import AsakaiManageReasons from "./pages/MainPages/Asakai/asakai-manage-reasons"
 import AsakaiReasonsList from "./pages/MainPages/Asakai/asakai-reasons-list";
 import AsakaiManageTarget from "./pages/MainPages/Asakai/asakai-manage-target";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import SSOCallback from "./pages/AuthPages/SSOCallback";
 
 // Lazy load dashboard pages for better performance
 const WarehouseAllRm = lazy(() => import("./pages/MainPages/Warehouse/warehouse-allRm"));
@@ -300,12 +301,15 @@ export default function App() {
             <Route path="/pie-chart" element={<PieChart />} />
           </Route>
 
+          {/* SSO Callback Route - Must be before auth layout */}
+          <Route path="/sso/callback" element={<SSOCallback />} />
+
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/two-step-verification" element={<TwoStepVerification />} />
-          
+
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />
