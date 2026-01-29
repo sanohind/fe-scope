@@ -4,22 +4,24 @@ import { Link, useLocation } from "react-router-dom";
 // Assume these icons are imported from an icon library
 import { ChevronDownIcon, HorizontaLDots} from "../icons";
 import { useSidebar } from "../context/SidebarContext";
+import { useAuth } from "../context/AuthContext";
 import { Boxes, BadgeDollarSign, HousePlug, Van, Handshake, Waypoints, ChartNetwork, Castle } from 'lucide-react';
 
 type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
+  subItems?: { name: string; path: string; pro?: boolean; new?: boolean; adminOnly?: boolean }[];
+  adminOnly?: boolean; // Only show for superadmin
 };
 
-const navItems: NavItem[] = [
+const allNavItems: NavItem[] = [
   {
     icon: <Castle size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Asakai Board",
     subItems: [
       { name: "Dashboard", path: "/asakai-board" },
-      { name: "Asakai Content", path: "/asakai-manage" },
+      { name: "Asakai Content", path: "/asakai-manage", adminOnly: true }, // Only superadmin
     ],
   },
   {
@@ -80,6 +82,7 @@ const navItems: NavItem[] = [
   {
     icon: <ChartNetwork size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Planning Manage",
+    adminOnly: true, // Only superadmin can see this entire menu
     subItems: [
       { name: "Daily Use (WH RM)", path: "/daily-use-upload" },
       { name: "Delivery Plan (WH FG)", path: "/delivery-plan-upload" },
@@ -91,7 +94,19 @@ const navItems: NavItem[] = [
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const { user } = useAuth();
   const location = useLocation();
+
+  // Filter menu items based on user role
+  const isSuperadmin = user?.role?.slug === 'superadmin';
+  
+  const navItems = allNavItems
+    .filter(item => !item.adminOnly || isSuperadmin) // Filter top-level items
+    .map(item => ({
+      ...item,
+      subItems: item.subItems?.filter(subItem => !subItem.adminOnly || isSuperadmin) // Filter sub-items
+    }));
+
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main";

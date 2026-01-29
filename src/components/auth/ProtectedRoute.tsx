@@ -1,5 +1,5 @@
-import { ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import { ReactNode, useEffect } from 'react';
+import { useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_CONFIG } from '../../config/apiConfig';
 
@@ -11,11 +11,6 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, hasRole } = useAuth();
   const location = useLocation();
-
-  // If SSO is disabled, bypass all authentication checks
-  if (!API_CONFIG.ENABLE_SSO) {
-    return <>{children}</>;
-  }
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -29,17 +24,25 @@ export default function ProtectedRoute({ children, requiredRoles }: ProtectedRou
     );
   }
 
-  // If not authenticated, redirect to Sphere SSO
+  // If not authenticated, redirect based on SSO setting
   if (!isAuthenticated) {
     // Store the current path for redirect after login
-    sessionStorage.setItem('sso_redirect_path', location.pathname + location.search);
+    sessionStorage.setItem('redirect_path', location.pathname + location.search);
     
-    const appOrigin = window.location.origin;
-    const callback = `${appOrigin}/#/sso/callback`;
-    const sphereSsoUrl = API_CONFIG.SPHERE_SSO_URL;
-    window.location.href = `${sphereSsoUrl}?redirect=${encodeURIComponent(callback)}`;
-    
-    return null;
+    if (API_CONFIG.ENABLE_SSO) {
+      // SSO Mode: Redirect to Sphere SSO (external)
+      useEffect(() => {
+        const appOrigin = window.location.origin;
+        const callback = `${appOrigin}/#/sso/callback`;
+        const sphereSsoUrl = API_CONFIG.SPHERE_SSO_URL;
+        window.location.href = `${sphereSsoUrl}?redirect=${encodeURIComponent(callback)}`;
+      }, []);
+      
+      return null;
+    } else {
+      // Local Auth Mode: Redirect to local signin page
+      return <Navigate to="/signin" replace />;
+    }
   }
 
   // Check role-based access if requiredRoles is specified
