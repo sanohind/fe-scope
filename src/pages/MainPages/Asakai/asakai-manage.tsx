@@ -185,18 +185,11 @@ export default function AsakaiManage() {
     try {
       if (editingChart) {
         await asakaiApi.updateChart(editingChart.id, formData);
-        handleCloseModal();
-        fetchCharts();
       } else {
-        const response = await asakaiApi.createChart(formData);
-        if (response.success && response.data?.id) {
-          // Redirect to manage reasons after creating new chart
-          navigate(`/asakai-manage-reasons/${response.data.id}`);
-        } else {
-           handleCloseModal();
-           fetchCharts(); 
-        }
+        await asakaiApi.createChart(formData);
       }
+      handleCloseModal();
+      fetchCharts();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Failed to save chart");
       setErrorModalOpen(true);
