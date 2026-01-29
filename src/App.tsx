@@ -132,7 +132,7 @@ export default function App() {
         <Routes>
           {/* Dashboard Layout - All routes protected */}
           <Route element={
-            <ProtectedRoute requiredRoles={['admin', 'superadmin', 'operator']}>
+            <ProtectedRoute requiredRoles={['admin', 'superadmin', 'operator', 'user']}>
               <AppLayout />
             </ProtectedRoute>
           }>

@@ -25,7 +25,8 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (token: string) => Promise<void>;
+  login: (token: string) => Promise<void>; // SSO login
+  loginLocal: (username: string, password: string) => Promise<void>; // Local login
   logout: () => void;
   hasRole: (roles: string[]) => boolean;
 }
@@ -61,16 +62,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginLocal = async (username: string, password: string) => {
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/local-auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      if (data.success && data.token && data.user) {
+        setToken(data.token);
+        localStorage.setItem('token', data.token);
+        setUser(data.user);
+      } else {
+        throw new Error('Invalid response from server');
+      }
+    } catch (error: any) {
+      console.error('Local login error:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
     localStorage.removeItem('token');
     
-    const appOrigin = window.location.origin;
-    const callback = `${appOrigin}/#/sso/callback`;
-    const redirectUrl = `${API_CONFIG.SPHERE_SSO_URL}?redirect=${encodeURIComponent(callback)}`;
-    
-    window.location.replace(redirectUrl);
+    // If SSO is enabled, redirect to Sphere SSO
+    if (API_CONFIG.ENABLE_SSO) {
+      const appOrigin = window.location.origin;
+      const callback = `${appOrigin}/#/sso/callback`;
+      const redirectUrl = `${API_CONFIG.SPHERE_SSO_URL}?redirect=${encodeURIComponent(callback)}`;
+      window.location.replace(redirectUrl);
+    } else {
+      // If local auth, redirect to login page
+      window.location.replace('/#/signin');
+    }
   };
 
   const hasRole = (roles: string[]): boolean => {
@@ -149,6 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated,
     isLoading,
     login,
+    loginLocal,
     logout,
     hasRole,
   };
