@@ -178,19 +178,20 @@ export default function AsakaiManageReasons() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Line</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Penyebab</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Perbaikan</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {loading ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={10} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                       Loading...
                     </td>
                   </tr>
                 ) : reasons.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={10} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                       No reasons available. Click "Add BIRA" to create one.
                     </td>
                   </tr>
@@ -205,6 +206,7 @@ export default function AsakaiManageReasons() {
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{reason.line}</td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-[100px] truncate">{reason.penyebab}</td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-[100px] truncate">{reason.perbaikan}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{reason.user}</td>
                       <td className="px-6 py-4 text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
                           <button onClick={() => handleOpenModal(reason)} className="text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300" title="Edit">
