@@ -127,15 +127,23 @@ export default function AsakaiManage() {
       const response = await asakaiApi.getCharts(params);
       if (response.success) {
         // Handle both paginated and non-paginated responses
-        if (response.data && typeof response.data === 'object' && 'data' in response.data) {
-           // Paginated response
-           setCharts(response.data.data);
+        if (response.pagination) {
+           // Paginated response - calculate from and to based on current_page and per_page
+           const currentPage = response.pagination.current_page;
+           const perPageValue = response.pagination.per_page;
+           const total = response.pagination.total;
+           
+           // Calculate from and to
+           const from = total > 0 ? (currentPage - 1) * perPageValue + 1 : 0;
+           const to = Math.min(currentPage * perPageValue, total);
+           
+           setCharts(response.data);
            setPagination({
-             total: response.data.total,
-             last_page: response.data.last_page,
-             from: response.data.from,
-             to: response.data.to,
-             current_page: response.data.current_page
+             total: total,
+             last_page: response.pagination.last_page,
+             from: from,
+             to: to,
+             current_page: currentPage
            });
         } else if (Array.isArray(response.data)) {
             // Non-paginated response (fallback)
@@ -325,19 +333,20 @@ export default function AsakaiManage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">BIRA</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created At</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={8} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                       Loading...
                     </td>
                   </tr>
                 ) : charts.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={8} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                       No data available
                     </td>
                   </tr>
@@ -354,6 +363,7 @@ export default function AsakaiManage() {
                           {chart.reasons_count || 0} BIRA
                         </span>
                       </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{chart.created_at}</td>
                       <td className="px-6 py-4 text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
                           <button onClick={() => handleManageReasons(chart.id)} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" title="Manage BIRA">
