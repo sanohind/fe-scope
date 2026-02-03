@@ -23,20 +23,12 @@ export const authApi = {
             if (!response.ok) {
                 if (response.status === 401) {
                     // Token expired or invalid
-                    localStorage.removeItem('token');
-                    
-                    if (API_CONFIG.ENABLE_SSO) {
-                        // SSO Mode: Redirect to Sphere SSO
-                        const appOrigin = window.location.origin;
-                        const callback = `${appOrigin}/#/sso/callback`;
-                        const redirectUrl = `${API_CONFIG.SPHERE_SSO_URL}?redirect=${encodeURIComponent(callback)}`;
-                        window.location.replace(redirectUrl);
-                    } else {
-                        // Local Auth Mode: Redirect to signin
-                        window.location.replace('/#/signin');
-                    }
-                    
-                    throw new Error('Unauthorized - redirecting to login');
+                    // Don't auto-redirect here - let ProtectedRoute handle it
+                    // This prevents redirect loops
+                    throw {
+                        message: 'Unauthorized',
+                        status: 401,
+                    };
                 }
 
                 const errorData = await response.json().catch(() => ({}));
@@ -49,9 +41,6 @@ export const authApi = {
             const data = await response.json();
             return data;
         } catch (error: any) {
-            if (error.message === 'Unauthorized - redirecting to login') {
-                throw error;
-            }
             throw {
                 message: error.message || 'Token verification failed',
                 status: error.status || 500,
