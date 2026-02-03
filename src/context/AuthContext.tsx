@@ -41,24 +41,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAuthenticated = !!token;
 
   const login = async (newToken: string) => {
+    console.log('🔐 Login called with token:', newToken.substring(0, 20) + '...');
     setIsLoading(true);
     setToken(newToken);
     localStorage.setItem('token', newToken);
+    console.log('✅ Token saved to localStorage');
 
     try {
+      console.log('📡 Fetching user data from API...');
       const response = await authApi.verifyToken(newToken);
-      console.log('Login - /auth/user API response:', response);
+      console.log('📥 Login - /auth/user API response:', response);
       if (response.success && response.user) {
-        console.log('Login - Setting user from API:', response.user);
+        console.log('✅ Login - Setting user from API:', response.user);
         setUser(response.user);
       } else {
-        console.log('Login - No user data in response:', response);
+        console.log('⚠️ Login - No user data in response:', response);
       }
     } catch (error) {
-      console.warn('Login - Could not fetch user data:', error);
+      console.warn('❌ Login - Could not fetch user data:', error);
       throw error;
     } finally {
       setIsLoading(false);
+      console.log('🏁 Login process complete');
     }
   };
 
@@ -100,16 +104,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     localStorage.removeItem('token');
     
-    // If SSO is enabled, redirect to Sphere SSO
-    if (API_CONFIG.ENABLE_SSO) {
-      const appOrigin = window.location.origin;
-      const callback = `${appOrigin}/#/sso/callback`;
-      const redirectUrl = `${API_CONFIG.SPHERE_SSO_URL}?redirect=${encodeURIComponent(callback)}`;
-      window.location.replace(redirectUrl);
-    } else {
-      // If local auth, redirect to login page
-      window.location.replace('/#/signin');
-    }
+    // Don't auto-redirect - let ProtectedRoute handle it
+    // This prevents redirect loops
   };
 
   const hasRole = (roles: string[]): boolean => {
