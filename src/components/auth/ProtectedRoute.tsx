@@ -28,14 +28,24 @@ export default function ProtectedRoute({ children, requiredRoles }: ProtectedRou
   const currentPath = location.pathname + location.hash;
   const isCallbackPage = currentPath.includes('/sso/callback');
 
+  // Check if SSO is enabled
+  const ssoEnabled = import.meta.env.VITE_ENABLE_SSO === 'true';
+
   // If not authenticated, show login UI
   if (!isAuthenticated && !isCallbackPage) {
     // Additional check: if token exists in localStorage but not yet in state,
     // wait for AuthContext to initialize (prevents race condition)
     const hasStoredToken = localStorage.getItem('token');
-    
+
     if (!hasStoredToken) {
-      // Show manual login UI instead of auto-redirect
+      // If SSO is disabled, redirect to local login page
+      if (!ssoEnabled) {
+        // Store current path for redirect after login
+        sessionStorage.setItem('redirect_path', location.pathname + location.search);
+        return <Navigate to="/signin" state={{ from: location }} replace />;
+      }
+
+      // SSO is enabled - show SSO login UI
       return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
           <div className="text-center max-w-md p-8">
@@ -50,7 +60,7 @@ export default function ProtectedRoute({ children, requiredRoles }: ProtectedRou
                 onClick={() => {
                   // Store the current path for redirect after login
                   sessionStorage.setItem('redirect_path', location.pathname + location.search);
-                  
+
                   const appOrigin = window.location.origin;
                   const callback = `${appOrigin}/#/sso/callback`;
                   const sphereSsoUrl = API_CONFIG.SPHERE_SSO_URL;
@@ -69,7 +79,7 @@ export default function ProtectedRoute({ children, requiredRoles }: ProtectedRou
         </div>
       );
     }
-    
+
     // Token exists but state not updated yet - show loading
     return (
       <div className="flex items-center justify-center min-h-screen">

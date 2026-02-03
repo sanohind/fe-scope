@@ -22,12 +22,22 @@ export default function SSOCallback() {
       // Mark as processed immediately
       hasProcessed.current = true;
 
+      // Check if SSO is enabled
+      const ssoEnabled = import.meta.env.VITE_ENABLE_SSO === 'true';
+
+      // If SSO is disabled, redirect to home without processing token
+      if (!ssoEnabled) {
+        console.log('SSO is disabled, redirecting to home...');
+        navigate('/', { replace: true });
+        return;
+      }
+
       // Get token from URL query params
       const token = searchParams.get('token');
-      
+
       if (!token) {
         console.error('No token received from SSO');
-        navigate('/signin', { 
+        navigate('/signin', {
           replace: true,
           state: { error: 'Authentication failed: No token received' }
         });
@@ -36,21 +46,21 @@ export default function SSOCallback() {
 
       try {
         console.log('SSO Callback: Processing token...');
-        
+
         // Login with the token
         await login(token);
-        
+
         console.log('SSO Callback: Login successful, redirecting...');
-        
+
         // Redirect to dashboard or intended page
         const redirectTo = sessionStorage.getItem('redirectAfterLogin') || '/';
         sessionStorage.removeItem('redirectAfterLogin');
-        
+
         navigate(redirectTo, { replace: true });
       } catch (error) {
         console.error('SSO login failed:', error);
         hasProcessed.current = false; // Allow retry
-        navigate('/signin', { 
+        navigate('/signin', {
           replace: true,
           state: { error: 'Authentication failed' }
         });
