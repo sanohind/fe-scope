@@ -30,8 +30,8 @@ const ASAKAI_TITLES = [
   { id: 22, title: "Quality - InHouse Reject Nylon", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
   { id: 23, title: "Quality - InHouse Reject Chassis", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
   { id: 24, title: "Quality - InHouse Reject Brazing", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
-  { id: 25, title: "Quality - Non Lost Working Day", category: "Quality", descriptionLabel: "Target Maximum", unit: "qty" },
-  { id: 26, title: "Quality - CO2 Reduction", category: "Quality", descriptionLabel: "Target Maximum", unit: "tCO2" },
+  { id: 25, title: "Quality - Non Lost Working Day", category: "Quality", descriptionLabel: "Target Minimum", unit: "qty" },
+  { id: 26, title: "Safety - CO2 Reduction", category: "Safety", descriptionLabel: "Target Maximum", unit: "tCO2" },
 ];
 
 export default function AsakaiBoard() {
