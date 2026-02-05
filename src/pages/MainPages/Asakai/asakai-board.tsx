@@ -6,8 +6,8 @@ import { AsakaiFilterProvider, useAsakaiFilters } from "../../../context/AsakaiF
 
 // 13 Asakai Titles based on the image provided
 const ASAKAI_TITLES = [
-  { id: 1, title: "Safety - Fatal Accident", category: "Safety", descriptionLabel: "Target Maximum", unit: "qty" },
-  { id: 2, title: "Safety - Lost Working Day", category: "Safety", descriptionLabel: "Target Maximum", unit: "qty" },
+  { id: 1, title: "Safety - Fatal Accident", category: "Safety", descriptionLabel: "Target Maximum", unit: "case" },
+  { id: 2, title: "Safety - Lost Working Day", category: "Safety", descriptionLabel: "Target Maximum", unit: "case" },
   { id: 3, title: "Quality - Customer Claim", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
   { id: 4, title: "Quality - Warranty Claim", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
   { id: 5, title: "Quality - Service Part", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
@@ -30,8 +30,8 @@ const ASAKAI_TITLES = [
   { id: 22, title: "Quality - InHouse Reject Nylon", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
   { id: 23, title: "Quality - InHouse Reject Chassis", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
   { id: 24, title: "Quality - InHouse Reject Brazing", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
-  { id: 25, title: "Safety - Non Lost Working Day", category: "Safety", descriptionLabel: "Target Minimum", unit: "qty" },
-  { id: 26, title: "Safety - CO2 Reduction", category: "Safety", descriptionLabel: "Target Maximum", unit: "tCO2" },
+  { id: 25, title: "Safety - Non Lost Working Day", category: "Safety", descriptionLabel: "Target Minimum", unit: "case" },
+  { id: 26, title: "Safety - CO2 Emission", category: "Safety", descriptionLabel: "Target Maximum", unit: "tCO2" },
 ];
 
 export default function AsakaiBoard() {
