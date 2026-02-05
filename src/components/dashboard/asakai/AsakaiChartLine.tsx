@@ -71,7 +71,7 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
         const targetMap = new Map<string, number>();
         if (targetRes.success && targetRes.data?.data) {
             targetRes.data.data.forEach((t: any) => {
-                targetMap.set(`${t.year}-${t.period}`, t.target);
+                targetMap.set(`${t.year}-${t.period}`, Number(t.target));
             });
         }
 
@@ -112,8 +112,8 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
             return {
               date: item.date,
               period: item.date,
-              qty: item.qty,
-              target: targetVal,
+              qty: Number(item.qty),
+              target: targetVal !== undefined ? Number(targetVal) : (item.target !== undefined ? Number(item.target) : undefined),
               label,
               formattedDate,
               has_data: item.has_data,
