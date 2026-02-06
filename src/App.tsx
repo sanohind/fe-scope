@@ -229,17 +229,102 @@ export default function App() {
                 </Suspense>
               }
             />
-            <Route path="/daily-use-upload" element={<DailyUseUpload />} />
-            <Route path="/daily-use-manage" element={<DailyUseManage />} />
-            <Route path="/daily-use-min-max" element={<DailyUseMinMax />} />
-            <Route path="/production-plan-upload" element={<ProductionPlanUpload />} />
-            <Route path="/production-plan-manage" element={<ProductionPlanManage />} />
-            <Route path="/delivery-plan-upload" element={<DeliveryPlanUpload />} />
-            <Route path="/delivery-plan-manage" element={<DeliveryPlanManage />} />
+            {/* Planning Manage pages: admin & superadmin only */}
+            <Route path="/daily-use-upload" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <DailyUseUpload />
+              </ProtectedRoute>
+            } />
+            <Route path="/daily-use-manage" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <DailyUseManage />
+              </ProtectedRoute>
+            } />
+            <Route path="/daily-use-min-max" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <DailyUseMinMax />
+              </ProtectedRoute>
+            } />
+            <Route path="/production-plan-upload" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <ProductionPlanUpload />
+              </ProtectedRoute>
+            } />
+            <Route path="/production-plan-manage" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <ProductionPlanManage />
+              </ProtectedRoute>
+            } />
+            <Route path="/delivery-plan-upload" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <DeliveryPlanUpload />
+              </ProtectedRoute>
+            } />
+            <Route path="/delivery-plan-manage" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <DeliveryPlanManage />
+              </ProtectedRoute>
+            } />
+            <Route path="/asakai-board" element={<AsakaiBoard />} />
+            {/* Asakai manage pages: admin & superadmin only */}
+            <Route path="/asakai-manage-target" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <AsakaiManageTarget />
+              </ProtectedRoute>
+            } />
+            <Route path="/asakai-manage" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <AsakaiManage />
+              </ProtectedRoute>
+            } />
+            <Route path="/asakai-manage-reasons/:chartId" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <AsakaiManageReasons />
+              </ProtectedRoute>
+            } />
+            <Route path="/daily-use-min-max" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <DailyUseMinMax />
+              </ProtectedRoute>
+            } />
+            <Route path="/production-plan-upload" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <ProductionPlanUpload />
+              </ProtectedRoute>
+            } />
+            <Route path="/production-plan-manage" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <ProductionPlanManage />
+              </ProtectedRoute>
+            } />
+            <Route path="/delivery-plan-upload" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <DeliveryPlanUpload />
+              </ProtectedRoute>
+            } />
+            <Route path="/delivery-plan-manage" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <DeliveryPlanManage />
+              </ProtectedRoute>
+            } />
             <Route path="/asakai-board" element={<AsakaiBoard />} />
             <Route path="/asakai-manage-target" element={<AsakaiManageTarget />} />
-            <Route path="/asakai-manage" element={<AsakaiManage />} />
-            <Route path="/asakai-manage-reasons/:chartId" element={<AsakaiManageReasons />} />
+            {/* Asakai manage pages: admin & superadmin only */}
+            <Route path="/asakai-manage-target" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <AsakaiManageTarget />
+              </ProtectedRoute>
+            } />
+            <Route path="/asakai-manage" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <AsakaiManage />
+              </ProtectedRoute>
+            } />
+            <Route path="/asakai-manage-reasons/:chartId" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <AsakaiManageReasons />
+              </ProtectedRoute>
+            } />
             <Route path="/asakai-reasons/:titleId/:titleName" element={<AsakaiReasonsList />} />
             <Route path="/saas" element={<Saas />} />
 

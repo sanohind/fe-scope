@@ -98,13 +98,14 @@ const AppSidebar: React.FC = () => {
   const location = useLocation();
 
   // Filter menu items based on user role
-  const isSuperadmin = user?.role?.slug === 'superadmin';
+  const roleSlug = user?.role?.slug;
+  const isAdminOrSuperadmin = roleSlug === 'admin' || roleSlug === 'superadmin';
   
   const navItems = allNavItems
-    .filter(item => !item.adminOnly || isSuperadmin) // Filter top-level items
+    .filter(item => !item.adminOnly || isAdminOrSuperadmin) // Filter top-level items
     .map(item => ({
       ...item,
-      subItems: item.subItems?.filter(subItem => !subItem.adminOnly || isSuperadmin) // Filter sub-items
+      subItems: item.subItems?.filter(subItem => !subItem.adminOnly || isAdminOrSuperadmin) // Filter sub-items
     }));
 
 

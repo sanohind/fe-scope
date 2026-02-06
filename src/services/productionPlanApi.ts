@@ -2,6 +2,14 @@ import { API_CONFIG } from "../config/apiConfig";
 
 const BASE_URL = API_CONFIG.BASE_URL;
 
+const getAuthHeaders = (extra?: HeadersInit): HeadersInit => {
+  const token = localStorage.getItem('token');
+  return {
+    ...(extra || {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
+
 export interface ProductionPlanData {
   id?: number;
   partno: string;
@@ -51,6 +59,7 @@ export const productionPlanApi = {
 
     const response = await fetch(`${API_BASE}/import`, {
       method: "POST",
+      headers: getAuthHeaders(),
       body: formData,
     });
 
@@ -62,14 +71,14 @@ export const productionPlanApi = {
   getAll: async (params?: { page?: number; per_page?: number; plan_date?: string; partno?: string }): Promise<ProductionPlanListResponse> => {
     const queryParams = new URLSearchParams(params as any).toString();
     const url = `${API_BASE}${queryParams ? `?${queryParams}` : ""}`;
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: getAuthHeaders() });
     if (!response.ok) throw new Error("Failed to fetch data");
     return response.json();
   },
 
   // Get single record by ID
   getById: async (id: number): Promise<ProductionPlanResponse> => {
-    const response = await fetch(`${API_BASE}/${id}`);
+    const response = await fetch(`${API_BASE}/${id}`, { headers: getAuthHeaders() });
     if (!response.ok) throw new Error("Failed to fetch record");
     return response.json();
   },
@@ -79,7 +88,7 @@ export const productionPlanApi = {
     const response = await fetch(API_BASE, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        ...getAuthHeaders({ "Content-Type": "application/json" }),
       },
       body: JSON.stringify({ data }),
     });
@@ -92,7 +101,7 @@ export const productionPlanApi = {
     const response = await fetch(`${API_BASE}/${id}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json",
+        ...getAuthHeaders({ "Content-Type": "application/json" }),
       },
       body: JSON.stringify(data),
     });
@@ -104,6 +113,7 @@ export const productionPlanApi = {
   delete: async (id: number): Promise<ProductionPlanResponse> => {
     const response = await fetch(`${API_BASE}/${id}`, {
       method: "DELETE",
+      headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error("Failed to delete record");
     return response.json();
@@ -114,7 +124,7 @@ export const productionPlanApi = {
     const response = await fetch(`${API_BASE}/delete-multiple`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        ...getAuthHeaders({ "Content-Type": "application/json" }),
       },
       body: JSON.stringify({ ids }),
     });

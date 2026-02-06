@@ -168,6 +168,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (roles.includes('operator-warehouse') && userRoleSlug === 'operator' && departmentCode === 'WH') {
       return true;
     }
+
+    // Allow specialized roles to satisfy generic requirements
+    // e.g. 'operator-warehouse' satisfies 'operator'
+    if (roles.includes('operator') && userRoleSlug.startsWith('operator')) {
+        return true;
+    }
+    if (roles.includes('admin') && userRoleSlug.startsWith('admin')) {
+        return true;
+    }
     
     console.log('hasRole check:', { 
       userRole: userRoleSlug,
