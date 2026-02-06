@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_CONFIG } from '../../config/apiConfig';
+import { userManager } from '../../auth/oidcConfig';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -26,10 +27,11 @@ export default function ProtectedRoute({ children, requiredRoles }: ProtectedRou
 
   // Check if we're on the SSO callback page
   const currentPath = location.pathname + location.hash;
-  const isCallbackPage = currentPath.includes('/sso/callback');
+  const isCallbackPage = currentPath.includes('/sso/callback') || currentPath.includes('/callback');
 
   // Check if SSO is enabled
   const ssoEnabled = import.meta.env.VITE_ENABLE_SSO === 'true';
+  const oidcEnabled = import.meta.env.VITE_SSO_ENABLED !== 'false';
 
   // If not authenticated, show login UI
   if (!isAuthenticated && !isCallbackPage) {
@@ -57,15 +59,30 @@ export default function ProtectedRoute({ children, requiredRoles }: ProtectedRou
                 You need to login to access SCOPE.
               </p>
               <button
-                onClick={() => {
+                onClick={async () => {
                   // Store the current path for redirect after login
-                  sessionStorage.setItem('redirect_path', location.pathname + location.search);
+                  sessionStorage.setItem('redirectAfterLogin', location.pathname + location.search);
 
-                  const appOrigin = window.location.origin;
-                  const callback = `${appOrigin}/#/sso/callback`;
-                  const sphereSsoUrl = API_CONFIG.SPHERE_SSO_URL;
-                  console.log('Redirecting to SSO:', `${sphereSsoUrl}?redirect=${encodeURIComponent(callback)}`);
-                  window.location.href = `${sphereSsoUrl}?redirect=${encodeURIComponent(callback)}`;
+                  if (oidcEnabled) {
+                    // Use OIDC login
+                    try {
+                      await userManager.signinRedirect();
+                    } catch (error) {
+                      console.error('OIDC login failed:', error);
+                      // Fallback to legacy SSO
+                      const appOrigin = window.location.origin;
+                      const callback = `${appOrigin}/#/sso/callback`;
+                      const sphereSsoUrl = API_CONFIG.SPHERE_SSO_URL;
+                      window.location.href = `${sphereSsoUrl}?redirect=${encodeURIComponent(callback)}`;
+                    }
+                  } else {
+                    // Legacy SSO login
+                    const appOrigin = window.location.origin;
+                    const callback = `${appOrigin}/#/sso/callback`;
+                    const sphereSsoUrl = API_CONFIG.SPHERE_SSO_URL;
+                    console.log('Redirecting to SSO:', `${sphereSsoUrl}?redirect=${encodeURIComponent(callback)}`);
+                    window.location.href = `${sphereSsoUrl}?redirect=${encodeURIComponent(callback)}`;
+                  }
                 }}
                 className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >

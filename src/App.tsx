@@ -301,8 +301,9 @@ export default function App() {
             <Route path="/pie-chart" element={<PieChart />} />
           </Route>
 
-          {/* SSO Callback Route - Must be before auth layout */}
+          {/* SSO Callback Routes - Must be before auth layout */}
           <Route path="/sso/callback" element={<SSOCallback />} />
+          <Route path="/callback" element={<SSOCallback />} />
 
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />
