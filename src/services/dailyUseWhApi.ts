@@ -2,6 +2,14 @@ import { API_CONFIG } from "../config/apiConfig";
 
 const BASE_URL = API_CONFIG.BASE_URL;
 
+const getAuthHeaders = (extra?: HeadersInit): HeadersInit => {
+  const token = localStorage.getItem('token');
+  return {
+    ...(extra || {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
+
 export interface DailyUseWhData {
   id?: number;
   partno: string;
@@ -49,6 +57,7 @@ export const dailyUseWhApi = {
 
     const response = await fetch(`${API_BASE}/import`, {
       method: "POST",
+      headers: getAuthHeaders(),
       body: formData,
     });
 
@@ -60,14 +69,14 @@ export const dailyUseWhApi = {
   getAll: async (params?: { page?: number; per_page?: number; plan_date?: string; partno?: string }): Promise<DailyUseWhListResponse> => {
     const queryParams = new URLSearchParams(params as any).toString();
     const url = `${API_BASE}${queryParams ? `?${queryParams}` : ""}`;
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: getAuthHeaders() });
     if (!response.ok) throw new Error("Failed to fetch data");
     return response.json();
   },
 
   // Get single record by ID
   getById: async (id: number): Promise<DailyUseWhResponse> => {
-    const response = await fetch(`${API_BASE}/${id}`);
+    const response = await fetch(`${API_BASE}/${id}`, { headers: getAuthHeaders() });
     if (!response.ok) throw new Error("Failed to fetch record");
     return response.json();
   },
@@ -77,7 +86,7 @@ export const dailyUseWhApi = {
     const response = await fetch(API_BASE, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        ...getAuthHeaders({ "Content-Type": "application/json" }),
       },
       body: JSON.stringify({ data }),
     });
@@ -94,7 +103,7 @@ export const dailyUseWhApi = {
     const response = await fetch(`${API_BASE}/${id}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json",
+        ...getAuthHeaders({ "Content-Type": "application/json" }),
       },
       body: JSON.stringify(data),
     });
@@ -112,6 +121,7 @@ export const dailyUseWhApi = {
   delete: async (id: number): Promise<DailyUseWhResponse> => {
     const response = await fetch(`${API_BASE}/${id}`, {
       method: "DELETE",
+      headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error("Failed to delete record");
     return response.json();
@@ -122,7 +132,7 @@ export const dailyUseWhApi = {
     const response = await fetch(`${API_BASE}/delete-multiple`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        ...getAuthHeaders({ "Content-Type": "application/json" }),
       },
       body: JSON.stringify({ ids }),
     });
@@ -136,7 +146,7 @@ export const dailyUseWhApi = {
   getMinMax: async (params?: { page?: number; per_page?: number; warehouse?: string; year?: number; period?: number }): Promise<DailyUseWhMinMaxListResponse> => {
     const queryParams = new URLSearchParams(params as any).toString();
     const url = `${API_BASE}/min-max${queryParams ? `?${queryParams}` : ""}`;
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: getAuthHeaders() });
     if (!response.ok) throw new Error("Failed to fetch Min/Max data");
     return response.json();
   },
@@ -146,7 +156,7 @@ export const dailyUseWhApi = {
     const response = await fetch(`${API_BASE}/min-max`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        ...getAuthHeaders({ "Content-Type": "application/json" }),
       },
       body: JSON.stringify(data),
     });
@@ -162,8 +172,10 @@ export const dailyUseWhApi = {
     const response = await fetch(`${API_BASE}/min-max/${id}`, {
       method: "DELETE",
       headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
+        ...getAuthHeaders({
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        }),
       },
     });
     if (!response.ok) {
