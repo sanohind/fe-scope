@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { authApi } from '../services/api/authApi';
 import { API_CONFIG } from '../config/apiConfig';
+import { userManager } from '../auth/oidcConfig';
+import { User } from 'oidc-client-ts';
 
 interface User {
   id: number;
@@ -25,9 +27,9 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (token: string) => Promise<void>; // SSO login
+  login: (token?: string) => Promise<void>; // SSO login (OIDC or JWT token)
   loginLocal: (username: string, password: string) => Promise<void>; // Local login
-  logout: () => void;
+  logout: () => Promise<void>;
   hasRole: (roles: string[]) => boolean;
 }
 
@@ -40,29 +42,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !!token;
 
-  const login = async (newToken: string) => {
-    console.log('🔐 Login called with token:', newToken.substring(0, 20) + '...');
+  const login = async (newToken?: string) => {
     setIsLoading(true);
-    setToken(newToken);
-    localStorage.setItem('token', newToken);
-    console.log('✅ Token saved to localStorage');
-
-    try {
-      console.log('📡 Fetching user data from API...');
-      const response = await authApi.verifyToken(newToken);
-      console.log('📥 Login - /auth/user API response:', response);
-      if (response.success && response.user) {
-        console.log('✅ Login - Setting user from API:', response.user);
-        setUser(response.user);
-      } else {
-        console.log('⚠️ Login - No user data in response:', response);
+    
+    // Check if OIDC is enabled
+    const oidcEnabled = import.meta.env.VITE_SSO_ENABLED !== 'false';
+    
+    // If no token provided and OIDC is enabled, initiate OIDC flow
+    if (!newToken && oidcEnabled) {
+      try {
+        await userManager.signinRedirect();
+        return; // Will redirect to Sphere
+      } catch (err) {
+        console.error('OIDC login failed:', err);
+        setIsLoading(false);
+        throw err;
       }
-    } catch (error) {
-      console.warn('❌ Login - Could not fetch user data:', error);
-      throw error;
-    } finally {
+    }
+    
+    // Legacy JWT token login
+    if (newToken) {
+      console.log('🔐 Login called with token:', newToken.substring(0, 20) + '...');
+      setToken(newToken);
+      localStorage.setItem('token', newToken);
+      console.log('✅ Token saved to localStorage');
+
+      try {
+        console.log('📡 Fetching user data from API...');
+        const response = await authApi.verifyToken(newToken);
+        console.log('📥 Login - /auth/user API response:', response);
+        if (response.success && response.user) {
+          console.log('✅ Login - Setting user from API:', response.user);
+          setUser(response.user);
+        } else {
+          console.log('⚠️ Login - No user data in response:', response);
+        }
+      } catch (error) {
+        console.warn('❌ Login - Could not fetch user data:', error);
+        throw error;
+      } finally {
+        setIsLoading(false);
+        console.log('🏁 Login process complete');
+      }
+    } else {
       setIsLoading(false);
-      console.log('🏁 Login process complete');
     }
   };
 
@@ -99,13 +122,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('token');
-    
-    // Don't auto-redirect - let ProtectedRoute handle it
-    // This prevents redirect loops
+  const logout = async () => {
+    try {
+      // Clear local state
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem('token');
+
+      // Check if OIDC is enabled
+      const oidcEnabled = import.meta.env.VITE_SSO_ENABLED !== 'false';
+      
+      if (oidcEnabled) {
+        // Trigger OIDC logout
+        await userManager.signoutRedirect();
+      } else {
+        // Fallback for legacy logout
+        window.location.replace('/');
+      }
+    } catch (err) {
+      console.error('Logout failed:', err);
+      // Fallback
+      window.location.replace('/');
+    }
   };
 
   const hasRole = (roles: string[]): boolean => {
@@ -143,6 +181,84 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        // Build public path check
+        const currentPath = window.location.hash
+          ? window.location.hash.replace('#', '') || '/'
+          : window.location.pathname;
+        const publicRoutes = ['/signin', '/signup', '/sso/callback', '/callback'];
+        const isPublicRoute = publicRoutes.some(route => currentPath.startsWith(route));
+        
+        // Skip auth initialization for public routes
+        if (isPublicRoute) {
+            setIsLoading(false);
+            return;
+        }
+
+        // Check if SSO is enabled via env
+        const ssoEnabled = import.meta.env.VITE_SSO_ENABLED !== 'false'; // Default true if not set
+        const oidcEnabled = import.meta.env.VITE_SSO_ENABLED !== 'false'; // OIDC enabled if SSO enabled
+
+        if (!ssoEnabled) {
+            console.log('SSO is disabled (Mock Mode). Setting up mock superadmin...');
+            setToken('non-sso-mode');
+            localStorage.setItem('token', 'non-sso-mode');
+
+            // Set mock superadmin user for full access
+            setUser({
+                id: 1,
+                name: 'Super Admin (Non Auth)',
+                email: 'superadmin@besphere.com',
+                username: 'superadmin',
+                role: {
+                    id: 1,
+                    name: 'Superadmin',
+                    slug: 'superadmin',
+                    level: 1
+                },
+                department: {
+                    id: 1,
+                    name: 'Warehouse',
+                    code: 'WH'
+                }
+            });
+
+            setIsLoading(false);
+            return;
+        }
+
+        // Check OIDC user if OIDC is enabled
+        if (oidcEnabled) {
+          // Check OIDC user - retry logic for race conditions
+          let oidcUser = await userManager.getUser();
+          
+          // If user not found, wait a bit and retry (in case of race condition after redirect)
+          if (!oidcUser || oidcUser.expired) {
+            console.log("OIDC user not found on first try, retrying...");
+            await new Promise(resolve => setTimeout(resolve, 200));
+            oidcUser = await userManager.getUser();
+          }
+          
+          if (oidcUser && !oidcUser.expired) {
+            console.log("OIDC User found:", oidcUser);
+            setToken(oidcUser.access_token);
+            localStorage.setItem('token', oidcUser.access_token);
+            
+            // Fetch full profile from API if needed
+            try {
+               const response = await authApi.verifyToken(oidcUser.access_token);
+               if (response.success && response.user) {
+                  setUser(response.user);
+               }
+            } catch (e) {
+                console.warn("Failed to fetch API profile:", e);
+            }
+            
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        // Fallback to legacy JWT token
         const storedToken = localStorage.getItem('token');
         
         if (storedToken) {
@@ -175,7 +291,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
+    // Events for OIDC
+    const onUserLoaded = async (loadedUser: User) => {
+        console.log('OIDC User loaded event', loadedUser);
+        setToken(loadedUser.access_token);
+        localStorage.setItem('token', loadedUser.access_token);
+        try {
+            const response = await authApi.verifyToken(loadedUser.access_token);
+            if (response.success && response.user) {
+                setUser(response.user);
+            }
+        } catch (e) {
+            console.warn("Failed to fetch user profile after user loaded:", e);
+        }
+    };
+
+    const onAccessTokenExpired = () => {
+        console.log('Access token expired event');
+        // Let silent renew handle it, or logout if failed
+    };
+
+    // Listen for custom event from SSOCallback
+    const onCustomUserLoaded = async (event: CustomEvent) => {
+        console.log('Custom OIDC user loaded event', event.detail);
+        const userData = event.detail?.user;
+        if (userData && userData.access_token) {
+            setToken(userData.access_token);
+            localStorage.setItem('token', userData.access_token);
+            try {
+                const response = await authApi.verifyToken(userData.access_token);
+                if (response.success && response.user) {
+                    setUser(response.user);
+                }
+            } catch (e) {
+                console.warn("Failed to fetch user profile after custom user loaded:", e);
+            }
+        }
+    };
+
+    userManager.events.addUserLoaded(onUserLoaded);
+    userManager.events.addAccessTokenExpired(onAccessTokenExpired);
+    window.addEventListener('oidc-user-loaded', onCustomUserLoaded as unknown as EventListener);
+
     initializeAuth();
+
+    return () => {
+        userManager.events.removeUserLoaded(onUserLoaded);
+        userManager.events.removeAccessTokenExpired(onAccessTokenExpired);
+        window.removeEventListener('oidc-user-loaded', onCustomUserLoaded as unknown as EventListener);
+    };
   }, []);
 
   const value: AuthContextType = {
