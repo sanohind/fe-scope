@@ -2,9 +2,22 @@ import { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useAuth } from "../../context/AuthContext";
 
+/** Placeholder icon when user has no profile image */
+function ProfilePlaceholderIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+    </svg>
+  );
+}
+
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useAuth();
+
+  // Gunakan name, fallback ke username agar header dan dropdown konsisten
+  const displayName = user?.username || "User";
+  const displayEmail = user?.email ?? "";
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -16,7 +29,6 @@ export default function UserDropdown() {
 
   const handleLogout = () => {
     closeDropdown();
-    // Small delay to allow dropdown to close before redirect
     setTimeout(() => {
       logout();
     }, 100);
@@ -24,72 +36,34 @@ export default function UserDropdown() {
 
   return (
     <div className="relative">
-      <button
-        onClick={toggleDropdown}
-        className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
-      >
-        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img src="/images/icons/profile-icon.png" alt="User" />
+      <button onClick={toggleDropdown} className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400">
+        <span className="mr-3 flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+          {user?.image ? <img src={user.image} alt="" className="h-full w-full object-cover" /> : <ProfilePlaceholderIcon className="h-6 w-6 text-gray-500 dark:text-gray-400" />}
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">
-          {user?.name || 'User'}
-        </span>
-        <svg
-          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
-            }`}
-          width="18"
-          height="20"
-          viewBox="0 0 18 20"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M4.3125 8.65625L9 13.3437L13.6875 8.65625"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+        <span className="block mr-1 font-medium text-theme-sm">{displayName}</span>
+        <svg className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4.3125 8.65625L9 13.3437L13.6875 8.65625" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
-      <Dropdown
-        isOpen={isOpen}
-        onClose={closeDropdown}
-        className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
-      >
-        <div>
-          <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            {user?.name || 'User'}
+      <Dropdown isOpen={isOpen} onClose={closeDropdown} className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
+        <div className="flex gap-3">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+            {user?.image ? <img src={user.image} alt="" className="h-full w-full object-cover" /> : <ProfilePlaceholderIcon className="h-7 w-7 text-gray-500 dark:text-gray-400" />}
           </span>
-          <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            {user?.email || 'user@example.com'}
-          </span>
-          {user?.username && (
-            <span className="mt-0.5 block text-theme-xs text-gray-400 dark:text-gray-500">
-              @{user.username}
-            </span>
-          )}
-          {user?.role && (
-            <span className="mt-2 inline-block px-2 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full dark:bg-blue-900/30 dark:text-blue-400">
-              {user.role.name}
-            </span>
-          )}
+          <div className="min-w-0 flex-1">
+            <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">{user?.username}</span>
+            {displayEmail && <span className="mt-0.5 block truncate text-theme-xs text-gray-500 dark:text-gray-400">{displayEmail}</span>}
+            {user?.role?.name && <span className="mt-2 inline-block px-2 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full dark:bg-blue-900/30 dark:text-blue-400">{user.role.name}</span>}
+          </div>
         </div>
 
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
         >
-          <svg
-            className="fill-gray-500 group-hover:fill-gray-700 dark:group-hover:fill-gray-300"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg className="fill-gray-500 group-hover:fill-gray-700 dark:group-hover:fill-gray-300" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               fillRule="evenodd"
               clipRule="evenodd"

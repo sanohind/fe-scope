@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { userManager } from '../../auth/oidcConfig';
 import { useAuth } from '../../context/AuthContext';
-import { authApi } from '../../services/api/authApi';
 
 export default function SSOCallback() {
   const navigate = useNavigate();
