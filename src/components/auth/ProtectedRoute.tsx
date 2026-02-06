@@ -29,9 +29,9 @@ export default function ProtectedRoute({ children, requiredRoles }: ProtectedRou
   const currentPath = location.pathname + location.hash;
   const isCallbackPage = currentPath.includes('/sso/callback') || currentPath.includes('/callback');
 
-  // Check if SSO is enabled
+  // Check if SSO is enabled (.env: VITE_ENABLE_SSO)
   const ssoEnabled = import.meta.env.VITE_ENABLE_SSO === 'true';
-  const oidcEnabled = import.meta.env.VITE_SSO_ENABLED !== 'false';
+  const oidcEnabled = import.meta.env.VITE_ENABLE_SSO === 'true';
 
   // If not authenticated, show login UI
   if (!isAuthenticated && !isCallbackPage) {

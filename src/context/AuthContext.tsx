@@ -1,15 +1,16 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { authApi } from '../services/api/authApi';
+import { authApi, normalizeUser } from '../services/api/authApi';
 import { API_CONFIG } from '../config/apiConfig';
 import { userManager } from '../auth/oidcConfig';
-import { User } from 'oidc-client-ts';
+import { User as OidcUser } from 'oidc-client-ts';
 
 interface User {
   id: number;
   name: string;
   email: string;
-  username: string;
-  role: {
+  username?: string;
+  image?: string | null;
+  role?: {
     id: number;
     name: string;
     slug: string;
@@ -45,8 +46,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (newToken?: string) => {
     setIsLoading(true);
     
-    // Check if OIDC is enabled
-    const oidcEnabled = import.meta.env.VITE_SSO_ENABLED !== 'false';
+    // Check if OIDC is enabled (use VITE_ENABLE_SSO from .env)
+    const oidcEnabled = import.meta.env.VITE_ENABLE_SSO === 'true';
     
     // If no token provided and OIDC is enabled, initiate OIDC flow
     if (!newToken && oidcEnabled) {
@@ -110,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.success && data.token && data.user) {
         setToken(data.token);
         localStorage.setItem('token', data.token);
-        setUser(data.user);
+        setUser(normalizeUser(data.user));
       } else {
         throw new Error('Invalid response from server');
       }
@@ -130,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('token');
 
       // Check if OIDC is enabled
-      const oidcEnabled = import.meta.env.VITE_SSO_ENABLED !== 'false';
+      const oidcEnabled = import.meta.env.VITE_ENABLE_SSO === 'true';
       
       if (oidcEnabled) {
         // Trigger OIDC logout
@@ -194,9 +195,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return;
         }
 
-        // Check if SSO is enabled via env
-        const ssoEnabled = import.meta.env.VITE_SSO_ENABLED !== 'false'; // Default true if not set
-        const oidcEnabled = import.meta.env.VITE_SSO_ENABLED !== 'false'; // OIDC enabled if SSO enabled
+        // Check if SSO is enabled via env (.env: VITE_ENABLE_SSO=true|false)
+        const ssoEnabled = import.meta.env.VITE_ENABLE_SSO === 'true';
+        const oidcEnabled = import.meta.env.VITE_ENABLE_SSO === 'true';
 
         if (!ssoEnabled) {
             console.log('SSO is disabled (Mock Mode). Setting up mock superadmin...');
@@ -292,7 +293,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     // Events for OIDC
-    const onUserLoaded = async (loadedUser: User) => {
+    const onUserLoaded = async (loadedUser: OidcUser) => {
         console.log('OIDC User loaded event', loadedUser);
         setToken(loadedUser.access_token);
         localStorage.setItem('token', loadedUser.access_token);
