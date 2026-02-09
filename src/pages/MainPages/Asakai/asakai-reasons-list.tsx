@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { asakaiApi, AsakaiReason } from "../../../services/asakaiApi";
-import { ArrowLeft, Search, Printer } from "lucide-react";
+import { ArrowLeft, Search, Printer, ChevronLeft, ChevronRight } from "lucide-react";
 import PageMeta from "../../../components/common/PageMeta";
 import { API_CONFIG } from "../../../config/apiConfig";
 
@@ -17,12 +17,19 @@ export default function AsakaiReasonsList() {
   const navigate = useNavigate();
   const [reasons, setReasons] = useState<AsakaiReason[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    last_page: 1,
+    from: 0,
+    to: 0,
+    current_page: 1
+  });
 
   // Filters
-  /* Filters removed in favor of global filter */
   const [searchQuery, setSearchQuery] = useState("");
 
   const handlePrintBIRA = () => {
@@ -65,13 +72,14 @@ export default function AsakaiReasonsList() {
 
   useEffect(() => {
     fetchReasons();
-  }, [titleId, currentPage, searchQuery]);
+  }, [titleId, page, perPage, searchQuery]);
 
   const fetchReasons = async () => {
     try {
       setLoading(true);
       const params: any = {
-        per_page: 100,
+        page: page,
+        per_page: perPage,
         asakai_title_id: titleId,
       };
 
@@ -91,17 +99,26 @@ export default function AsakaiReasonsList() {
       const response = await asakaiApi.getReasons(params);
       
       if (response.success) {
-        // Data is already filtered by backend
-        const filteredReasons = response.data;
+        setReasons(response.data);
         
-        // Manual pagination
-        const startIndex = (currentPage - 1) * 20;
-        const endIndex = startIndex + 20;
-        const paginatedReasons = filteredReasons.slice(startIndex, endIndex);
-        
-        setReasons(paginatedReasons);
-        setTotal(filteredReasons.length);
-        setTotalPages(Math.ceil(filteredReasons.length / 20));
+        // Handle pagination from backend
+        if (response.pagination) {
+          const currentPage = response.pagination.current_page;
+          const perPageValue = response.pagination.per_page;
+          const total = response.pagination.total;
+          
+          // Calculate from and to
+          const from = total > 0 ? (currentPage - 1) * perPageValue + 1 : 0;
+          const to = Math.min(currentPage * perPageValue, total);
+          
+          setPagination({
+            total: total,
+            last_page: response.pagination.last_page,
+            from: from,
+            to: to,
+            current_page: currentPage
+          });
+        }
       }
     } catch (error) {
       console.error("Failed to fetch reasons:", error);
@@ -112,13 +129,13 @@ export default function AsakaiReasonsList() {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    setCurrentPage(1);
+    setPage(1); // Reset to page 1 on search
   };
 
-
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= pagination.last_page) {
+      setPage(newPage);
+    }
   };
 
   return (
@@ -271,27 +288,45 @@ export default function AsakaiReasonsList() {
             </table>
           </div>
 
-          {/* Pagination */}
-          {!loading && totalPages > 1 && (
-            <div className="border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-900">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-700 dark:text-gray-300">
-                  Showing page {currentPage} of {totalPages} ({total} total reasons)
-                </div>
-                <div className="flex gap-2">
+          {/* Pagination Controls */}
+          {reasons.length > 0 && (
+            <div className="flex items-center justify-between border-t border-gray-200 px-6 py-4 dark:border-gray-800">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-700 dark:text-gray-400">Show</span>
+                <select
+                  value={perPage}
+                  onChange={(e) => {
+                    setPerPage(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span className="text-sm text-gray-700 dark:text-gray-400">entries</span>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-700 dark:text-gray-400">
+                  Showing {pagination.from} to {pagination.to} of {pagination.total} entries
+                </span>
+                <div className="flex items-center gap-1">
                   <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page <= 1}
+                    className="rounded-lg border border-gray-200 p-1 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:hover:bg-gray-800"
                   >
-                    Previous
+                    <ChevronLeft size={20} className="text-gray-600 dark:text-gray-400" />
                   </button>
                   <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page >= pagination.last_page}
+                    className="rounded-lg border border-gray-200 p-1 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:hover:bg-gray-800"
                   >
-                    Next
+                    <ChevronRight size={20} className="text-gray-600 dark:text-gray-400" />
                   </button>
                 </div>
               </div>
