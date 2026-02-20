@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { inventoryRevApi } from "../../../services/api/dashboardApi";
 import { useNavigate } from "react-router-dom";
 
@@ -60,6 +60,7 @@ const getStatusStyle = (status: string) => {
         label: "Critical",
       };
     case "low":
+    case "low stock":
       return {
         bg: "bg-orange-50 dark:bg-orange-900/20",
         text: "text-orange-700 dark:text-orange-400",
@@ -88,8 +89,7 @@ const getStatusStyle = (status: string) => {
 
 const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({ warehouse }) => {
   const navigate = useNavigate();
-  const [allRows, setAllRows] = useState<RmStockItem[]>([]); // Store all data from API
-  const [filteredRows, setFilteredRows] = useState<RmStockItem[]>([]); // Filtered data for display
+  const [rows, setRows] = useState<RmStockItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
@@ -98,131 +98,97 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(25);
-  
+
   // Separate month and year filters
-  const [selectedMonth, setSelectedMonth] = useState("");
-  const [selectedYear, setSelectedYear] = useState("");
-  
-  // Group type filter
+  const [selectedMonth] = useState(() =>
+    (new Date().getMonth() + 1).toString().padStart(2, "0")
+  );
+  const [selectedYear] = useState(() =>
+    new Date().getFullYear().toString()
+  );
+
+  // Group type filter - dikirim ke API sebagai `group_type`
   const [selectedGroupType, setSelectedGroupType] = useState("");
 
   // Generate month options (1-12)
-  const monthOptions = [
-    { value: "01", label: "January" },
-    { value: "02", label: "February" },
-    { value: "03", label: "March" },
-    { value: "04", label: "April" },
-    { value: "05", label: "May" },
-    { value: "06", label: "June" },
-    { value: "07", label: "July" },
-    { value: "08", label: "August" },
-    { value: "09", label: "September" },
-    { value: "10", label: "October" },
-    { value: "11", label: "November" },
-    { value: "12", label: "December" },
-  ];
+  // const monthOptions = [
+  //   { value: "01", label: "January" },
+  //   { value: "02", label: "February" },
+  //   { value: "03", label: "March" },
+  //   { value: "04", label: "April" },
+  //   { value: "05", label: "May" },
+  //   { value: "06", label: "June" },
+  //   { value: "07", label: "July" },
+  //   { value: "08", label: "August" },
+  //   { value: "09", label: "September" },
+  //   { value: "10", label: "October" },
+  //   { value: "11", label: "November" },
+  //   { value: "12", label: "December" },
+  // ];
 
   // Generate year options (current year and 2 years back)
-  const generateYearOptions = () => {
-    const currentYear = new Date().getFullYear();
-    const years = [];
-    for (let i = 0; i <= 2; i++) {
-      years.push((currentYear - i).toString());
-    }
-    return years;
-  };
+  // const yearOptions = (() => {
+  //   const currentYear = new Date().getFullYear();
+  //   const years = [];
+  //   for (let i = 0; i <= 2; i++) {
+  //     years.push((currentYear - i).toString());
+  //   }
+  //   return years;
+  // })();
 
-  const yearOptions = generateYearOptions();
-
-  // Set default to current month and year
-  useEffect(() => {
-    const now = new Date();
-    setSelectedMonth((now.getMonth() + 1).toString().padStart(2, "0"));
-    setSelectedYear(now.getFullYear().toString());
-  }, []);
-
+  // Debounce search input → searchTerm, reset page ke 1
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearchTerm(searchInput.trim());
       setCurrentPage(1);
     }, 400);
-
     return () => clearTimeout(handler);
   }, [searchInput]);
 
-  useEffect(() => {
+  // Fetch data dari API setiap kali filter atau pagination berubah
+  const fetchData = useCallback(async () => {
     if (!selectedMonth || !selectedYear) return;
-    fetchData();
-  }, [warehouse, searchTerm, selectedMonth, selectedYear]);
-
-  // Apply frontend filters whenever allRows or filters change
-  useEffect(() => {
-    applyFilters();
-  }, [allRows, selectedGroupType, currentPage, perPage]);
-
-  const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Calculate date_from and date_to from selected month and year
+      // Hitung date_from dan date_to dari bulan dan tahun yang dipilih
       const firstDay = `${selectedYear}-${selectedMonth}-01`;
-      const lastDay = new Date(parseInt(selectedYear), parseInt(selectedMonth), 0).toISOString().split("T")[0];
+      const lastDay = new Date(parseInt(selectedYear), parseInt(selectedMonth), 0)
+        .toISOString()
+        .split("T")[0];
 
+      // Kirim semua parameter filter + pagination ke API
       const params: Record<string, string | number> = {
-        page: 1,
-        per_page: 9999, // Get all data for frontend filtering
+        page: currentPage,
+        per_page: perPage,
         date_from: firstDay,
         date_to: lastDay,
       };
 
       if (searchTerm) params.search = searchTerm;
+      if (selectedGroupType) params.group_type = selectedGroupType;
 
       const result = await inventoryRevApi.getRmStockLevelDetail(warehouse, params);
 
       if (result.data) {
-        setAllRows(result.data || []);
+        setRows(result.data || []);
+      }
+
+      // Gunakan pagination dari response API
+      if (result.pagination) {
+        setPagination(result.pagination);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch data");
     } finally {
       setLoading(false);
     }
-  };
+  }, [warehouse, currentPage, perPage, searchTerm, selectedGroupType, selectedMonth, selectedYear]);
 
-  const applyFilters = () => {
-    let filtered = [...allRows];
-
-    // Apply group type filter
-    // Apply group type filter
-    if (selectedGroupType) {
-      filtered = filtered.filter((row) => {
-        if (selectedGroupType === "-") return !row.group_type_desc || row.group_type_desc === "-";
-        return row.group_type_desc === selectedGroupType;
-      });
-    }
-
-    // Calculate pagination
-    const total = filtered.length;
-    const lastPage = Math.ceil(total / perPage);
-    const from = (currentPage - 1) * perPage + 1;
-    const to = Math.min(currentPage * perPage, total);
-
-    // Apply pagination
-    const startIndex = (currentPage - 1) * perPage;
-    const endIndex = startIndex + perPage;
-    const paginatedData = filtered.slice(startIndex, endIndex);
-
-    setFilteredRows(paginatedData);
-    setPagination({
-      total,
-      per_page: perPage,
-      current_page: currentPage,
-      last_page: lastPage,
-      from: from > total ? 0 : from,
-      to,
-    });
-  };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const formatNumber = (value: number) => NUMBER_FORMATTER.format(value ?? 0);
 
@@ -269,6 +235,7 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
             <p className="text-sm text-gray-500 dark:text-gray-400">Detailed raw material stock information</p>
           </div>
           <div className="flex flex-wrap gap-3">
+            {/* Search */}
             <input
               type="text"
               value={searchInput}
@@ -276,7 +243,8 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
               onChange={(e) => setSearchInput(e.target.value)}
               className="w-64 rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
             />
-            <select
+            {/* Year filter */}
+            {/* <select
               value={selectedYear}
               onChange={(e) => {
                 setSelectedYear(e.target.value);
@@ -289,8 +257,9 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
                   {year}
                 </option>
               ))}
-            </select>
-            <select
+            </select> */}
+            {/* Month filter */}
+            {/* <select
               value={selectedMonth}
               onChange={(e) => {
                 setSelectedMonth(e.target.value);
@@ -303,7 +272,8 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
                   {option.label}
                 </option>
               ))}
-            </select>
+            </select> */}
+            {/* Group Type filter - dikirim ke API */}
             <select
               value={selectedGroupType}
               onChange={(e) => {
@@ -319,6 +289,7 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
                 </option>
               ))}
             </select>
+            {/* Per Page Selector */}
             <select
               value={perPage}
               onChange={(e) => {
@@ -327,7 +298,7 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
               }}
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
             >
-              {[25, 50, 100, 150].map((size) => (
+              {[25, 50, 100, 150, 200].map((size) => (
                 <option key={size} value={size}>
                   {size} per page
                 </option>
@@ -360,14 +331,14 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white text-sm dark:divide-gray-800 dark:bg-gray-950/40">
-                {filteredRows.length === 0 ? (
+                {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={10} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
                       No data available
                     </td>
                   </tr>
                 ) : (
-                  filteredRows.map((row, index) => {
+                  rows.map((row, index) => {
                     const statusStyle = getStatusStyle(row.stock_status);
                     return (
                       <tr key={`${row.partno}-${index}`} className="hover:bg-gray-50 dark:hover:bg-white/5">
@@ -394,6 +365,7 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
           </div>
         </div>
 
+        {/* Pagination dari API */}
         {pagination && (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600 dark:text-gray-400">
             <div>
@@ -402,7 +374,7 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
+                disabled={pagination.current_page <= 1}
                 className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
               >
                 Previous
@@ -412,7 +384,7 @@ const RawMaterialStockLevelTable: React.FC<RawMaterialStockLevelTableProps> = ({
               </span>
               <button
                 onClick={() => setCurrentPage((prev) => Math.min(pagination.last_page, prev + 1))}
-                disabled={currentPage === pagination.last_page}
+                disabled={pagination.current_page >= pagination.last_page}
                 className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
               >
                 Next
