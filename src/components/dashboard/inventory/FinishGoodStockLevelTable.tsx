@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { inventoryRevApi } from "../../../services/api/dashboardApi";
 import { useNavigate } from "react-router-dom";
-import DatePicker from "../../form/date-picker";
+// import DatePicker from "../../form/date-picker";
 
 interface FgStockItem {
   partno: string;
@@ -48,6 +48,7 @@ const getStatusStyle = (status: string) => {
         label: "Critical",
       };
     case "low":
+    case "low stock":
       return {
         bg: "bg-orange-50 dark:bg-orange-900/20",
         text: "text-orange-700 dark:text-orange-400",
@@ -76,8 +77,7 @@ const getStatusStyle = (status: string) => {
 
 const FinishGoodStockLevelTable: React.FC<FinishGoodStockLevelTableProps> = ({ warehouse }) => {
   const navigate = useNavigate();
-  const [allRows, setAllRows] = useState<FgStockItem[]>([]); // Store all data from API
-  const [filteredRows, setFilteredRows] = useState<FgStockItem[]>([]); // Filtered data for display
+  const [rows, setRows] = useState<FgStockItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
@@ -86,10 +86,17 @@ const FinishGoodStockLevelTable: React.FC<FinishGoodStockLevelTableProps> = ({ w
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(25);
-  
+
   // Date filter (default to today)
-  const [selectedDate, setSelectedDate] = useState(() => {
-    // Return today's date in YYYY-MM-DD format
+  // const [selectedDate, setSelectedDate] = useState(() => {
+  //   const now = new Date();
+  //   const year = now.getFullYear();
+  //   const month = String(now.getMonth() + 1).padStart(2, "0");
+  //   const day = String(now.getDate()).padStart(2, "0");
+  //   return `${year}-${month}-${day}`;
+  // });
+
+  const [selectedDate] = useState(() => {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -97,89 +104,66 @@ const FinishGoodStockLevelTable: React.FC<FinishGoodStockLevelTableProps> = ({ w
     return `${year}-${month}-${day}`;
   });
 
-  // Customer filter
+  // Customer filter (dikirim ke API)
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [availableCustomers, setAvailableCustomers] = useState<string[]>([]);
 
+  // Debounce search input → searchTerm, reset page ke 1
   useEffect(() => {
     const handler = setTimeout(() => {
       setSearchTerm(searchInput.trim());
       setCurrentPage(1);
     }, 400);
-
     return () => clearTimeout(handler);
   }, [searchInput]);
 
-  useEffect(() => {
+  // Fetch data dari API setiap kali filter atau pagination berubah
+  const fetchData = useCallback(async () => {
     if (!selectedDate) return;
-    fetchData();
-  }, [warehouse, searchTerm, selectedDate]);
-
-  // Apply frontend filters whenever allRows or filters change
-  useEffect(() => {
-    applyFilters();
-  }, [allRows, selectedCustomer, currentPage, perPage]);
-
-  const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Use selectedDate for both from and to since it's a daily view
+      // Kirim semua parameter filter + pagination ke API
       const params: Record<string, string | number> = {
-        page: 1,
-        per_page: 9999, // Get all data for frontend filtering
+        page: currentPage,
+        per_page: perPage,
         date_from: selectedDate,
         date_to: selectedDate,
       };
 
       if (searchTerm) params.search = searchTerm;
+      if (selectedCustomer) params.customer = selectedCustomer;
 
       const result = await inventoryRevApi.getFgStockLevelDetail(warehouse, params);
 
       if (result.data) {
-        setAllRows(result.data || []);
-        
-        // Extract unique customers
-        const uniqueCustomers = Array.from(new Set(result.data.map((item: FgStockItem) => item.customer).filter(Boolean))) as string[];
-        setAvailableCustomers(uniqueCustomers.sort());
+        setRows(result.data || []);
+        // Ekstrak daftar customer unik dari data yang di-fetch
+        const uniqueCustomers = Array.from(
+          new Set(
+            (result.data as FgStockItem[])
+              .map((item) => item.customer)
+              .filter(Boolean)
+          )
+        ).sort() as string[];
+        setAvailableCustomers(uniqueCustomers);
+      }
+
+      // Gunakan pagination dari response API
+      if (result.pagination) {
+        setPagination(result.pagination);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch data");
     } finally {
       setLoading(false);
     }
-  };
+  }, [warehouse, currentPage, perPage, searchTerm, selectedCustomer, selectedDate]);
 
-  const applyFilters = () => {
-    let filtered = [...allRows];
-
-    // Apply customer filter
-    if (selectedCustomer) {
-      filtered = filtered.filter((row) => row.customer === selectedCustomer);
-    }
-
-    // Calculate pagination
-    const total = filtered.length;
-    const lastPage = Math.ceil(total / perPage);
-    const from = (currentPage - 1) * perPage + 1;
-    const to = Math.min(currentPage * perPage, total);
-
-    // Apply pagination
-    const startIndex = (currentPage - 1) * perPage;
-    const endIndex = startIndex + perPage;
-    const paginatedData = filtered.slice(startIndex, endIndex);
-
-    setFilteredRows(paginatedData);
-    setPagination({
-      total,
-      per_page: perPage,
-      current_page: currentPage,
-      last_page: lastPage,
-      from: from > total ? 0 : from,
-      to,
-    });
-  };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const formatNumber = (value: number) => NUMBER_FORMATTER.format(value ?? 0);
 
@@ -226,6 +210,7 @@ const FinishGoodStockLevelTable: React.FC<FinishGoodStockLevelTableProps> = ({ w
             <p className="text-sm text-gray-500 dark:text-gray-400">Detailed finish good stock information</p>
           </div>
           <div className="flex flex-wrap gap-3">
+            {/* Search */}
             <input
               type="text"
               value={searchInput}
@@ -233,7 +218,8 @@ const FinishGoodStockLevelTable: React.FC<FinishGoodStockLevelTableProps> = ({ w
               onChange={(e) => setSearchInput(e.target.value)}
               className="w-64 rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
             />
-            <div className="w-64">
+            {/* Date Picker (disabled) */}
+            {/* <div className="w-64">
               <DatePicker
                 id="date-picker-finish-good"
                 mode="single"
@@ -241,17 +227,18 @@ const FinishGoodStockLevelTable: React.FC<FinishGoodStockLevelTableProps> = ({ w
                 defaultDate={selectedDate.split("-").reverse().join("-")}
                 onChange={(selectedDates: Date[]) => {
                   if (selectedDates && selectedDates.length > 0) {
-                     const date = selectedDates[0];
-                     const year = date.getFullYear();
-                     const month = String(date.getMonth() + 1).padStart(2, "0");
-                     const day = String(date.getDate()).padStart(2, "0");
-                     setSelectedDate(`${year}-${month}-${day}`);
-                     setCurrentPage(1);
+                    const date = selectedDates[0];
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+                    setSelectedDate(`${year}-${month}-${day}`);
+                    setCurrentPage(1);
                   }
                 }}
                 placeholder="Select date"
               />
-            </div>
+            </div> */}
+            {/* Customer Filter */}
             <select
               value={selectedCustomer}
               onChange={(e) => {
@@ -267,6 +254,7 @@ const FinishGoodStockLevelTable: React.FC<FinishGoodStockLevelTableProps> = ({ w
                 </option>
               ))}
             </select>
+            {/* Per Page Selector */}
             <select
               value={perPage}
               onChange={(e) => {
@@ -275,7 +263,7 @@ const FinishGoodStockLevelTable: React.FC<FinishGoodStockLevelTableProps> = ({ w
               }}
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
             >
-              {[25, 50, 100, 150].map((size) => (
+              {[25, 50, 100, 150, 200].map((size) => (
                 <option key={size} value={size}>
                   {size} per page
                 </option>
@@ -308,14 +296,14 @@ const FinishGoodStockLevelTable: React.FC<FinishGoodStockLevelTableProps> = ({ w
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white text-sm dark:divide-gray-800 dark:bg-gray-950/40">
-                {filteredRows.length === 0 ? (
+                {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={10} className="px-4 py-10 text-center text-gray-500 dark:text-gray-400">
                       No data available
                     </td>
                   </tr>
                 ) : (
-                  filteredRows.map((row, index) => {
+                  rows.map((row, index) => {
                     const statusStyle = getStatusStyle(row.stock_status);
                     return (
                       <tr key={`${row.partno}-${index}`} className="hover:bg-gray-50 dark:hover:bg-white/5">
@@ -342,6 +330,7 @@ const FinishGoodStockLevelTable: React.FC<FinishGoodStockLevelTableProps> = ({ w
           </div>
         </div>
 
+        {/* Pagination dari API */}
         {pagination && (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600 dark:text-gray-400">
             <div>
@@ -350,7 +339,7 @@ const FinishGoodStockLevelTable: React.FC<FinishGoodStockLevelTableProps> = ({ w
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
+                disabled={pagination.current_page <= 1}
                 className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
               >
                 Previous
@@ -360,7 +349,7 @@ const FinishGoodStockLevelTable: React.FC<FinishGoodStockLevelTableProps> = ({ w
               </span>
               <button
                 onClick={() => setCurrentPage((prev) => Math.min(pagination.last_page, prev + 1))}
-                disabled={currentPage === pagination.last_page}
+                disabled={pagination.current_page >= pagination.last_page}
                 className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
               >
                 Next
