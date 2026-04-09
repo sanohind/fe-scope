@@ -3,17 +3,18 @@ import LazyLoad from "../../../components/common/LazyLoad";
 import AsakaiFilterHeader from "../../../components/dashboard/asakai/AsakaiFilterHeader";
 import AsakaiChartLine from "../../../components/dashboard/asakai/AsakaiChartLine";
 import { AsakaiFilterProvider, useAsakaiFilters } from "../../../context/AsakaiFilterContext";
+import { useEffect } from "react";
 
 // 13 Asakai Titles based on the image provided
 const ASAKAI_TITLES = [
   { id: 1, title: "Safety - Fatal Accident", category: "Safety", descriptionLabel: "Target Maximum", unit: "case" },
   { id: 2, title: "Safety - Lost Working Day", category: "Safety", descriptionLabel: "Target Maximum", unit: "case" },
-  { id: 3, title: "Quality - Customer Claim", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
-  { id: 4, title: "Quality - Warranty Claim", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
-  { id: 5, title: "Quality - Service Part", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
-  { id: 6, title: "Quality - Export Part", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
-  { id: 7, title: "Quality - Local Supplier", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
-  { id: 8, title: "Quality - Overseas Supplier", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
+  { id: 3, title: "Quality - Customer Claim", category: "Quality", descriptionLabel: "Target Maximum", unit: "case" },
+  { id: 4, title: "Quality - Warranty Claim", category: "Quality", descriptionLabel: "Target Maximum", unit: "case" },
+  { id: 5, title: "Quality - Service Part", category: "Quality", descriptionLabel: "Target Maximum", unit: "case" },
+  { id: 6, title: "Quality - Export Part", category: "Quality", descriptionLabel: "Target Maximum", unit: "case" },
+  { id: 7, title: "Quality - Local Supplier", category: "Quality", descriptionLabel: "Target Maximum", unit: "case" },
+  { id: 8, title: "Quality - Overseas Supplier", category: "Quality", descriptionLabel: "Target Maximum", unit: "case" },
   { id: 9, title: "Delivery - Shortage", category: "Delivery", descriptionLabel: "Target Maximum", unit: "ppm" },
   { id: 10, title: "Delivery - Miss Part", category: "Delivery", descriptionLabel: "Target Maximum", unit: "ppm" },
   { id: 11, title: "Delivery - Line Stop", category: "Delivery", descriptionLabel: "Target Maximum", unit: "minutes" },
@@ -47,6 +48,28 @@ export default function AsakaiBoard() {
 
 const AsakaiBoardContent = () => {
   const { requestParams } = useAsakaiFilters();
+
+  useEffect(() => {
+    const savedScrollPosition = sessionStorage.getItem("asakaiBoardScrollPos");
+    if (savedScrollPosition) {
+      setTimeout(() => {
+        window.scrollTo({
+          top: parseInt(savedScrollPosition, 10),
+          behavior: "smooth"
+        });
+      }, 100);
+    }
+
+    const handleScroll = () => {
+      sessionStorage.setItem("asakaiBoardScrollPos", window.scrollY.toString());
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   return (
     <div className="space-y-6">
