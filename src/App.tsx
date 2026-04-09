@@ -136,7 +136,7 @@ export default function App() {
               <AppLayout />
             </ProtectedRoute>
           }>
-            <Route index path="/" element={<Navigate to="/inventory-rm" replace />} />
+            <Route index path="/" element={<Navigate to="/asakai-board" replace />} />
             <Route path="/ecommerce" element={<Ecommerce />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/marketing" element={<Marketing />} />
