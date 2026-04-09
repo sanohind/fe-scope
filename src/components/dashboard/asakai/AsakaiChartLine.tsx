@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
+import { ResponsiveContainer, ComposedChart, Line, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { List } from "lucide-react";
 import { asakaiApi } from "../../../services/asakaiApi";
@@ -305,7 +305,7 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
       <div className="max-w-full overflow-x-auto custom-scrollbar">
         <div className="min-w-[600px]">
           <ResponsiveContainer width="100%" height={320}>
-            <LineChart data={data} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
+            <ComposedChart data={data} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
               <XAxis dataKey="label" stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12, fontFamily: "Outfit, sans-serif" }} tickLine={false} axisLine={false} />
               <YAxis
@@ -323,9 +323,13 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
-              <Line type="monotone" dataKey="qty" name="Actual" stroke={lineColor} strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
+              {(category.toLowerCase() === "quality" || category.toLowerCase() === "safety") && unit.toLowerCase() === "case" ? (
+                <Bar dataKey="qty" name="Actual" fill={lineColor} radius={[4, 4, 0, 0]} maxBarSize={50} />
+              ) : (
+                <Line type="monotone" dataKey="qty" name="Actual" stroke={lineColor} strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
+              )}
               <Line type="step" dataKey="target" name="Target" stroke="#d20000ff" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={false} connectNulls />
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </div>
