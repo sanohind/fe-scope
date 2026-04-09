@@ -56,8 +56,8 @@ const HrOverviewKPI: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 xl:grid-cols-4">
-        {[1, 2, 3, 4].map((i) => (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:grid-cols-6">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
           <div key={i} className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6 animate-pulse">
             <div className="h-12 w-12 bg-gray-200 rounded-xl dark:bg-gray-800"></div>
             <div className="mt-5 space-y-2">
@@ -82,6 +82,8 @@ const HrOverviewKPI: React.FC = () => {
   const permanentCount = employmentStatusData.summary?.Permanent || 0;
   const contractCount = employmentStatusData.summary?.Contract || 0;
   const outsourcingCount = employmentStatusData.summary?.Outsourcing || 0;
+  const internshipCount = employmentStatusData.summary?.Internship || 0;
+  const probationCount = employmentStatusData.summary?.Probation || 0;
 
   const metrics = [
     {
@@ -116,10 +118,26 @@ const HrOverviewKPI: React.FC = () => {
       bgColor: "bg-blue-light-50 dark:bg-blue-light-500/10",
       iconColor: "text-blue-light-500",
     },
+    {
+      id: 5,
+      title: "Internship",
+      value: internshipCount.toLocaleString(),
+      icon: UserCircleIcon,
+      bgColor: "bg-purple-50 dark:bg-purple-500/10",
+      iconColor: "text-purple-500",
+    },
+    {
+      id: 6,
+      title: "Probation",
+      value: probationCount.toLocaleString(),
+      icon: GroupIcon,
+      bgColor: "bg-teal-50 dark:bg-teal-500/10",
+      iconColor: "text-teal-500",
+    },
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:grid-cols-6">
       {metrics.map((metric) => {
         const IconComponent = metric.icon;
         return (
