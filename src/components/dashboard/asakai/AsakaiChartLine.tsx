@@ -8,7 +8,7 @@ import { AsakaiFilterRequestParams } from "../../../context/AsakaiFilterContext"
 interface ChartDataPoint {
   date: string;
   period: string;
-  qty: number;
+  qty: number | null;
   target?: number;
   label: string;
   formattedDate: string;
@@ -112,7 +112,7 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
             return {
               date: item.date,
               period: item.date,
-              qty: Number(item.qty),
+              qty: item.qty !== null && item.qty !== undefined ? Number(item.qty) : null,
               target: targetVal !== undefined ? Number(targetVal) : (item.target !== undefined ? Number(item.target) : undefined),
               label,
               formattedDate,
@@ -148,7 +148,7 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
   const todayStr = `${year}-${month}-${day}`;
 
   const todayData = data.find((item) => item.date === todayStr);
-  const todayValue = todayData ? todayData.qty : 0;
+  const todayValue = todayData && todayData.qty !== null ? todayData.qty : null;
 
   // Calculate current target for description
   let currentTarget: number | undefined = undefined;
@@ -175,7 +175,7 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-gray-500 dark:text-gray-300">Quantity:</p>
               <p className="text-sm font-semibold text-brand-600 dark:text-brand-300">
-                {dataPoint.qty.toLocaleString()} {unit}
+                {dataPoint.qty !== null ? `${dataPoint.qty.toLocaleString()} ${unit}` : "-"}
               </p>
             </div>
             
@@ -290,7 +290,7 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
         </div>
         <div className="flex flex-wrap items-center gap-3 md:flex-nowrap md:shrink-0">
           <div className="rounded-xl bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-300 whitespace-nowrap">
-            Today: <span className="text-brand-600 dark:text-brand-300">{todayValue.toLocaleString()} {unit}</span>
+            Today: <span className="text-brand-600 dark:text-brand-300">{todayValue !== null ? `${todayValue.toLocaleString()} ${unit}` : "-"}</span>
           </div>
           <button
             onClick={handleShowReasons}
@@ -323,7 +323,7 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
-              {(category.toLowerCase() === "quality" || category.toLowerCase() === "safety") && unit.toLowerCase() === "case" ? (
+              {(category.toLowerCase() === "quality" || category.toLowerCase() === "safety" || category.toLowerCase() === "delivery") && unit.toLowerCase() === "case" ? (
                 <Bar dataKey="qty" name="Actual" fill={lineColor} radius={[4, 4, 0, 0]} maxBarSize={50} />
               ) : (
                 <Line type="monotone" dataKey="qty" name="Actual" stroke={lineColor} strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
