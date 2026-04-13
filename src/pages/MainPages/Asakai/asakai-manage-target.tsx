@@ -399,6 +399,7 @@ export default function AsakaiManageTarget() {
                   min="0"
                   value={editingData.target}
                   onChange={(e) => setEditingData({ ...editingData, target: Number(e.target.value) })}
+                  onWheel={(e) => (e.target as HTMLInputElement).blur()}
                   className="w-full rounded-lg border border-gray-300 p-2.5 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                   required
                 />

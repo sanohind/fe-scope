@@ -3,12 +3,15 @@ import { API_CONFIG } from "../config/apiConfig";
 const BASE_URL = API_CONFIG.BASE_URL;
 
 // Helper function to get authentication headers
-const getAuthHeaders = (): HeadersInit => {
+const getAuthHeaders = (isFormData: boolean = false): HeadersInit => {
   const token = localStorage.getItem('token');
-  return {
-    'Content-Type': 'application/json',
+  const headers: Record<string, string> = {
     ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
   };
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+  return headers;
 };
 
 // Helper function to filter out undefined/null values from params
@@ -53,6 +56,7 @@ export interface AsakaiReason {
   line: string;
   penyebab: string;
   perbaikan: string;
+  image_urls?: string[];
   user: string;
   user_id: number;
   created_at: string;
@@ -100,7 +104,7 @@ export const asakaiApi = {
   getTitleById: async (id: number): Promise<{ success: boolean; data: AsakaiTitle }> => {
     const url = `${BASE_URL}/api/asakai/titles/${id}`;
     const response = await fetch(url, {
-      headers: getAuthHeaders(),
+      headers: getAuthHeaders(false),
     });
     if (!response.ok) throw new Error("Failed to fetch asakai title");
     return response.json();
@@ -203,7 +207,7 @@ export const asakaiApi = {
     return response.json();
   },
 
-  createReason: async (data: {
+  createReason: async (data: FormData | {
     asakai_chart_id: number;
     date: string;
     part_no: string;
@@ -216,10 +220,11 @@ export const asakaiApi = {
     perbaikan: string;
   }) => {
     const url = `${BASE_URL}/api/asakai/reasons`;
+    const isFormData = data instanceof FormData;
     const response = await fetch(url, {
       method: "POST",
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
+      headers: getAuthHeaders(isFormData),
+      body: isFormData ? data : JSON.stringify(data),
     });
     if (!response.ok) {
       const error = await response.json();
@@ -228,12 +233,13 @@ export const asakaiApi = {
     return response.json();
   },
 
-  updateReason: async (id: number, data: Partial<AsakaiReason>) => {
+  updateReason: async (id: number, data: FormData | Partial<AsakaiReason>) => {
     const url = `${BASE_URL}/api/asakai/reasons/${id}`;
+    const isFormData = data instanceof FormData;
     const response = await fetch(url, {
-      method: "PUT",
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data),
+      method: "POST", // Route has a POST alias to support multipart/form-data for file uploads
+      headers: getAuthHeaders(isFormData),
+      body: isFormData ? data : JSON.stringify(data),
     });
     if (!response.ok) {
       const error = await response.json();

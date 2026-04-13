@@ -196,6 +196,11 @@ export default function AsakaiManage() {
       } else {
         await asakaiApi.createChart(formData);
       }
+      // Reset filters to view all (or keep to newly default state)
+      setFilterTitle(0);
+      setSelectedMonth("");
+      setSelectedYear("");
+      setPage(1);
       handleCloseModal();
       fetchCharts();
     } catch (error) {
@@ -252,7 +257,7 @@ export default function AsakaiManage() {
               <Target size={16} />
               Manage Target
             </button>
-            <button onClick={() => handleOpenModal()} className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
+            <button onClick={() => navigate("/asakai-chart-entry")} className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
               <Plus size={16} />
               Add Content
             </button>
@@ -477,6 +482,7 @@ export default function AsakaiManage() {
                   step="0.01"
                   value={formData.qty}
                   onChange={(e) => setFormData({ ...formData, qty: parseFloat(e.target.value) || 0 })}
+                  onWheel={(e) => (e.target as HTMLInputElement).blur()}
                   className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                   required
                 />

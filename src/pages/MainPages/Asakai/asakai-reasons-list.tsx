@@ -229,6 +229,9 @@ export default function AsakaiReasonsList() {
                     Perbaikan
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">
+                    Attachments
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">
                     User
                   </th>
                 </tr>
@@ -236,13 +239,13 @@ export default function AsakaiReasonsList() {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {loading ? (
                   <tr>
-                    <td colSpan={10} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={11} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                       Loading...
                     </td>
                   </tr>
                 ) : reasons.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={11} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                       No reasons found
                     </td>
                   </tr>
@@ -277,6 +280,14 @@ export default function AsakaiReasonsList() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 min-w-[200px] break-words">
                         {reason.perbaikan}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex flex-col gap-1">
+                          {reason.image_urls && reason.image_urls.map((url, i) => (
+                            <a key={i} href={url} target="_blank" rel="noreferrer" className="text-brand-600 hover:underline dark:text-brand-400 text-xs">Image {i+1}</a>
+                          ))}
+                          {(!reason.image_urls || reason.image_urls.length === 0) && <span className="text-xs text-gray-400">-</span>}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                         {reason.user}

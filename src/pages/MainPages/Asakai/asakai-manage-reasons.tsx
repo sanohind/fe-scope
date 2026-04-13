@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { asakaiApi, AsakaiReason, AsakaiChartWithReasons } from "../../../services/asakaiApi";
-import { Plus, Edit, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Edit, Trash2, ArrowLeft, X, ImagePlus } from "lucide-react";
 import PageMeta from "../../../components/common/PageMeta";
 import { Modal } from "../../../components/ui/modal";
 import { ConfirmationModal } from "../../../components/ui/modal/ConfirmationModal";
 
 const SECTION_OPTIONS = ["no_section", "brazzing", "chassis", "nylon", "subcon", "passthrough"];
+const MAX_IMAGES = 5;
 
 export default function AsakaiManageReasons() {
   const { chartId } = useParams<{ chartId: string }>();
@@ -16,15 +17,16 @@ export default function AsakaiManageReasons() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingReason, setEditingReason] = useState<AsakaiReason | null>(null);
-  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Custom Error Modal State
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  
+
   // Delete Confirmation State
   const [reasonToDelete, setReasonToDelete] = useState<number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     asakai_chart_id: Number(chartId),
     date: "",
@@ -32,17 +34,28 @@ export default function AsakaiManageReasons() {
     part_name: "",
     problem: "",
     qty: 0,
-    section: "brazzing",
+    section: "no_section",
     line: "",
     penyebab: "",
     perbaikan: "",
+    images: [] as File[],
   });
+
+  // Preview URLs for newly selected files
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   useEffect(() => {
     if (chartId) {
       fetchChartAndReasons();
     }
   }, [chartId]);
+
+  // Revoke object URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [imagePreviews]);
 
   const fetchChartAndReasons = async () => {
     try {
@@ -60,9 +73,13 @@ export default function AsakaiManageReasons() {
     }
   };
 
+  // Urls of existing images being kept
+  const [keptImages, setKeptImages] = useState<string[]>([]);
+
   const handleOpenModal = (reason?: AsakaiReason) => {
     if (reason) {
       setEditingReason(reason);
+      setKeptImages(reason.image_urls || []);
       setFormData({
         asakai_chart_id: reason.asakai_chart_id,
         date: reason.date,
@@ -74,9 +91,11 @@ export default function AsakaiManageReasons() {
         line: reason.line,
         penyebab: reason.penyebab,
         perbaikan: reason.perbaikan,
+        images: [],
       });
     } else {
       setEditingReason(null);
+      setKeptImages([]);
       setFormData({
         asakai_chart_id: Number(chartId),
         date: chart?.date || "",
@@ -88,29 +107,79 @@ export default function AsakaiManageReasons() {
         line: "",
         penyebab: "",
         perbaikan: "",
+        images: [],
       });
     }
+    setImagePreviews([]);
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
+    imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    setImagePreviews([]);
+    setKeptImages([]);
     setShowModal(false);
     setEditingReason(null);
+  };
+
+  // Add new images from file picker (respects MAX_IMAGES limit)
+  const handleAddImages = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const incoming = Array.from(e.target.files);
+    const totalCurrentCount = formData.images.length + keptImages.length;
+    const remaining = MAX_IMAGES - totalCurrentCount;
+    const toAdd = incoming.slice(0, remaining);
+    const newPreviews = toAdd.map((f) => URL.createObjectURL(f));
+    setFormData((prev) => ({ ...prev, images: [...prev.images, ...toAdd] }));
+    setImagePreviews((prev) => [...prev, ...newPreviews]);
+    // Reset input so the same file can be re-selected
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  // Remove a single image by index
+  const handleRemoveImage = (index: number) => {
+    URL.revokeObjectURL(imagePreviews[index]);
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const submitData = new FormData();
+
+      // Always append required fields explicitly
+      submitData.append("asakai_chart_id", String(formData.asakai_chart_id));
+      submitData.append("date", formData.date);
+
+      // Optional text fields
+      const textFields: (keyof typeof formData)[] = [
+        "part_no", "part_name", "problem", "qty",
+        "section", "line", "penyebab", "perbaikan",
+      ];
+      textFields.forEach((key) => {
+        const val = formData[key];
+        if (val !== null && val !== undefined) {
+          submitData.append(key, String(val));
+        }
+      });
+
+      // Images – append each as images[]
+      formData.images.forEach((file) => {
+        submitData.append("images[]", file);
+      });
+
       if (editingReason) {
-        await asakaiApi.updateReason(editingReason.id, {
-          ...formData,
-          section: formData.section as "brazzing" | "chassis" | "nylon" | "subcon" | "passthrough" | "no_section",
+        submitData.append("image_edits", "1");
+        keptImages.forEach((url) => {
+          submitData.append("kept_image_urls[]", url);
         });
+        await asakaiApi.updateReason(editingReason.id, submitData);
       } else {
-        await asakaiApi.createReason({
-          ...formData,
-          section: formData.section as "brazzing" | "chassis" | "nylon" | "subcon" | "passthrough" | "no_section",
-        });
+        await asakaiApi.createReason(submitData);
       }
       handleCloseModal();
       fetchChartAndReasons();
@@ -126,7 +195,7 @@ export default function AsakaiManageReasons() {
 
   const confirmDelete = async () => {
     if (!reasonToDelete) return;
-    
+
     setDeleteLoading(true);
     try {
       await asakaiApi.deleteReason(reasonToDelete);
@@ -178,6 +247,7 @@ export default function AsakaiManageReasons() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Line</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Penyebab</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Perbaikan</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Attachments</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -185,13 +255,13 @@ export default function AsakaiManageReasons() {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {loading ? (
                   <tr>
-                    <td colSpan={10} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={11} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                       Loading...
                     </td>
                   </tr>
                 ) : reasons.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan={11} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                       No reasons available. Click "Add BIRA" to create one.
                     </td>
                   </tr>
@@ -206,6 +276,14 @@ export default function AsakaiManageReasons() {
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{reason.line}</td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-[100px] truncate">{reason.penyebab}</td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-[100px] truncate">{reason.perbaikan}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex flex-col gap-1">
+                          {reason.image_urls && reason.image_urls.map((url, i) => (
+                            <a key={i} href={url} target="_blank" rel="noreferrer" className="text-brand-600 hover:underline dark:text-brand-400 text-xs">Image {i + 1}</a>
+                          ))}
+                          {(!reason.image_urls || reason.image_urls.length === 0) && <span className="text-xs text-gray-400">-</span>}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{reason.user}</td>
                       <td className="px-6 py-4 text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
@@ -270,6 +348,7 @@ export default function AsakaiManageReasons() {
                     min="0"
                     value={formData.qty}
                     onChange={(e) => setFormData({ ...formData, qty: Number(e.target.value) })}
+                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
                     className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                   />
                 </div>
@@ -281,9 +360,7 @@ export default function AsakaiManageReasons() {
                     className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                   >
                     {SECTION_OPTIONS.map((section) => (
-                      <option key={section} value={section}>
-                        {section}
-                      </option>
+                      <option key={section} value={section}>{section}</option>
                     ))}
                   </select>
                 </div>
@@ -315,7 +392,97 @@ export default function AsakaiManageReasons() {
                   rows={3}
                 />
               </div>
-              <div className="flex gap-2 justify-end">
+
+              {/* Image Upload Section */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Images
+                    <span className="ml-1 text-xs text-gray-400 font-normal">
+                      ({formData.images.length + keptImages.length}/{MAX_IMAGES})
+                    </span>
+                  </label>
+                  {/* Tampilkan tombol upload jika memungkinkan */}
+                  {(formData.images.length + keptImages.length) < MAX_IMAGES && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-brand-300 px-3 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-50 dark:border-brand-700 dark:text-brand-400 dark:hover:bg-brand-900/20"
+                    >
+                      <ImagePlus size={14} />
+                      {(formData.images.length + keptImages.length) > 0 ? "Add More" : "Add Image"}
+                    </button>
+                  )}
+                </div>
+
+                {/* Hidden file input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleAddImages}
+                />
+
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {/* Current saved images that are kept */}
+                  {keptImages.map((url, i) => (
+                    <div key={`kept-${i}`} className="relative group">
+                      <img src={url} alt={`Saved ${i + 1}`} className="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-700" />
+                      {/* Delete button */}
+                      <button
+                        type="button"
+                        onClick={() => setKeptImages(prev => prev.filter((_, idx) => idx !== i))}
+                        className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                        title="Remove saved image"
+                      >
+                        <X size={11} />
+                      </button>
+                      <span className="absolute bottom-0 left-0 right-0 text-center text-[10px] bg-black/40 text-white rounded-b-lg py-0.5">
+                        Saved
+                      </span>
+                    </div>
+                  ))}
+
+                  {/* Newly staged images with individual remove buttons */}
+                  {formData.images.map((file, i) => (
+                    <div key={`new-${i}`} className="relative group">
+                      <img
+                        src={imagePreviews[i]}
+                        alt={file.name}
+                        className="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
+                      />
+                      {/* Delete button */}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(i)}
+                        className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                        title="Remove new image"
+                      >
+                        <X size={11} />
+                      </button>
+                      <span className="absolute bottom-0 left-0 right-0 text-center text-[10px] bg-black/40 text-white rounded-b-lg py-0.5 truncate px-1">
+                        New
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Empty state – show dashed upload area jika tak ada gambar sama sekali */}
+                {(formData.images.length + keptImages.length) === 0 && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 py-6 text-sm text-gray-400 hover:border-brand-400 hover:text-brand-500 dark:border-gray-700 dark:hover:border-brand-600"
+                  >
+                    <ImagePlus size={18} />
+                    Click to upload images (max {MAX_IMAGES})
+                  </button>
+                )}
+              </div>
+
+              <div className="flex gap-2 justify-end pt-2">
                 <button type="button" onClick={handleCloseModal} className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
                   Cancel
                 </button>
@@ -327,6 +494,7 @@ export default function AsakaiManageReasons() {
           </div>
         </div>
       )}
+
       {/* Error Modal */}
       <Modal
         isOpen={errorModalOpen}
@@ -334,45 +502,19 @@ export default function AsakaiManageReasons() {
         className="max-w-[400px] p-6 text-center"
       >
         <div className="flex flex-col items-center justify-center">
-            <div className="relative flex items-center justify-center z-1 mb-4">
-            <svg
-              className="fill-error-50 dark:fill-error-500/15"
-              width="64"
-              height="64"
-              viewBox="0 0 90 90"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M34.364 6.85053C38.6205 -2.28351 51.3795 -2.28351 55.636 6.85053C58.0129 11.951 63.5594 14.6722 68.9556 13.3853C78.6192 11.0807 86.5743 21.2433 82.2185 30.3287C79.7862 35.402 81.1561 41.5165 85.5082 45.0122C93.3019 51.2725 90.4628 63.9451 80.7747 66.1403C75.3648 67.3661 71.5265 72.2695 71.5572 77.9156C71.6123 88.0265 60.1169 93.6664 52.3918 87.3184C48.0781 83.7737 41.9219 83.7737 37.6082 87.3184C29.8831 93.6664 18.3877 88.0266 18.4428 77.9156C18.4735 72.2695 14.6352 67.3661 9.22531 66.1403C-0.462787 63.9451 -3.30193 51.2725 4.49185 45.0122C8.84391 41.5165 10.2138 35.402 7.78151 30.3287C3.42572 21.2433 11.3808 11.0807 21.0444 13.3853C26.4406 14.6722 31.9871 11.951 34.364 6.85053Z"
-                fill=""
-              />
+          <div className="relative flex items-center justify-center z-1 mb-4">
+            <svg className="fill-error-50 dark:fill-error-500/15" width="64" height="64" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M34.364 6.85053C38.6205 -2.28351 51.3795 -2.28351 55.636 6.85053C58.0129 11.951 63.5594 14.6722 68.9556 13.3853C78.6192 11.0807 86.5743 21.2433 82.2185 30.3287C79.7862 35.402 81.1561 41.5165 85.5082 45.0122C93.3019 51.2725 90.4628 63.9451 80.7747 66.1403C75.3648 67.3661 71.5265 72.2695 71.5572 77.9156C71.6123 88.0265 60.1169 93.6664 52.3918 87.3184C48.0781 83.7737 41.9219 83.7737 37.6082 87.3184C29.8831 93.6664 18.3877 88.0266 18.4428 77.9156C18.4735 72.2695 14.6352 67.3661 9.22531 66.1403C-0.462787 63.9451 -3.30193 51.2725 4.49185 45.0122C8.84391 41.5165 10.2138 35.402 7.78151 30.3287C3.42572 21.2433 11.3808 11.0807 21.0444 13.3853C26.4406 14.6722 31.9871 11.951 34.364 6.85053Z" fill="" />
             </svg>
-
             <span className="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
-              <svg
-                className="fill-error-600 dark:fill-error-500"
-                width="32"
-                height="32"
-                viewBox="0 0 38 38"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M9.62684 11.7496C9.04105 11.1638 9.04105 10.2141 9.62684 9.6283C10.2126 9.04252 11.1624 9.04252 11.7482 9.6283L18.9985 16.8786L26.2485 9.62851C26.8343 9.04273 27.7841 9.04273 28.3699 9.62851C28.9556 10.2143 28.9556 11.164 28.3699 11.7498L21.1198 18.9999L28.3699 26.25C28.9556 26.8358 28.9556 27.7855 28.3699 28.3713C27.7841 28.9571 26.8343 28.9571 26.2485 28.3713L18.9985 21.1212L11.7482 28.3715C11.1624 28.9573 10.2126 28.9573 9.62684 28.3715C9.04105 27.7857 9.04105 26.836 9.62684 26.2502L16.8771 18.9999L9.62684 11.7496Z"
-                  fill=""
-                />
+              <svg className="fill-error-600 dark:fill-error-500" width="32" height="32" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" clipRule="evenodd" d="M9.62684 11.7496C9.04105 11.1638 9.04105 10.2141 9.62684 9.6283C10.2126 9.04252 11.1624 9.04252 11.7482 9.6283L18.9985 16.8786L26.2485 9.62851C26.8343 9.04273 27.7841 9.04273 28.3699 9.62851C28.9556 10.2143 28.9556 11.164 28.3699 11.7498L21.1198 18.9999L28.3699 26.25C28.9556 26.8358 28.9556 27.7855 28.3699 28.3713C27.7841 28.9571 26.8343 28.9571 26.2485 28.3713L18.9985 21.1212L11.7482 28.3715C11.1624 28.9573 10.2126 28.9573 9.62684 28.3715C9.04105 27.7857 9.04105 26.836 9.62684 26.2502L16.8771 18.9999L9.62684 11.7496Z" fill="" />
               </svg>
             </span>
           </div>
           <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">Error</h3>
           <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">{errorMessage}</p>
-          <button
-            onClick={() => setErrorModalOpen(false)}
-            className="w-full rounded-lg bg-error-600 px-4 py-2 text-sm font-medium text-white hover:bg-error-700"
-          >
+          <button onClick={() => setErrorModalOpen(false)} className="w-full rounded-lg bg-error-600 px-4 py-2 text-sm font-medium text-white hover:bg-error-700">
             Okay, Got it
           </button>
         </div>
