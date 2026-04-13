@@ -4,6 +4,8 @@ export { default as PresentAttendanceByShift } from "./PresentAttendanceByShift"
 export { default as OvertimePerDay } from "./OvertimePerDay";
 export { default as TopEmployeesOvertimeTable } from "./TopEmployeesOvertimeTable";
 export { default as TopDepartmentsOvertimeTable } from "./TopDepartmentsOvertimeTable";
+export { default as AttendanceByStatus } from "./AttendanceByStatus";
+
 
 
 

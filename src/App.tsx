@@ -96,6 +96,7 @@ import AsakaiManage from "./pages/MainPages/Asakai/asakai-manage";
 import AsakaiManageReasons from "./pages/MainPages/Asakai/asakai-manage-reasons";
 import AsakaiReasonsList from "./pages/MainPages/Asakai/asakai-reasons-list";
 import AsakaiManageTarget from "./pages/MainPages/Asakai/asakai-manage-target";
+import AsakaiChartEntry from "./pages/MainPages/Asakai/asakai-chart-entry";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import SSOCallback from "./pages/AuthPages/SSOCallback";
 
@@ -275,6 +276,11 @@ export default function App() {
             <Route path="/asakai-manage" element={
               <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
                 <AsakaiManage />
+              </ProtectedRoute>
+            } />
+            <Route path="/asakai-chart-entry" element={
+              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+                <AsakaiChartEntry />
               </ProtectedRoute>
             } />
             <Route path="/asakai-manage-reasons/:chartId" element={

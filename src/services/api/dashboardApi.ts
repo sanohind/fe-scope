@@ -924,6 +924,15 @@ export const hrApi = {
     return response.json();
   },
 
+  // 6.7 Attendance By Status
+  getAttendanceByStatus: async (params?: { month?: number; year?: number; startDate?: string; endDate?: string }) => {
+    const queryParams = new URLSearchParams(cleanParams(params) as any).toString();
+    const url = `${BASE_URL}/api/dashboard/hr/attendance-by-status${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch attendance by status");
+    return response.json();
+  },
+
   // Get all dashboard data
   getAllData: async () => {
     const response = await fetch(`${BASE_URL}/api/dashboard/hr/all-data`);
