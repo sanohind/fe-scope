@@ -31,7 +31,7 @@ const ASAKAI_TITLES = [
   { id: 22, title: "Quality - InHouse Reject Nylon", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
   { id: 23, title: "Quality - InHouse Reject Chassis", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
   { id: 24, title: "Quality - InHouse Reject Brazing", category: "Quality", descriptionLabel: "Target Maximum", unit: "ppm" },
-  { id: 25, title: "Safety - Non Lost Working Day", category: "Safety", descriptionLabel: "Target Minimum", unit: "case" },
+  { id: 25, title: "Safety - Non Lost Working Day", category: "Safety", descriptionLabel: "Target Maximum", unit: "case" },
   { id: 26, title: "Safety - CO2 Emission", category: "Safety", descriptionLabel: "Target Maximum", unit: "tCO2" },
 ];
 
