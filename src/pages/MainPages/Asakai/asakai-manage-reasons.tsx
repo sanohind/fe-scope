@@ -306,191 +306,202 @@ export default function AsakaiManageReasons() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
-          <div className="w-full max-w-2xl rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900 my-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{editingReason ? "Edit BIRA" : "Add BIRA"}</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Part No</label>
-                  <input
-                    type="text"
-                    value={formData.part_no}
-                    onChange={(e) => setFormData({ ...formData, part_no: e.target.value })}
-                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Part Name</label>
-                  <input
-                    type="text"
-                    value={formData.part_name}
-                    onChange={(e) => setFormData({ ...formData, part_name: e.target.value })}
-                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Problem</label>
-                <textarea
-                  value={formData.problem}
-                  onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
-                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                  rows={3}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Quantity</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={formData.qty}
-                    onChange={(e) => setFormData({ ...formData, qty: Number(e.target.value) })}
-                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
-                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Department</label>
-                  <select
-                    value={formData.section}
-                    onChange={(e) => setFormData({ ...formData, section: e.target.value })}
-                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                  >
-                    {SECTION_OPTIONS.map((section) => (
-                      <option key={section} value={section}>{section}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Line</label>
-                  <input
-                    type="text"
-                    value={formData.line}
-                    onChange={(e) => setFormData({ ...formData, line: e.target.value })}
-                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Penyebab</label>
-                <textarea
-                  value={formData.penyebab}
-                  onChange={(e) => setFormData({ ...formData, penyebab: e.target.value })}
-                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                  rows={3}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Perbaikan</label>
-                <textarea
-                  value={formData.perbaikan}
-                  onChange={(e) => setFormData({ ...formData, perbaikan: e.target.value })}
-                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                  rows={3}
-                />
-              </div>
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4 sm:p-6">
+          <div className="w-full max-w-3xl flex flex-col max-h-[90vh] rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-gray-800 dark:bg-gray-900">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{editingReason ? "Edit BIRA" : "Add BIRA"}</h2>
+              <button onClick={handleCloseModal} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <X size={20} />
+              </button>
+            </div>
 
-              {/* Image Upload Section */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                    Images
-                    <span className="ml-1 text-xs text-gray-400 font-normal">
-                      ({formData.images.length + keptImages.length}/{MAX_IMAGES})
-                    </span>
-                  </label>
-                  {/* Tampilkan tombol upload jika memungkinkan */}
-                  {(formData.images.length + keptImages.length) < MAX_IMAGES && (
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <form id="reason-form" onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Part No</label>
+                    <input
+                      type="text"
+                      value={formData.part_no}
+                      onChange={(e) => setFormData({ ...formData, part_no: e.target.value })}
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Part Name</label>
+                    <input
+                      type="text"
+                      value={formData.part_name}
+                      onChange={(e) => setFormData({ ...formData, part_name: e.target.value })}
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Problem</label>
+                  <textarea
+                    value={formData.problem}
+                    onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    rows={2}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Quantity</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.qty}
+                      onChange={(e) => setFormData({ ...formData, qty: Number(e.target.value) })}
+                      onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Department</label>
+                    <select
+                      value={formData.section}
+                      onChange={(e) => setFormData({ ...formData, section: e.target.value })}
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    >
+                      {SECTION_OPTIONS.map((section) => (
+                        <option key={section} value={section}>{section}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Line</label>
+                    <input
+                      type="text"
+                      value={formData.line}
+                      onChange={(e) => setFormData({ ...formData, line: e.target.value })}
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Penyebab</label>
+                  <textarea
+                    value={formData.penyebab}
+                    onChange={(e) => setFormData({ ...formData, penyebab: e.target.value })}
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    rows={2}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1.5">Perbaikan</label>
+                  <textarea
+                    value={formData.perbaikan}
+                    onChange={(e) => setFormData({ ...formData, perbaikan: e.target.value })}
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    rows={2}
+                  />
+                </div>
+
+                {/* Image Upload Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                      Images
+                      <span className="ml-1 text-xs text-gray-400 font-normal">
+                        ({formData.images.length + keptImages.length}/{MAX_IMAGES})
+                      </span>
+                    </label>
+                    {/* Tampilkan tombol upload jika memungkinkan */}
+                    {(formData.images.length + keptImages.length) < MAX_IMAGES && (
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-brand-300 px-3 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-50 dark:border-brand-700 dark:text-brand-400 dark:hover:bg-brand-900/20"
+                      >
+                        <ImagePlus size={14} />
+                        {(formData.images.length + keptImages.length) > 0 ? "Add More" : "Add Image"}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Hidden file input */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleAddImages}
+                  />
+
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {/* Current saved images that are kept */}
+                    {keptImages.map((url, i) => (
+                      <div key={`kept-${i}`} className="relative group">
+                        <img src={url} alt={`Saved ${i + 1}`} className="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-700" />
+                        {/* Delete button */}
+                        <button
+                          type="button"
+                          onClick={() => setKeptImages(prev => prev.filter((_, idx) => idx !== i))}
+                          className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                          title="Remove saved image"
+                        >
+                          <X size={11} />
+                        </button>
+                        <span className="absolute bottom-0 left-0 right-0 text-center text-[10px] bg-black/40 text-white rounded-b-lg py-0.5">
+                          Saved
+                        </span>
+                      </div>
+                    ))}
+
+                    {/* Newly staged images with individual remove buttons */}
+                    {formData.images.map((file, i) => (
+                      <div key={`new-${i}`} className="relative group">
+                        <img
+                          src={imagePreviews[i]}
+                          alt={file.name}
+                          className="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
+                        />
+                        {/* Delete button */}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(i)}
+                          className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                          title="Remove new image"
+                        >
+                          <X size={11} />
+                        </button>
+                        <span className="absolute bottom-0 left-0 right-0 text-center text-[10px] bg-black/40 text-white rounded-b-lg py-0.5 truncate px-1">
+                          New
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Empty state – show dashed upload area jika tak ada gambar sama sekali */}
+                  {(formData.images.length + keptImages.length) === 0 && (
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-brand-300 px-3 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-50 dark:border-brand-700 dark:text-brand-400 dark:hover:bg-brand-900/20"
+                      className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 py-6 text-sm text-gray-400 hover:border-brand-400 hover:text-brand-500 dark:border-gray-700 dark:hover:border-brand-600"
                     >
-                      <ImagePlus size={14} />
-                      {(formData.images.length + keptImages.length) > 0 ? "Add More" : "Add Image"}
+                      <ImagePlus size={18} />
+                      Click to upload images (max {MAX_IMAGES})
                     </button>
                   )}
                 </div>
+              </form>
+            </div>
 
-                {/* Hidden file input */}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleAddImages}
-                />
-
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {/* Current saved images that are kept */}
-                  {keptImages.map((url, i) => (
-                    <div key={`kept-${i}`} className="relative group">
-                      <img src={url} alt={`Saved ${i + 1}`} className="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-700" />
-                      {/* Delete button */}
-                      <button
-                        type="button"
-                        onClick={() => setKeptImages(prev => prev.filter((_, idx) => idx !== i))}
-                        className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow"
-                        title="Remove saved image"
-                      >
-                        <X size={11} />
-                      </button>
-                      <span className="absolute bottom-0 left-0 right-0 text-center text-[10px] bg-black/40 text-white rounded-b-lg py-0.5">
-                        Saved
-                      </span>
-                    </div>
-                  ))}
-
-                  {/* Newly staged images with individual remove buttons */}
-                  {formData.images.map((file, i) => (
-                    <div key={`new-${i}`} className="relative group">
-                      <img
-                        src={imagePreviews[i]}
-                        alt={file.name}
-                        className="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
-                      />
-                      {/* Delete button */}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(i)}
-                        className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow"
-                        title="Remove new image"
-                      >
-                        <X size={11} />
-                      </button>
-                      <span className="absolute bottom-0 left-0 right-0 text-center text-[10px] bg-black/40 text-white rounded-b-lg py-0.5 truncate px-1">
-                        New
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Empty state – show dashed upload area jika tak ada gambar sama sekali */}
-                {(formData.images.length + keptImages.length) === 0 && (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 py-6 text-sm text-gray-400 hover:border-brand-400 hover:text-brand-500 dark:border-gray-700 dark:hover:border-brand-600"
-                  >
-                    <ImagePlus size={18} />
-                    Click to upload images (max {MAX_IMAGES})
-                  </button>
-                )}
-              </div>
-
-              <div className="flex gap-2 justify-end pt-2">
-                <button type="button" onClick={handleCloseModal} className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
-                  Cancel
-                </button>
-                <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
-                  {editingReason ? "Update" : "Create"}
-                </button>
-              </div>
-            </form>
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50 rounded-b-2xl">
+              <button type="button" onClick={handleCloseModal} className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                Cancel
+              </button>
+              <button type="submit" form="reason-form" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
+                {editingReason ? "Update" : "Create"}
+              </button>
+            </div>
           </div>
         </div>
       )}
