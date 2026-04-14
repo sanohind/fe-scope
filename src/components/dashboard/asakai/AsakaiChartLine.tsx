@@ -39,9 +39,10 @@ interface AsakaiChartLineProps {
   filters?: AsakaiFilterRequestParams;
   descriptionLabel?: string;
   unit?: string;
+  chartType?: string;
 }
 
-const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, category, filters, descriptionLabel = "Target", unit = "" }) => {
+const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, category, filters, descriptionLabel = "Target", unit = "", chartType = "line" }) => {
   const [data, setData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -323,7 +324,7 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
-              {(category.toLowerCase() === "quality" || category.toLowerCase() === "safety" || category.toLowerCase() === "delivery") && unit.toLowerCase() === "case" ? (
+              {chartType === "bar" ? (
                 <Bar dataKey="qty" name="Actual" fill={lineColor} radius={[4, 4, 0, 0]} maxBarSize={50} />
               ) : (
                 <Line type="monotone" dataKey="qty" name="Actual" stroke={lineColor} strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
