@@ -19,7 +19,6 @@ import Images from "./pages/UiElements/Images";
 import Alerts from "./pages/UiElements/Alerts";
 import Badges from "./pages/UiElements/Badges";
 import Pagination from "./pages/UiElements/Pagination";
-import Avatars from "./pages/UiElements/Avatars";
 import Buttons from "./pages/UiElements/Buttons";
 import ButtonsGroup from "./pages/UiElements/ButtonsGroup";
 import Notifications from "./pages/UiElements/Notifications";
@@ -364,7 +363,6 @@ export default function App() {
 
             {/* Ui Elements */}
             <Route path="/alerts" element={<Alerts />} />
-            <Route path="/avatars" element={<Avatars />} />
             <Route path="/badge" element={<Badges />} />
             <Route path="/breadcrumb" element={<BreadCrumb />} />
             <Route path="/buttons" element={<Buttons />} />
