@@ -11,6 +11,8 @@ interface DepartmentOvertimeData {
   total_employees?: number;
   total_overtime_index_minutes: number;
   total_overtime_index_formatted: string;
+  average_overtime_minutes?: number;
+  average_overtime_formatted?: string;
 }
 
 const TopDepartmentsOvertimeTable: React.FC = () => {
@@ -154,17 +156,19 @@ const TopDepartmentsOvertimeTable: React.FC = () => {
         if (!department) return "";
 
         const formatted = department.total_overtime_index_formatted || "";
+        const avgFormatted = department.average_overtime_formatted || "";
         const dept = department.department || "N/A";
         const costCenter = department.cost_center || "N/A";
         const employees = department.total_employees || 0;
 
         return `
-          <div>
+          <div class="px-2 py-1">
             <div class="font-semibold mb-1 text-gray-900 dark:text-gray-100">${dept}</div>
             <div class="text-xs opacity-90 text-gray-500 dark:text-gray-400">Cost Center: ${costCenter}</div>
             ${employees > 0 ? `<div class="text-xs opacity-90 text-gray-500 dark:text-gray-400">Employees: ${employees}</div>` : ""}
-            <div class="mt-1 pt-1 border-t border-gray-700 dark:border-gray-800">
-              <span class="font-medium text-gray-900 dark:text-gray-100">Overtime: ${formatted}</span>
+            <div class="mt-2 pt-1.5 border-t border-gray-200 dark:border-gray-800 flex flex-col gap-0.5">
+              <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Total OT: ${formatted}</span>
+              ${avgFormatted ? `<span class="text-sm font-medium text-brand-600 dark:text-brand-400">Avg OT/Emp: ${avgFormatted}</span>` : ""}
             </div>
           </div>
         `;
