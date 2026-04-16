@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ResponsiveContainer, ComposedChart, Line, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
+import { ResponsiveContainer, ComposedChart, Line, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, Cell } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { List } from "lucide-react";
 import { asakaiApi } from "../../../services/asakaiApi";
@@ -325,7 +325,11 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
               <Tooltip content={<CustomTooltip />} />
               <Legend />
               {chartType === "bar" ? (
-                <Bar dataKey="qty" name="Actual" fill={lineColor} radius={[4, 4, 0, 0]} maxBarSize={50} minPointSize={5} />
+                <Bar dataKey="qty" name="Actual" fill={lineColor} radius={[4, 4, 0, 0]} maxBarSize={50} minPointSize={5}>
+                  {data.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.qty === null ? 'transparent' : lineColor} />
+                  ))}
+                </Bar>
               ) : (
                 <Line type="monotone" dataKey="qty" name="Actual" stroke={lineColor} strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
               )}
