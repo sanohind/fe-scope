@@ -325,7 +325,7 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
               <Tooltip content={<CustomTooltip />} />
               <Legend />
               {chartType === "bar" ? (
-                <Bar dataKey="qty" name="Actual" fill={lineColor} radius={[4, 4, 0, 0]} maxBarSize={50} />
+                <Bar dataKey="qty" name="Actual" fill={lineColor} radius={[4, 4, 0, 0]} maxBarSize={50} minPointSize={5} />
               ) : (
                 <Line type="monotone" dataKey="qty" name="Actual" stroke={lineColor} strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
               )}
