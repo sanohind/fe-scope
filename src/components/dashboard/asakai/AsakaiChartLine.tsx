@@ -321,6 +321,9 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
                   position: "insideLeft",
                   style: { fill: "#6b7280", fontSize: 12, fontFamily: "Outfit, sans-serif" },
                 }}
+                domain={unit.toLowerCase() === "case" ? [0, 10] : undefined}
+                allowDecimals={unit.toLowerCase() === "case" ? false : true}
+                ticks={unit.toLowerCase() === "case" ? [0, 2, 4, 6, 8, 10] : undefined}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
