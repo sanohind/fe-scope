@@ -102,7 +102,7 @@ const allNavItems: NavItem[] = [
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
-  const { user, hasAccess } = useAuth();
+  const { hasAccess } = useAuth();
   const location = useLocation();
 
   const navItems = allNavItems
