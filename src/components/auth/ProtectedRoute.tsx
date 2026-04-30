@@ -7,10 +7,11 @@ import { userManager } from '../../auth/oidcConfig';
 interface ProtectedRouteProps {
   children: ReactNode;
   requiredRoles?: string[];
+  feature?: string;
 }
 
-export default function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, hasRole } = useAuth();
+export default function ProtectedRoute({ children, requiredRoles, feature }: ProtectedRouteProps) {
+  const { isAuthenticated, isLoading, hasRole, hasAccess } = useAuth();
   const location = useLocation();
 
   // Show loading state while checking authentication
@@ -121,7 +122,33 @@ export default function ProtectedRoute({ children, requiredRoles }: ProtectedRou
                 Access Denied
               </h3>
               <p className="text-sm text-red-700 dark:text-red-300 mb-4">
-                You don't have permission to access this page.
+                You don't have permission to access this page based on your role.
+              </p>
+              <button
+                onClick={() => window.history.back()}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Go Back
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // Check feature-based access if feature is specified
+  if (feature) {
+    if (!hasAccess(feature)) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md">
+              <h3 className="text-lg font-medium text-red-800 dark:text-red-200 mb-2">
+                Access Denied
+              </h3>
+              <p className="text-sm text-red-700 dark:text-red-300 mb-4">
+                You don't have permission to access this module based on your department or role.
               </p>
               <button
                 onClick={() => window.history.back()}
