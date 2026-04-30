@@ -132,7 +132,7 @@ export default function App() {
         <Routes>
           {/* Dashboard Layout - All routes protected */}
           <Route element={
-            <ProtectedRoute requiredRoles={['admin', 'superadmin', 'operator', 'user']}>
+            <ProtectedRoute>
               <AppLayout />
             </ProtectedRoute>
           }>
@@ -142,191 +142,164 @@ export default function App() {
             <Route path="/marketing" element={<Marketing />} />
             <Route path="/crm" element={<Crm />} />
             <Route path="/stocks" element={<Stocks />} />
-            <Route path="/inventory/whfg01" element={<InventoryWhfg01 />} />
-            <Route path="/inventory/whfg02" element={<InventoryWhfg02 />} />
-            <Route path="/inventory/whrm01" element={<InventoryWhrm01 />} />
-            <Route path="/inventory/whrm02" element={<InventoryWhrm02 />} />
-            <Route path="/inventory/whrm03" element={<InventoryWhrm03 />} />
-            <Route path="/inventory/whmt01" element={<InventoryWhmt01 />} />
-            <Route path="/inventory/whfg01/stock-detail" element={<InventoryWhfg01StockDetail />} />
-            <Route path="/inventory/whfg02/stock-detail" element={<InventoryWhfg02StockDetail />} />
-            <Route path="/inventory/whrm01/stock-detail" element={<InventoryWhrm01StockDetail />} />
-            <Route path="/inventory/whrm02/stock-detail" element={<InventoryWhrm02StockDetail />} />
-            <Route path="/inventory/whrm03/stock-detail" element={<InventoryWhrm03StockDetail />} />
-            <Route path="/inventory/whmt01/stock-detail" element={<InventoryWhmt01StockDetail />} />
-            <Route path="/warehouse/whfg01" element={<WarehouseWhfg01 />} />
-            <Route path="/warehouse/whfg02" element={<WarehouseWhfg02 />} />
-            <Route path="/warehouse/whrm01" element={<WarehouseWhrm01 />} />
-            <Route path="/warehouse/whrm02" element={<WarehouseWhrm02 />} />
-            <Route path="/warehouse/whrm03" element={<WarehouseWhrm03 />} />
-            <Route path="/warehouse/whmt01" element={<WarehouseWhmt01 />} />
-            <Route path="/production/bz" element={<ProductionBz />} />
-            <Route path="/production/ch" element={<ProductionCh />} />
-            <Route path="/production/nl" element={<ProductionNl />} />
-            <Route path="/production/ps" element={<ProductionPs />} />
-            <Route path="/production/sc" element={<ProductionSc />} />
+            <Route path="/inventory/whfg01" element={<ProtectedRoute feature="inventory"><InventoryWhfg01 /></ProtectedRoute>} />
+            <Route path="/inventory/whfg02" element={<ProtectedRoute feature="inventory"><InventoryWhfg02 /></ProtectedRoute>} />
+            <Route path="/inventory/whrm01" element={<ProtectedRoute feature="inventory"><InventoryWhrm01 /></ProtectedRoute>} />
+            <Route path="/inventory/whrm02" element={<ProtectedRoute feature="inventory"><InventoryWhrm02 /></ProtectedRoute>} />
+            <Route path="/inventory/whrm03" element={<ProtectedRoute feature="inventory"><InventoryWhrm03 /></ProtectedRoute>} />
+            <Route path="/inventory/whmt01" element={<ProtectedRoute feature="inventory"><InventoryWhmt01 /></ProtectedRoute>} />
+            <Route path="/inventory/whfg01/stock-detail" element={<ProtectedRoute feature="inventory"><InventoryWhfg01StockDetail /></ProtectedRoute>} />
+            <Route path="/inventory/whfg02/stock-detail" element={<ProtectedRoute feature="inventory"><InventoryWhfg02StockDetail /></ProtectedRoute>} />
+            <Route path="/inventory/whrm01/stock-detail" element={<ProtectedRoute feature="inventory"><InventoryWhrm01StockDetail /></ProtectedRoute>} />
+            <Route path="/inventory/whrm02/stock-detail" element={<ProtectedRoute feature="inventory"><InventoryWhrm02StockDetail /></ProtectedRoute>} />
+            <Route path="/inventory/whrm03/stock-detail" element={<ProtectedRoute feature="inventory"><InventoryWhrm03StockDetail /></ProtectedRoute>} />
+            <Route path="/inventory/whmt01/stock-detail" element={<ProtectedRoute feature="inventory"><InventoryWhmt01StockDetail /></ProtectedRoute>} />
+            <Route path="/warehouse/whfg01" element={<ProtectedRoute feature="inventory-movement"><WarehouseWhfg01 /></ProtectedRoute>} />
+            <Route path="/warehouse/whfg02" element={<ProtectedRoute feature="inventory-movement"><WarehouseWhfg02 /></ProtectedRoute>} />
+            <Route path="/warehouse/whrm01" element={<ProtectedRoute feature="inventory-movement"><WarehouseWhrm01 /></ProtectedRoute>} />
+            <Route path="/warehouse/whrm02" element={<ProtectedRoute feature="inventory-movement"><WarehouseWhrm02 /></ProtectedRoute>} />
+            <Route path="/warehouse/whrm03" element={<ProtectedRoute feature="inventory-movement"><WarehouseWhrm03 /></ProtectedRoute>} />
+            <Route path="/warehouse/whmt01" element={<ProtectedRoute feature="inventory-movement"><WarehouseWhmt01 /></ProtectedRoute>} />
+            <Route path="/production/bz" element={<ProtectedRoute feature="production"><ProductionBz /></ProtectedRoute>} />
+            <Route path="/production/ch" element={<ProtectedRoute feature="production"><ProductionCh /></ProtectedRoute>} />
+            <Route path="/production/nl" element={<ProtectedRoute feature="production"><ProductionNl /></ProtectedRoute>} />
+            <Route path="/production/ps" element={<ProtectedRoute feature="production"><ProductionPs /></ProtectedRoute>} />
+            <Route path="/production/sc" element={<ProtectedRoute feature="production"><ProductionSc /></ProtectedRoute>} />
             <Route
               path="/production"
               element={
-                <Suspense fallback={<DashboardLoading />}>
-                  <ProductionDashboard />
-                </Suspense>
+                <ProtectedRoute feature="production">
+                  <Suspense fallback={<DashboardLoading />}>
+                    <ProductionDashboard />
+                  </Suspense>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/warehouse-rm"
               element={
-                <Suspense fallback={<DashboardLoading />}>
-                  <WarehouseAllRm />
-                </Suspense>
+                <ProtectedRoute feature="inventory-movement">
+                  <Suspense fallback={<DashboardLoading />}>
+                    <WarehouseAllRm />
+                  </Suspense>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/warehouse-fg"
               element={
-                <Suspense fallback={<DashboardLoading />}>
-                  <WarehouseAllFg />
-                </Suspense>
+                <ProtectedRoute feature="inventory-movement">
+                  <Suspense fallback={<DashboardLoading />}>
+                    <WarehouseAllFg />
+                  </Suspense>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/inventory-fg"
               element={
-                <Suspense fallback={<DashboardLoading />}>
-                  <InventoryAllFg />
-                </Suspense>
+                <ProtectedRoute feature="inventory">
+                  <Suspense fallback={<DashboardLoading />}>
+                    <InventoryAllFg />
+                  </Suspense>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/inventory-rm"
               element={
-                <Suspense fallback={<DashboardLoading />}>
-                  <InventoryAllRm />
-                </Suspense>
+                <ProtectedRoute feature="inventory">
+                  <Suspense fallback={<DashboardLoading />}>
+                    <InventoryAllRm />
+                  </Suspense>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/sales"
               element={
-                <Suspense fallback={<DashboardLoading />}>
-                  <SalesDashboard />
-                </Suspense>
+                <ProtectedRoute feature="sales">
+                  <Suspense fallback={<DashboardLoading />}>
+                    <SalesDashboard />
+                  </Suspense>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/logistics"
               element={
-                <Suspense fallback={<DashboardLoading />}>
-                  <LogisticsDashboard />
-                </Suspense>
+                <ProtectedRoute feature="logistics">
+                  <Suspense fallback={<DashboardLoading />}>
+                    <LogisticsDashboard />
+                  </Suspense>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/hr"
               element={
-                <Suspense fallback={<DashboardLoading />}>
-                  <HrDashboard />
-                </Suspense>
+                <ProtectedRoute feature="hr">
+                  <Suspense fallback={<DashboardLoading />}>
+                    <HrDashboard />
+                  </Suspense>
+                </ProtectedRoute>
               }
             />
             {/* Planning Manage pages: admin & superadmin only */}
             <Route path="/daily-use-upload" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+              <ProtectedRoute feature="planning-manage">
                 <DailyUseUpload />
               </ProtectedRoute>
             } />
             <Route path="/daily-use-manage" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+              <ProtectedRoute feature="planning-manage">
                 <DailyUseManage />
               </ProtectedRoute>
             } />
             <Route path="/daily-use-min-max" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+              <ProtectedRoute feature="planning-manage">
                 <DailyUseMinMax />
               </ProtectedRoute>
             } />
             <Route path="/production-plan-upload" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+              <ProtectedRoute feature="planning-manage">
                 <ProductionPlanUpload />
               </ProtectedRoute>
             } />
             <Route path="/production-plan-manage" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+              <ProtectedRoute feature="planning-manage">
                 <ProductionPlanManage />
               </ProtectedRoute>
             } />
             <Route path="/delivery-plan-upload" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+              <ProtectedRoute feature="planning-manage">
                 <DeliveryPlanUpload />
               </ProtectedRoute>
             } />
             <Route path="/delivery-plan-manage" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+              <ProtectedRoute feature="planning-manage">
                 <DeliveryPlanManage />
               </ProtectedRoute>
             } />
-            <Route path="/asakai-board" element={<AsakaiBoard />} />
+            <Route path="/asakai-board" element={<ProtectedRoute feature="asakai-board"><AsakaiBoard /></ProtectedRoute>} />
             {/* Asakai manage pages: admin & superadmin only */}
             <Route path="/asakai-manage-target" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+              <ProtectedRoute feature="asakai-content">
                 <AsakaiManageTarget />
               </ProtectedRoute>
             } />
             <Route path="/asakai-manage" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+              <ProtectedRoute feature="asakai-content">
                 <AsakaiManage />
               </ProtectedRoute>
             } />
             <Route path="/asakai-chart-entry" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+              <ProtectedRoute feature="asakai-content">
                 <AsakaiChartEntry />
               </ProtectedRoute>
             } />
             <Route path="/asakai-manage-reasons/:chartId" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
-                <AsakaiManageReasons />
-              </ProtectedRoute>
-            } />
-            <Route path="/daily-use-min-max" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
-                <DailyUseMinMax />
-              </ProtectedRoute>
-            } />
-            <Route path="/production-plan-upload" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
-                <ProductionPlanUpload />
-              </ProtectedRoute>
-            } />
-            <Route path="/production-plan-manage" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
-                <ProductionPlanManage />
-              </ProtectedRoute>
-            } />
-            <Route path="/delivery-plan-upload" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
-                <DeliveryPlanUpload />
-              </ProtectedRoute>
-            } />
-            <Route path="/delivery-plan-manage" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
-                <DeliveryPlanManage />
-              </ProtectedRoute>
-            } />
-            <Route path="/asakai-board" element={<AsakaiBoard />} />
-            <Route path="/asakai-manage-target" element={<AsakaiManageTarget />} />
-            {/* Asakai manage pages: admin & superadmin only */}
-            <Route path="/asakai-manage-target" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
-                <AsakaiManageTarget />
-              </ProtectedRoute>
-            } />
-            <Route path="/asakai-manage" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
-                <AsakaiManage />
-              </ProtectedRoute>
-            } />
-            <Route path="/asakai-manage-reasons/:chartId" element={
-              <ProtectedRoute requiredRoles={['admin', 'superadmin']}>
+              <ProtectedRoute feature="asakai-content">
                 <AsakaiManageReasons />
               </ProtectedRoute>
             } />

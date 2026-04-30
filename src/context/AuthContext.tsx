@@ -32,6 +32,7 @@ interface AuthContextType {
   loginLocal: (username: string, password: string) => Promise<void>; // Local login
   logout: () => Promise<void>;
   hasRole: (roles: string[]) => boolean;
+  hasAccess: (feature: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -187,6 +188,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
+  const hasAccess = (feature: string): boolean => {
+    if (!user) return false;
+
+    const roleSlug = user.role?.slug || '';
+    const deptCode = user.department?.code || '';
+
+    // Superadmin has access to everything
+    if (roleSlug === 'superadmin') {
+      return true;
+    }
+
+    const topManagementRoles = ['president-director', 'general-manager', 'manager'];
+    const isTopManagement = topManagementRoles.includes(roleSlug);
+
+    switch (feature) {
+      case 'asakai-board':
+        return true; // Everyone can access
+
+      case 'asakai-content':
+        return isTopManagement;
+
+      case 'planning-manage':
+        // Top management CANNOT access planning manage according to requirement
+        return deptCode === 'PPIC';
+
+      case 'inventory':
+      case 'inventory-movement':
+        if (isTopManagement) return true;
+        return ['WH', 'BRZ', 'CHS', 'NYL'].includes(deptCode);
+
+      case 'production':
+        if (isTopManagement) return true;
+        return ['CHS', 'BRZ', 'NYL'].includes(deptCode);
+
+      case 'logistics':
+        if (isTopManagement) return true;
+        return deptCode === 'LOG';
+
+      case 'sales':
+        if (isTopManagement) return true;
+        return ['MKT', 'PUR'].includes(deptCode);
+
+      case 'hr':
+        if (isTopManagement) return true;
+        return ['HRD', 'GA'].includes(deptCode);
+
+      default:
+        return false;
+    }
+  };
+
   // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
@@ -258,17 +310,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                const response = await authApi.verifyToken(oidcUser.access_token);
                if (response.success && response.user) {
                   setUser(response.user);
+               } else {
+                 // Backend rejected token — clear everything
+                 setToken(null);
+                 setUser(null);
+                 localStorage.removeItem('token');
+                 await userManager.removeUser();
                }
-            } catch (e) {
-                console.warn("Failed to fetch API profile:", e);
+            } catch (e: any) {
+                if (e?.status === 401 || e?.response?.status === 401) {
+                  // Token rejected by backend — force re-login
+                  console.warn('Backend rejected OIDC token, clearing session...');
+                  setToken(null);
+                  setUser(null);
+                  localStorage.removeItem('token');
+                  await userManager.removeUser();
+                } else {
+                  console.warn("Failed to fetch API profile:", e);
+                }
             }
             
+            setIsLoading(false);
+            return;
+          } else {
+            // SSO enabled but no valid OIDC session found — user logged out from Sphere
+            // Clear any stale local tokens and don't fall back to them
+            console.log('SSO enabled but no valid OIDC session — clearing stale local data');
+            setToken(null);
+            setUser(null);
+            localStorage.removeItem('token');
+            if (oidcUser?.expired) {
+              await userManager.removeUser();
+            }
             setIsLoading(false);
             return;
           }
         }
         
-        // Fallback to legacy JWT token
+        // Non-SSO path: Fallback to legacy JWT token stored in localStorage
         const storedToken = localStorage.getItem('token');
         
         if (storedToken) {
@@ -361,6 +440,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loginLocal,
     logout,
     hasRole,
+    hasAccess,
   };
 
   return (

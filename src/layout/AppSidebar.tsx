@@ -11,22 +11,25 @@ type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean; adminOnly?: boolean }[];
+  subItems?: { name: string; path: string; pro?: boolean; new?: boolean; adminOnly?: boolean; feature?: string }[];
   adminOnly?: boolean; // Only show for superadmin
+  feature?: string;
 };
 
 const allNavItems: NavItem[] = [
   {
     icon: <Castle size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Asakai Board",
+    feature: 'asakai-board',
     subItems: [
-      { name: "Dashboard", path: "/asakai-board" },
-      { name: "Asakai Content", path: "/asakai-manage", adminOnly: true }, // Only superadmin
+      { name: "Dashboard", path: "/asakai-board", feature: 'asakai-board' },
+      { name: "Asakai Content", path: "/asakai-manage", feature: 'asakai-content' }, // Only superadmin & top management
     ],
   },
   {
     icon: <Boxes size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Inventory",
+    feature: 'inventory',
     subItems: [
       { name: "Overview Raw Material", path: "/inventory-rm" },
       { name: "WHRM01", path: "/inventory/whrm01" },
@@ -41,6 +44,7 @@ const allNavItems: NavItem[] = [
   {
     icon: <Waypoints size={12} strokeWidth={0.7} absoluteStrokeWidth/>,
     name: "Inventory Movement",
+    feature: 'inventory-movement',
     subItems: [
       { name: "Overview Raw Material", path: "/warehouse-rm" },
       { name: "WHRM01", path: "/warehouse/whrm01" },
@@ -55,6 +59,7 @@ const allNavItems: NavItem[] = [
   {
     icon: <HousePlug size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Production",
+    feature: 'production',
     subItems: [
       { name: "Overview", path: "/production" },
       { name: "Brazing", path: "/production/bz" },
@@ -68,21 +73,24 @@ const allNavItems: NavItem[] = [
     icon: <BadgeDollarSign size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Sales",
     path: "/sales",
+    feature: 'sales',
   },
   {
     icon: <Van size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Logistics",
     path: "/logistics",
+    feature: 'logistics',
   },
   {
     icon: <Handshake size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Human Resource",
     path: "/hr",
+    feature: 'hr',
   },
   {
     icon: <ChartNetwork size={12} strokeWidth={0.7} absoluteStrokeWidth />,
     name: "Planning Manage",
-    adminOnly: true, // Only superadmin can see this entire menu
+    feature: 'planning-manage',
     subItems: [
       { name: "Daily Use (WH RM)", path: "/daily-use-upload" },
       { name: "Delivery Plan (WH FG)", path: "/delivery-plan-upload" },
@@ -94,19 +102,16 @@ const allNavItems: NavItem[] = [
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
-  const { user } = useAuth();
+  const { user, hasAccess } = useAuth();
   const location = useLocation();
 
-  // Filter menu items based on user role
-  const roleSlug = user?.role?.slug;
-  const isAdminOrSuperadmin = roleSlug === 'admin' || roleSlug === 'superadmin';
-  
   const navItems = allNavItems
-    .filter(item => !item.adminOnly || isAdminOrSuperadmin) // Filter top-level items
+    .filter(item => item.feature ? hasAccess(item.feature) : true) // Filter top-level items
     .map(item => ({
       ...item,
-      subItems: item.subItems?.filter(subItem => !subItem.adminOnly || isAdminOrSuperadmin) // Filter sub-items
-    }));
+      subItems: item.subItems?.filter(subItem => subItem.feature ? hasAccess(subItem.feature) : true) // Filter sub-items
+    }))
+    .filter(item => !item.subItems || item.subItems.length > 0); // Hide if all sub-items are removed
 
 
   const [openSubmenu, setOpenSubmenu] = useState<{

@@ -85,25 +85,31 @@ export default function SSOCallback() {
         }
         
         console.log("Code and state found in URL, proceeding with token exchange...");
-        
-        // Check if we already have a user (prevent double processing)
-        // This prevents using the same authorization code twice
-        const existingUser = await userManager.getUser();
+
+        // Always clear any previous OIDC session before processing a new authorization code.
+        // This is critical when switching between user accounts — without this, the old
+        // user's cached token would be reused, ignoring the new login entirely.
+        try {
+          const prevUser = await userManager.getUser();
+          if (prevUser) {
+            console.log('Clearing previous OIDC session before new token exchange...');
+            await userManager.removeUser();
+            localStorage.removeItem('token');
+          }
+        } catch (e) {
+          console.warn('Could not clear previous session:', e);
+        }
+
         let user;
-        
-        if (existingUser && !existingUser.expired) {
-          console.log("User already authenticated, skipping callback");
-          user = existingUser;
-        } else {
-          // Since user was redirected from Sphere (external redirect),
-          // state might not be in localStorage. We need to handle this manually.
-          // Try signinRedirectCallback first, if it fails due to state mismatch,
-          // we'll do manual token exchange
-          
-          try {
-            // Try normal callback first
-            user = await userManager.signinRedirectCallback();
-          } catch (callbackError: any) {
+
+        // Since user was redirected from Sphere (external redirect),
+        // state might not be in localStorage. We need to handle this manually.
+        // Try signinRedirectCallback first, if it fails due to state mismatch,
+        // we'll do manual token exchange
+        try {
+          // Try normal callback first
+          user = await userManager.signinRedirectCallback();
+        } catch (callbackError: any) {
             // If error is about state not found, do manual token exchange
             if (callbackError.message && callbackError.message.includes('state')) {
               console.warn("State not found in storage (external redirect), doing manual token exchange...");
@@ -221,7 +227,6 @@ export default function SSOCallback() {
               throw callbackError;
             }
           }
-        }
         
         // Ensure user is set
         if (!user) {
