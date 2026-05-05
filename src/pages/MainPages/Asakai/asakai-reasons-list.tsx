@@ -283,9 +283,14 @@ export default function AsakaiReasonsList() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex flex-col gap-1">
-                          {reason.image_urls && reason.image_urls.map((url, i) => (
-                            <a key={i} href={url} target="_blank" rel="noreferrer" className="text-brand-600 hover:underline dark:text-brand-400 text-xs">Image {i+1}</a>
-                          ))}
+                          {reason.image_urls && reason.image_urls.map((url, i) => {
+                            const isPdf = url.toLowerCase().endsWith('.pdf');
+                            return (
+                              <a key={i} href={url} target="_blank" rel="noreferrer" className="text-brand-600 hover:underline dark:text-brand-400 text-xs">
+                                {isPdf ? `PDF ${i+1}` : `Image ${i+1}`}
+                              </a>
+                            );
+                          })}
                           {(!reason.image_urls || reason.image_urls.length === 0) && <span className="text-xs text-gray-400">-</span>}
                         </div>
                       </td>

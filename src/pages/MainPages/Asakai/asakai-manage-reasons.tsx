@@ -126,10 +126,30 @@ export default function AsakaiManageReasons() {
   const handleAddImages = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const incoming = Array.from(e.target.files);
+
+    const validFiles: File[] = [];
+    for (const file of incoming) {
+      if (file.size > 2 * 1024 * 1024) {
+        setErrorMessage(`File ${file.name} is larger than 2MB and cannot be uploaded.`);
+        setErrorModalOpen(true);
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     const totalCurrentCount = formData.images.length + keptImages.length;
     const remaining = MAX_IMAGES - totalCurrentCount;
-    const toAdd = incoming.slice(0, remaining);
-    const newPreviews = toAdd.map((f) => URL.createObjectURL(f));
+    const toAdd = validFiles.slice(0, remaining);
+    const newPreviews = toAdd.map((f) => {
+      // For PDFs, we don't create an object URL because we can't preview it in img src
+      if (f.type === "application/pdf") return "pdf-placeholder";
+      return URL.createObjectURL(f);
+    });
     setFormData((prev) => ({ ...prev, images: [...prev.images, ...toAdd] }));
     setImagePreviews((prev) => [...prev, ...newPreviews]);
     // Reset input so the same file can be re-selected
@@ -278,9 +298,14 @@ export default function AsakaiManageReasons() {
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-[100px] truncate">{reason.perbaikan}</td>
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex flex-col gap-1">
-                          {reason.image_urls && reason.image_urls.map((url, i) => (
-                            <a key={i} href={url} target="_blank" rel="noreferrer" className="text-brand-600 hover:underline dark:text-brand-400 text-xs">Image {i + 1}</a>
-                          ))}
+                          {reason.image_urls && reason.image_urls.map((url, i) => {
+                            const isPdf = url.toLowerCase().endsWith('.pdf');
+                            return (
+                              <a key={i} href={url} target="_blank" rel="noreferrer" className="text-brand-600 hover:underline dark:text-brand-400 text-xs">
+                                {isPdf ? `PDF ${i + 1}` : `Image ${i + 1}`}
+                              </a>
+                            );
+                          })}
                           {(!reason.image_urls || reason.image_urls.length === 0) && <span className="text-xs text-gray-400">-</span>}
                         </div>
                       </td>
@@ -406,7 +431,7 @@ export default function AsakaiManageReasons() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                      Images
+                      Attachments (Images/PDF)
                       <span className="ml-1 text-xs text-gray-400 font-normal">
                         ({formData.images.length + keptImages.length}/{MAX_IMAGES})
                       </span>
@@ -419,7 +444,7 @@ export default function AsakaiManageReasons() {
                         className="inline-flex items-center gap-1.5 rounded-lg border border-brand-300 px-3 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-50 dark:border-brand-700 dark:text-brand-400 dark:hover:bg-brand-900/20"
                       >
                         <ImagePlus size={14} />
-                        {(formData.images.length + keptImages.length) > 0 ? "Add More" : "Add Image"}
+                        {(formData.images.length + keptImages.length) > 0 ? "Add More" : "Add File"}
                       </button>
                     )}
                   </div>
@@ -428,7 +453,7 @@ export default function AsakaiManageReasons() {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.pdf"
                     multiple
                     className="hidden"
                     onChange={handleAddImages}
@@ -436,9 +461,17 @@ export default function AsakaiManageReasons() {
 
                   <div className="flex flex-wrap gap-2 mb-2">
                     {/* Current saved images that are kept */}
-                    {keptImages.map((url, i) => (
+                    {keptImages.map((url, i) => {
+                      const isPdf = url.toLowerCase().endsWith('.pdf');
+                      return (
                       <div key={`kept-${i}`} className="relative group">
-                        <img src={url} alt={`Saved ${i + 1}`} className="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-700" />
+                        {isPdf ? (
+                          <div className="h-20 w-20 flex items-center justify-center rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800">
+                            <span className="text-xs font-bold text-red-500">PDF</span>
+                          </div>
+                        ) : (
+                          <img src={url} alt={`Saved ${i + 1}`} className="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-700" />
+                        )}
                         {/* Delete button */}
                         <button
                           type="button"
@@ -452,16 +485,23 @@ export default function AsakaiManageReasons() {
                           Saved
                         </span>
                       </div>
-                    ))}
+                      );
+                    })}
 
                     {/* Newly staged images with individual remove buttons */}
                     {formData.images.map((file, i) => (
                       <div key={`new-${i}`} className="relative group">
-                        <img
-                          src={imagePreviews[i]}
-                          alt={file.name}
-                          className="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
-                        />
+                        {file.type === "application/pdf" ? (
+                          <div className="h-20 w-20 flex items-center justify-center rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800">
+                            <span className="text-xs font-bold text-red-500">PDF</span>
+                          </div>
+                        ) : (
+                          <img
+                            src={imagePreviews[i]}
+                            alt={file.name}
+                            className="h-20 w-20 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
+                          />
+                        )}
                         {/* Delete button */}
                         <button
                           type="button"
@@ -486,7 +526,7 @@ export default function AsakaiManageReasons() {
                       className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 py-6 text-sm text-gray-400 hover:border-brand-400 hover:text-brand-500 dark:border-gray-700 dark:hover:border-brand-600"
                     >
                       <ImagePlus size={18} />
-                      Click to upload images (max {MAX_IMAGES})
+                      Click to upload images or PDF (max {MAX_IMAGES})
                     </button>
                   )}
                 </div>
