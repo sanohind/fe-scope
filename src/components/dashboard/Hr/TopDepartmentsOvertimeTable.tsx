@@ -11,6 +11,7 @@ interface DepartmentOvertimeData {
   total_employees?: number;
   total_overtime_index_minutes: number;
   total_overtime_index_formatted: string;
+  average_overtime_index?: number;
   average_overtime_minutes?: number;
   average_overtime_formatted?: string;
 }
@@ -80,11 +81,11 @@ const TopDepartmentsOvertimeTable: React.FC = () => {
   // Sort data by rank (ascending)
   const sortedData = [...data].sort((a, b) => a.rank - b.rank);
 
-  // Prepare series data - use total_overtime_index (hours) as the main value
+  // Prepare series data - use average_overtime_index (hours) as the main value
   const series = [
     {
-      name: "Overtime Hours",
-      data: sortedData.map((item) => item.total_overtime_index),
+      name: "Average Overtime Hours",
+      data: sortedData.map((item) => item.average_overtime_index || 0),
     },
   ];
 
@@ -133,7 +134,7 @@ const TopDepartmentsOvertimeTable: React.FC = () => {
     },
     yaxis: {
       title: {
-        text: "Overtime Hours",
+        text: "Average Overtime Hours",
       },
       labels: {
         formatter: (val: number) => val.toLocaleString(),
