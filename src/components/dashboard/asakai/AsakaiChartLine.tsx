@@ -174,8 +174,8 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
           <p className="text-sm font-medium text-gray-800 dark:text-white">{dataPoint.formattedDate}</p>
           <div className="mt-2 space-y-1">
             <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-gray-500 dark:text-gray-300">Quantity:</p>
-              <p className="text-sm font-semibold text-brand-600 dark:text-brand-300">
+              <p className="text-sm text-gray-500 dark:text-gray-300">Actual:</p>
+              <p className="text-sm font-semibold text-[#12B76A] dark:text-[#12B76A]">
                 {dataPoint.qty !== null ? `${dataPoint.qty.toLocaleString()} ${unit}` : "-"}
               </p>
             </div>
@@ -183,7 +183,7 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
             {dataPoint.target !== undefined && (
               <div className="flex items-center justify-between gap-4">
                 <p className="text-sm text-gray-500 dark:text-gray-300">Target:</p>
-                <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                <p className="text-sm font-semibold text-[#d20000ff] dark:text-[#d20000ff]">
                   {dataPoint.target.toLocaleString()} {unit}
                 </p>
               </div>

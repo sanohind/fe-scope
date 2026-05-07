@@ -202,7 +202,7 @@ const TopDepartmentsOvertimeTable: React.FC = () => {
       <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Top Departments by Overtime</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Top departments ranked by overtime hours</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Top departments ranked by average overtime</p>
         </div>
 
         <div className="flex gap-3 items-center">
