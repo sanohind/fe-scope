@@ -81,11 +81,14 @@ const TopDepartmentsOvertimeTable: React.FC = () => {
   // Sort data by rank (ascending)
   const sortedData = [...data].sort((a, b) => a.rank - b.rank);
 
-  // Prepare series data - use average_overtime_index (hours) as the main value
+  // Prepare series data - use average_overtime_minutes converted to hours for better precision
   const series = [
     {
       name: "Average Overtime Hours",
-      data: sortedData.map((item) => item.average_overtime_index || 0),
+      data: sortedData.map((item) => {
+        const minutes = item.average_overtime_minutes || 0;
+        return Number((minutes / 60).toFixed(2));
+      }),
     },
   ];
 
