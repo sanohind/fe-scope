@@ -6,7 +6,7 @@ import PageMeta from "../../../components/common/PageMeta";
 import { Modal } from "../../../components/ui/modal";
 import { ConfirmationModal } from "../../../components/ui/modal/ConfirmationModal";
 
-const SECTION_OPTIONS = ["no_section", "brazzing", "chassis", "nylon", "subcon", "passthrough"];
+const SECTION_OPTIONS = ["No Section", "Brazing", "Chassis", "Nylon", "Subcon", "Passthrough", "PPIC", "Logistics", "Service Parts", "Quality Control", "Quality Assurance", "Engineering", "Maintenance", "Purchasing", "Warehouse", "Marketing", "HRD", "General Affairs", "Information Technology", "Safety", "Accounting", "Jishuken"];
 const MAX_IMAGES = 5;
 
 export default function AsakaiManageReasons() {
