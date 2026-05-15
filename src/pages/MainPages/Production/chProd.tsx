@@ -7,6 +7,10 @@ import ProductionByModel from "../../../components/dashboard/production/Producti
 import ProductionTrend from "../../../components/dashboard/production/ProductionTrend";
 import ProductionFilterHeader from "../../../components/dashboard/production/ProductionFilterHeader";
 import { ProductionFilterProvider, useProductionFilters } from "../../../context/ProductionFilterContext";
+import ProductionTrendKelola from "../../../components/dashboard/production/ProductionTrendKelola";
+import ProductionNgTrend from "../../../components/dashboard/production/ProductionNgTrend";
+import ProductionTopNgTypes from "../../../components/dashboard/production/ProductionTopNgTypes";
+
 
 const DIVISI = "CH";
 
@@ -35,6 +39,20 @@ const ProductionChContent = () => {
       <LazyLoad height="450px">
         <ProductionTrend dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} />
       </LazyLoad>
+
+      {/* Kelola Charts */}
+      <LazyLoad height="450px">
+        <ProductionTrendKelola dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} />
+      </LazyLoad>
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <LazyLoad height="400px">
+          <ProductionNgTrend dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} />
+        </LazyLoad>
+        <LazyLoad height="400px">
+          <ProductionTopNgTypes dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} />
+        </LazyLoad>
+      </div>
 
       {/* Production Status Distribution & Production by Customer */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">

@@ -1,37 +1,34 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
 import { productionApi } from "../../../services/api/dashboardApi";
+import { useTheme } from "../../../context/ThemeContext";
 
-interface TrendData {
+interface NgTrendData {
   period: string;
-  qty_pelaporan: string | number;
-  qty_plan: string | number;
-  total_prod_index: string | number;
+  qty_ng: number;
 }
 
-interface ProductionTrendProps {
+interface ProductionNgTrendProps {
   divisi?: string;
   dateFrom?: string;
   dateTo?: string;
   period?: "daily" | "monthly" | "yearly";
 }
 
-const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL", dateFrom, dateTo, period = "daily" }) => {
-  const [data, setData] = useState<TrendData[]>([]);
+const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", dateFrom, dateTo, period = "daily" }) => {
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
+  const [data, setData] = useState<NgTrendData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const effectiveRangeLabel = useMemo(() => {
-    if (period === "daily") return "Per tanggal (periode default sistem)";
-    if (period === "monthly") return "Per bulan (periode default sistem)";
-    return "Per tahun (periode default sistem)";
-  }, [period]);
+  
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await productionApi.getProductionTrend({
+        const result = await productionApi.getDailyNgQty({
           period,
           date_from: dateFrom,
           date_to: dateTo,
@@ -41,7 +38,7 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL", dateF
         setData(dataArray);
         setError(null);
       } catch (err) {
-        console.error("Error fetching Production Achievement:", err);
+        console.error("Error fetching Daily NG:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch data");
       } finally {
         setLoading(false);
@@ -51,7 +48,6 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL", dateF
     fetchData();
   }, [divisi, dateFrom, dateTo, period]);
 
-  // Konversi string ke number dengan aman
   const toNumber = (value: string | number | undefined): number => {
     if (typeof value === "number") return value;
     if (!value) return 0;
@@ -86,15 +82,14 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL", dateF
 
       return {
         ...item,
-        qty_pelaporan: toNumber(item.qty_pelaporan),
-        qty_plan: toNumber(item.qty_plan),
+        qty_ng: toNumber(item.qty_ng),
         label,
         formattedDate,
       };
     });
   }, [data, period]);
 
-  const latestValue = chartData.length ? chartData[chartData.length - 1].qty_pelaporan : null;
+  const latestValue = chartData.length ? chartData[chartData.length - 1].qty_ng : null;
 
   const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
     const dataPoint = payload?.[0]?.payload;
@@ -104,12 +99,8 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL", dateF
           <p className="text-sm font-medium text-gray-800 dark:text-white">{dataPoint.formattedDate}</p>
           <div className="mt-2 space-y-1">
             <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-gray-500 dark:text-gray-300">Qty Pelaporan:</p>
-              <p className="text-sm font-semibold text-[#10B981] dark:text-[#10B981]">{dataPoint.qty_pelaporan.toLocaleString()}</p>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-gray-500 dark:text-gray-300">Qty Plan:</p>
-              <p className="text-sm font-semibold text-[#465FFF] dark:text-[#465FFF]">{dataPoint.qty_plan.toLocaleString()}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-300">Qty NG:</p>
+              <p className="text-sm font-semibold text-[#EF4444] dark:text-[#EF4444]">{dataPoint.qty_ng.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -133,8 +124,7 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL", dateF
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Production Achievement</h3>
-          <span className="text-sm text-gray-500 dark:text-gray-400">{effectiveRangeLabel}</span>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Daily NG (Kelola)</h3>
         </div>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 text-error-600 dark:border-error-800 dark:bg-error-900/20 dark:text-error-400">
           {error || "No data available"}
@@ -147,7 +137,7 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL", dateF
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Production Achievement</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Daily NG (Kelola)</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {divisi === "ALL" ? "All Divisions" : divisi} · {period === "daily" ? "Daily" : period === "monthly" ? "Monthly" : "Yearly"}
           </p>
@@ -155,19 +145,16 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL", dateF
         <div className="flex flex-wrap items-center gap-3">
           {latestValue !== null && (
             <div className="rounded-xl bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-300">
-              Latest Qty Pelaporan: <span className="text-[#10B981] dark:text-[#10B981]">{latestValue.toLocaleString()}</span>
+              Today's Qty NG: <span className="text-[#EF4444] dark:text-[#EF4444]">{latestValue.toLocaleString()}</span>
             </div>
           )}
-          <div className="rounded-xl bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-300">
-            {effectiveRangeLabel}
-          </div>
         </div>
       </div>
 
       <div className="max-w-full overflow-x-auto custom-scrollbar">
-        <div className="min-w-[600px]">
+        <div className="min-w-[400px]">
           <ResponsiveContainer width="100%" height={320}>
-            <ComposedChart data={chartData} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
+            <BarChart data={chartData} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
               <XAxis dataKey="label" stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12, fontFamily: "Outfit, sans-serif" }} tickLine={false} axisLine={false} />
               <YAxis
@@ -177,7 +164,7 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL", dateF
                 axisLine={false}
                 tickFormatter={(value) => value.toLocaleString()}
                 label={{
-                  value: "Quantity",
+                  value: "Quantity NG",
                   angle: -90,
                   position: "insideLeft",
                   style: { fill: "#6b7280", fontSize: 12, fontFamily: "Outfit, sans-serif" },
@@ -186,9 +173,8 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL", dateF
               <Tooltip content={<CustomTooltip />} />
               <Legend />
               
-              <Bar dataKey="qty_pelaporan" name="Qty Pelaporan" fill="#10B981" radius={[4, 4, 0, 0]} barSize={20} />
-              <Line type="monotone" dataKey="qty_plan" name="Qty Plan" stroke="#465FFF" strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
-            </ComposedChart>
+              <Bar dataKey="qty_ng" name="Qty NG" fill="#EF4444" radius={[4, 4, 0, 0]} barSize={30} />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
@@ -196,4 +182,4 @@ const ProductionTrend: React.FC<ProductionTrendProps> = ({ divisi = "ALL", dateF
   );
 };
 
-export default ProductionTrend;
+export default ProductionNgTrend;
