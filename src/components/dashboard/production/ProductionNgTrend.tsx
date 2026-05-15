@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
 import { productionApi } from "../../../services/api/dashboardApi";
-import { useTheme } from "../../../context/ThemeContext";
 
 interface NgTrendData {
   period: string;
@@ -16,8 +15,6 @@ interface ProductionNgTrendProps {
 }
 
 const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", dateFrom, dateTo, period = "daily" }) => {
-  const { theme } = useTheme();
-  const isDarkMode = theme === "dark";
   const [data, setData] = useState<NgTrendData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

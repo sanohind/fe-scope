@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
 import { productionApi } from "../../../services/api/dashboardApi";
-import { useTheme } from "../../../context/ThemeContext";
 
 interface TrendData {
   period: string;
@@ -19,8 +18,6 @@ interface ProductionTrendKelolaProps {
 }
 
 const ProductionTrendKelola: React.FC<ProductionTrendKelolaProps> = ({ divisi = "ALL", dateFrom, dateTo, period = "daily" }) => {
-  const { theme } = useTheme();
-  const isDarkMode = theme === "dark";
   const [data, setData] = useState<TrendData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
