@@ -32,7 +32,8 @@ const COLORS = [
   "#0F766E", // teal
   "#9333EA", // purple
   "#CA8A04", // yellow
-  "#334155"  // slate
+  "#334155",  // slate
+  "#912a9eff"  // purple 2
 ];
 
 const BreakdownCauseDistributionChart: React.FC<BreakdownCauseDistributionChartProps> = ({ 
