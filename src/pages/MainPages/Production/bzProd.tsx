@@ -45,15 +45,12 @@ const ProductionBzContent = () => {
         <ProductionTrendKelola dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} />
       </LazyLoad>
 
-      {/* Breakdown Cause Distributions */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <LazyLoad height="450px">
-          <BreakdownCauseDistributionChart dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} metric="duration" />
-        </LazyLoad>
-        <LazyLoad height="450px">
-          <BreakdownCauseDistributionChart dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} metric="count" />
-        </LazyLoad>
-      </div>
+      <LazyLoad height="450px">
+        <BreakdownCauseDistributionChart dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} metric="duration" />
+      </LazyLoad>
+      <LazyLoad height="450px">
+        <BreakdownCauseDistributionChart dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} metric="count" />
+      </LazyLoad>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <LazyLoad height="400px">

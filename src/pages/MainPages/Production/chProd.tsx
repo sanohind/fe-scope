@@ -10,7 +10,7 @@ import { ProductionFilterProvider, useProductionFilters } from "../../../context
 import ProductionTrendKelola from "../../../components/dashboard/production/ProductionTrendKelola";
 import ProductionNgTrend from "../../../components/dashboard/production/ProductionNgTrend";
 import ProductionTopNgTypes from "../../../components/dashboard/production/ProductionTopNgTypes";
-
+import BreakdownCauseDistributionChart from "../../../components/dashboard/production/BreakdownCauseDistributionChart";
 
 const DIVISI = "CH";
 
@@ -43,6 +43,13 @@ const ProductionChContent = () => {
       {/* Kelola Charts */}
       <LazyLoad height="450px">
         <ProductionTrendKelola dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} />
+      </LazyLoad>
+
+      <LazyLoad height="450px">
+        <BreakdownCauseDistributionChart dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} metric="duration" />
+      </LazyLoad>
+      <LazyLoad height="450px">
+        <BreakdownCauseDistributionChart dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} metric="count" />
       </LazyLoad>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
