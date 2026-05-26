@@ -18,9 +18,21 @@ interface BreakdownCauseDistributionChartProps {
 }
 
 const COLORS = [
-  "#465FFF", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", 
-  "#EC4899", "#14B8A6", "#F97316", "#06B6D4", "#6366F1", 
-  "#84CC16", "#D946EF", "#EAB308", "#22C55E", "#3B82F6"
+  "#2563EB", // blue
+  "#DC2626", // red
+  "#16A34A", // green
+  "#F59E0B", // amber
+  "#7C3AED", // violet
+  "#EC4899", // pink
+  "#0891B2", // cyan
+  "#EA580C", // orange
+  "#65A30D", // lime
+  "#4F46E5", // indigo
+  "#BE123C", // rose
+  "#0F766E", // teal
+  "#9333EA", // purple
+  "#CA8A04", // yellow
+  "#334155"  // slate
 ];
 
 const BreakdownCauseDistributionChart: React.FC<BreakdownCauseDistributionChartProps> = ({ 
