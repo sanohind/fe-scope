@@ -6,3 +6,4 @@ export { default as ProductionScheduleTimeline } from "./ProductionScheduleTimel
 export { default as ProductionOutstandingAnalysis } from "./ProductionOutstandingAnalysis";
 export { default as ProductionByDivisi } from "./ProductionByDivision";
 export { default as ProductionTrend } from "./ProductionTrend";
+export { default as BreakdownCauseDistributionChart } from "./BreakdownCauseDistributionChart";

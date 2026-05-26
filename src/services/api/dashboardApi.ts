@@ -623,6 +623,16 @@ export const productionApi = {
     return response.json();
   },
 
+  // 3.13 Breakdown Cause Distribution
+  getBreakdownCauseDistribution: async (params?: { period?: "daily" | "monthly" | "yearly"; date_from?: string; date_to?: string; divisi?: string; metric?: "duration" | "count" }) => {
+    const cleaned = cleanParams(params);
+    const queryParams = new URLSearchParams(cleaned as any).toString();
+    const url = `${BASE_URL}/api/dashboard/production/breakdown-cause-distribution${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch breakdown cause distribution");
+    return response.json();
+  },
+
   // Get all dashboard data
   getAllData: async () => {
     const response = await fetch(`${BASE_URL}/api/dashboard/production/all-data`);

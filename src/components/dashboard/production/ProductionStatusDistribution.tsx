@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { productionApi } from "../../../services/api/dashboardApi";
+import { useTheme } from "../../../context/ThemeContext";
 
 interface StatusData {
   status: string;
@@ -28,6 +29,8 @@ interface ProductionStatusDistributionProps {
 }
 
 const ProductionStatusDistribution: React.FC<ProductionStatusDistributionProps> = ({ divisi = "ALL", dateFrom, dateTo, period = "daily" }) => {
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
   const [data, setData] = useState<StatusData[]>([]);
   const [totalOrders, setTotalOrders] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -135,11 +138,20 @@ const ProductionStatusDistribution: React.FC<ProductionStatusDistributionProps> 
       },
     ],
     tooltip: {
-      y: {
-        formatter: (val) => {
-          const percentage = totalOrders > 0 ? ((val / totalOrders) * 100).toFixed(1) : "0.0";
-          return `${val.toLocaleString()} (${percentage}%)`;
-        },
+      theme: isDarkMode ? "dark" : "light",
+      custom: function ({ series, seriesIndex, w }) {
+        const val = series[seriesIndex];
+        const percentage = totalOrders > 0 ? ((val / totalOrders) * 100).toFixed(1) : "0.0";
+        const label = w.config.labels[seriesIndex];
+        const color = w.config.colors[seriesIndex];
+
+        return `
+          <div class="flex items-center gap-2 px-2 py-1">
+            <span class="w-3 h-3 rounded-full shadow-sm" style="background-color: ${color}"></span>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">${label}:</span>
+            <span class="text-sm font-bold text-gray-900 dark:text-white">${val.toLocaleString()} (${percentage}%)</span>
+          </div>
+        `;
       },
     },
   };

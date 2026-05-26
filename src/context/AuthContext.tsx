@@ -211,7 +211,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       case 'planning-manage':
         // Top management CANNOT access planning manage according to requirement
-        return deptCode === 'PPIC';
+        return ['PPIC', 'TOP'].includes(deptCode);
 
       case 'inventory':
       case 'inventory-movement':
