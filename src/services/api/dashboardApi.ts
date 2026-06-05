@@ -603,6 +603,16 @@ export const productionApi = {
     return response.json();
   },
 
+  // 3.10.1 Daily Production Qty Odoo
+  getDailyProductionQtyOdoo: async (params?: { period?: "daily" | "monthly" | "yearly"; date_from?: string; date_to?: string }) => {
+    const cleaned = cleanParams(params);
+    const queryParams = new URLSearchParams(cleaned as any).toString();
+    const url = `${BASE_URL}/api/dashboard/production/daily-production-qty-odoo${queryParams ? `?${queryParams}` : ""}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch daily production qty odoo");
+    return response.json();
+  },
+
   // 3.11 Daily NG Qty
   getDailyNgQty: async (params?: { period?: "daily" | "monthly" | "yearly"; date_from?: string; date_to?: string; divisi?: string }) => {
     const cleaned = cleanParams(params);
