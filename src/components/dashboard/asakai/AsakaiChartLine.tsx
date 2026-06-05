@@ -334,7 +334,7 @@ const AsakaiChartLine: React.FC<AsakaiChartLineProps> = ({ titleId, titleName, c
                   ))}
                 </Bar>
               ) : (
-                <Line type="monotone" dataKey="qty" name="Actual" stroke={lineColor} strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} />
+                <Line type="monotone" dataKey="qty" name="Actual" stroke={lineColor} strokeWidth={3} dot={{ strokeWidth: 2, r: 3 }} activeDot={{ r: 5 }} connectNulls />
               )}
               <Line type="step" dataKey="target" name="Target" stroke="#d20000ff" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={false} connectNulls />
             </ComposedChart>
