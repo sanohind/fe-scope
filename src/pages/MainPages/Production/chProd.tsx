@@ -51,15 +51,13 @@ const ProductionChContent = () => {
       <LazyLoad height="450px">
         <BreakdownCauseDistributionChart dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} metric="count" />
       </LazyLoad>
-
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <LazyLoad height="400px">
-          <ProductionNgTrend dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} />
-        </LazyLoad>
-        <LazyLoad height="400px">
-          <ProductionTopNgTypes dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} />
-        </LazyLoad>
-      </div>
+      
+      <LazyLoad height="400px">
+        <ProductionNgTrend dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} />
+      </LazyLoad>
+      <LazyLoad height="400px">
+        <ProductionTopNgTypes dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} />
+      </LazyLoad>
 
       {/* Production Status Distribution & Production by Customer */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">

@@ -233,8 +233,7 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
       {/* Custom Scrollable Legend */}
       {ngNames.length > 0 && (
         <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3">Kategori NG:</p>
-          <div className="max-h-[120px] overflow-y-auto custom-scrollbar pr-2">
+          <div className="mt-3 max-h-[120px] overflow-y-auto custom-scrollbar pr-2">
             <ul className="flex flex-wrap gap-x-4 gap-y-3 m-0 p-0 list-none">
               {ngNames.map((name, index) => (
                 <li key={name} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 w-[calc(50%-1rem)] sm:w-[calc(33.33%-1rem)] lg:w-[calc(25%-1rem)]">
