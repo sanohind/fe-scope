@@ -2,13 +2,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ResponsiveContainer, ComposedChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { productionApi } from "../../../services/api/dashboardApi";
 
-interface NgTrendData {
+interface TrendData {
   period: string;
-  qty_ng: number;
-  [key: string]: string | number; // For dynamic NG categories
+  total_qty: number;
+  [key: string]: string | number; // For dynamic main process categories
 }
 
-interface ProductionNgTrendProps {
+interface ProductionMainProcessTrendProps {
   divisi?: string;
   dateFrom?: string;
   dateTo?: string;
@@ -34,9 +34,9 @@ const COLORS = [
   "#912a9eff"  // purple 2
 ];
 
-const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", dateFrom, dateTo, period = "daily" }) => {
-  const [data, setData] = useState<NgTrendData[]>([]);
-  const [ngNames, setNgNames] = useState<string[]>([]);
+const ProductionMainProcessTrend: React.FC<ProductionMainProcessTrendProps> = ({ divisi = "ALL", dateFrom, dateTo, period = "daily" }) => {
+  const [data, setData] = useState<TrendData[]>([]);
+  const [mainProcesses, setMainProcesses] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +44,7 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
     const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await productionApi.getDailyNgQty({
+        const result = await productionApi.getDailyProductionQtyDetail({
           period,
           date_from: dateFrom,
           date_to: dateTo,
@@ -52,10 +52,10 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
         });
         const dataArray = Array.isArray(result) ? result : result?.data || [];
         setData(dataArray);
-        setNgNames(result?.ng_names || []);
+        setMainProcesses(result?.main_processes || []);
         setError(null);
       } catch (err) {
-        console.error("Error fetching Daily NG:", err);
+        console.error("Error fetching Daily Production Qty Detail:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch data");
       } finally {
         setLoading(false);
@@ -99,20 +99,20 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
 
       const processedItem: any = {
         ...item,
-        qty_ng: toNumber(item.qty_ng),
+        total_qty: toNumber(item.total_qty),
         label,
         formattedDate,
       };
 
-      ngNames.forEach((name) => {
+      mainProcesses.forEach((name) => {
         processedItem[name] = toNumber(item[name]);
       });
 
       return processedItem;
     });
-  }, [data, period, ngNames]);
+  }, [data, period, mainProcesses]);
 
-  const latestValue = chartData.length ? chartData[chartData.length - 1].qty_ng : null;
+  const latestValue = chartData.length ? chartData[chartData.length - 1].total_qty : null;
 
   const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
     if (active && payload && payload.length) {
@@ -139,9 +139,9 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
             })}
           </div>
           <div className="flex items-center justify-between gap-4 pt-2 mt-2 border-t border-gray-100 dark:border-gray-800">
-            <p className="text-sm text-gray-500 dark:text-gray-300">Total Qty NG:</p>
+            <p className="text-sm text-gray-500 dark:text-gray-300">Total Production:</p>
             <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-              {dataPoint.qty_ng?.toLocaleString()}
+              {dataPoint.total_qty?.toLocaleString()}
             </p>
           </div>
         </div>
@@ -165,7 +165,7 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Daily NG (Kelola)</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Daily Production by Main Process</h3>
         </div>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 text-error-600 dark:border-error-800 dark:bg-error-900/20 dark:text-error-400">
           {error || "No data available"}
@@ -178,7 +178,7 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Daily NG (Kelola)</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Daily Production by Main Process</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {divisi === "ALL" ? "All Divisions" : divisi} · {period === "daily" ? "Daily" : period === "monthly" ? "Monthly" : "Yearly"}
           </p>
@@ -186,7 +186,7 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
         <div className="flex flex-wrap items-center gap-3">
           {latestValue !== null && (
             <div className="rounded-xl bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-300">
-              Today's Qty NG: <span className="text-[#EF4444] dark:text-[#EF4444]">{latestValue.toLocaleString()}</span>
+              Today's Production: <span className="text-[#10B981] dark:text-[#10B981]">{latestValue.toLocaleString()}</span>
             </div>
           )}
         </div>
@@ -205,7 +205,7 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
                 axisLine={false}
                 tickFormatter={(value) => value.toLocaleString()}
                 label={{
-                  value: "Quantity NG",
+                  value: "Quantity",
                   angle: -90,
                   position: "insideLeft",
                   style: { fill: "#6b7280", fontSize: 12, fontFamily: "Outfit, sans-serif" },
@@ -214,14 +214,14 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
               <Tooltip content={<CustomTooltip />} />
               
               {/* Stacked Bars */}
-              {ngNames.map((name, index) => (
+              {mainProcesses.map((name, index) => (
                 <Bar 
                   key={name} 
                   dataKey={name} 
                   name={name} 
                   fill={COLORS[index % COLORS.length]} 
-                  stackId="ng" 
-                  radius={index === ngNames.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]} 
+                  stackId="process" 
+                  radius={index === mainProcesses.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]} 
                   barSize={30} 
                 />
               ))}
@@ -231,11 +231,12 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
       </div>
 
       {/* Custom Scrollable Legend */}
-      {ngNames.length > 0 && (
+      {mainProcesses.length > 0 && (
         <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-          <div className="mt-3 max-h-[120px] overflow-y-auto custom-scrollbar pr-2">
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3">Main Process:</p>
+          <div className="max-h-[120px] overflow-y-auto custom-scrollbar pr-2">
             <ul className="flex flex-wrap gap-x-4 gap-y-3 m-0 p-0 list-none">
-              {ngNames.map((name, index) => (
+              {mainProcesses.map((name, index) => (
                 <li key={name} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 w-[calc(50%-1rem)] sm:w-[calc(33.33%-1rem)] lg:w-[calc(25%-1rem)]">
                   <span className="w-3 h-3 rounded-sm flex-shrink-0 shadow-sm" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                   <span className="truncate" title={name}>{name}</span>
@@ -249,4 +250,4 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
   );
 };
 
-export default ProductionNgTrend;
+export default ProductionMainProcessTrend;

@@ -125,7 +125,7 @@ const BreakdownCauseDistributionChart: React.FC<BreakdownCauseDistributionChartP
       return (
         <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-900">
           <p className="text-sm font-medium text-gray-800 dark:text-white mb-2">{dataPoint.formattedDate}</p>
-          <div className="space-y-1">
+          <div className="space-y-1 max-h-[200px] overflow-y-auto custom-scrollbar pr-2">
             {payload.map((entry, index) => {
               if (entry.value > 0) {
                 return (
@@ -142,14 +142,14 @@ const BreakdownCauseDistributionChart: React.FC<BreakdownCauseDistributionChartP
               }
               return null;
             })}
-            <div className="flex items-center justify-between gap-4 pt-2 mt-2 border-t border-gray-100 dark:border-gray-800">
-              <p className="text-sm text-gray-500 dark:text-gray-300">Total {metric === "duration" ? "Duration" : "Count"}:</p>
-              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                {metric === "duration" 
-                  ? dataPoint.total_duration_minutes?.toLocaleString() + " mins" 
-                  : dataPoint.total_count?.toLocaleString()}
-              </p>
-            </div>
+          </div>
+          <div className="flex items-center justify-between gap-4 pt-2 mt-2 border-t border-gray-100 dark:border-gray-800">
+            <p className="text-sm text-gray-500 dark:text-gray-300">Total {metric === "duration" ? "Duration" : "Count"}:</p>
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+              {metric === "duration" 
+                ? dataPoint.total_duration_minutes?.toLocaleString() + " mins" 
+                : dataPoint.total_count?.toLocaleString()}
+            </p>
           </div>
         </div>
       );

@@ -9,6 +9,7 @@ import ProductionFilterHeader from "../../../components/dashboard/production/Pro
 import { ProductionFilterProvider, useProductionFilters } from "../../../context/ProductionFilterContext";
 import ProductionTrendKelola from "../../../components/dashboard/production/ProductionTrendKelola";
 import ProductionTrendOdoo from "../../../components/dashboard/production/ProductionTrendOdoo";
+import ProductionMainProcessTrend from "../../../components/dashboard/production/ProductionMainProcessTrend";
 import ProductionNgTrend from "../../../components/dashboard/production/ProductionNgTrend";
 import ProductionTopNgTypes from "../../../components/dashboard/production/ProductionTopNgTypes";
 import BreakdownCauseDistributionChart from "../../../components/dashboard/production/BreakdownCauseDistributionChart";
@@ -49,6 +50,9 @@ const ProductionNlContent = () => {
       {/* Kelola Charts */}
       <LazyLoad height="450px">
         <ProductionTrendKelola dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} />
+      </LazyLoad>
+      <LazyLoad height="400px">
+        <ProductionMainProcessTrend dateFrom={from} dateTo={to} divisi={requestParams.divisi} period={requestParams.period} />
       </LazyLoad>
 
       <LazyLoad height="450px">

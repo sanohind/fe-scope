@@ -199,15 +199,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return true;
     }
 
-    const topManagementRoles = ['president-director', 'general-manager', 'manager'];
-    const isTopManagement = topManagementRoles.includes(roleSlug);
+    const levels: Record<string, number> = {
+      'superadmin': 1,
+      'president-director': 2,
+      'division-head': 3,
+      'general-manager': 4,
+      'manager': 5,
+      'supervisor': 6,
+      'leader': 7,
+      'staff': 8,
+    };
+    
+    const roleLevel = levels[roleSlug] || 99;
+    // Top Management is Manager and above (Level <= 5)
+    const isTopManagement = roleLevel <= 5;
 
     switch (feature) {
       case 'asakai-board':
         return true; // Everyone can access
 
+      case 'asakai-input':
+        return roleLevel <= 6; // Supervisor and above
+
       case 'asakai-content':
-        return isTopManagement;
+        return isTopManagement; // Manager and above
 
       case 'planning-manage':
         // Top management CANNOT access planning manage according to requirement
