@@ -116,14 +116,17 @@ export default function AsakaiChartEntry() {
 
     await Promise.all(promises);
 
+    if (successCount > 0) {
+      setFormData({});
+      fetchExistingCharts();
+    }
+
     if (successCount === 0 && failCount === 0) {
       setMessage({ type: "error", text: "Please fill at least one data field." });
     } else if (failCount > 0) {
       setMessage({ type: "error", text: `Saved ${successCount} successfully, but failed to save ${failCount}. Error: ${failMessages[0]}` });
     } else {
       setMessage({ type: "success", text: `Successfully saved ${successCount} chart data.` });
-      // Reset form
-      setFormData({});
     }
     
     setSubmitLoading(false);
