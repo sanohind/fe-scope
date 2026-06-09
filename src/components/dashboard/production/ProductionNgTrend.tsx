@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
+import { ResponsiveContainer, ComposedChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
 import { productionApi } from "../../../services/api/dashboardApi";
 
 interface NgTrendData {
   period: string;
   qty_ng: number;
+  [key: string]: string | number; // For dynamic NG categories
 }
 
 interface ProductionNgTrendProps {
@@ -14,12 +15,30 @@ interface ProductionNgTrendProps {
   period?: "daily" | "monthly" | "yearly";
 }
 
+const COLORS = [
+  "#2563EB", // blue
+  "#DC2626", // red
+  "#16A34A", // green
+  "#F59E0B", // amber
+  "#7C3AED", // violet
+  "#EC4899", // pink
+  "#0891B2", // cyan
+  "#EA580C", // orange
+  "#65A30D", // lime
+  "#4F46E5", // indigo
+  "#BE123C", // rose
+  "#0F766E", // teal
+  "#9333EA", // purple
+  "#CA8A04", // yellow
+  "#334155",  // slate
+  "#912a9eff"  // purple 2
+];
+
 const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", dateFrom, dateTo, period = "daily" }) => {
   const [data, setData] = useState<NgTrendData[]>([]);
+  const [ngNames, setNgNames] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,6 +52,7 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
         });
         const dataArray = Array.isArray(result) ? result : result?.data || [];
         setData(dataArray);
+        setNgNames(result?.ng_names || []);
         setError(null);
       } catch (err) {
         console.error("Error fetching Daily NG:", err);
@@ -77,27 +97,51 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
         formattedDate = item.period;
       }
 
-      return {
+      const processedItem: any = {
         ...item,
         qty_ng: toNumber(item.qty_ng),
         label,
         formattedDate,
       };
+
+      ngNames.forEach((name) => {
+        processedItem[name] = toNumber(item[name]);
+      });
+
+      return processedItem;
     });
-  }, [data, period]);
+  }, [data, period, ngNames]);
 
   const latestValue = chartData.length ? chartData[chartData.length - 1].qty_ng : null;
 
   const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
-    const dataPoint = payload?.[0]?.payload;
-    if (active && dataPoint) {
+    if (active && payload && payload.length) {
+      const dataPoint = payload[0].payload;
       return (
         <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-          <p className="text-sm font-medium text-gray-800 dark:text-white">{dataPoint.formattedDate}</p>
-          <div className="mt-2 space-y-1">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-gray-500 dark:text-gray-300">Qty NG:</p>
-              <p className="text-sm font-semibold text-[#EF4444] dark:text-[#EF4444]">{dataPoint.qty_ng.toLocaleString()}</p>
+          <p className="text-sm font-medium text-gray-800 dark:text-white mb-2">{dataPoint.formattedDate}</p>
+          <div className="space-y-1">
+            {payload.map((entry, index) => {
+              if (entry.value > 0) {
+                return (
+                  <div key={index} className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
+                      <p className="text-sm text-gray-500 dark:text-gray-300">{entry.name}:</p>
+                    </div>
+                    <p className="text-sm font-semibold" style={{ color: entry.color }}>
+                      {entry.value.toLocaleString()}
+                    </p>
+                  </div>
+                );
+              }
+              return null;
+            })}
+            <div className="flex items-center justify-between gap-4 pt-2 mt-2 border-t border-gray-100 dark:border-gray-800">
+              <p className="text-sm text-gray-500 dark:text-gray-300">Total Qty NG:</p>
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                {dataPoint.qty_ng?.toLocaleString()}
+              </p>
             </div>
           </div>
         </div>
@@ -149,9 +193,9 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
       </div>
 
       <div className="max-w-full overflow-x-auto custom-scrollbar">
-        <div className="min-w-[400px]">
+        <div className="min-w-[600px]">
           <ResponsiveContainer width="100%" height={320}>
-            <BarChart data={chartData} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
+            <ComposedChart data={chartData} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
               <XAxis dataKey="label" stroke="#9ca3af" tick={{ fill: "#6b7280", fontSize: 12, fontFamily: "Outfit, sans-serif" }} tickLine={false} axisLine={false} />
               <YAxis
@@ -168,10 +212,21 @@ const ProductionNgTrend: React.FC<ProductionNgTrendProps> = ({ divisi = "ALL", d
                 }}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend />
+              <Legend wrapperStyle={{ fontSize: "12px", fontFamily: "Outfit, sans-serif", paddingTop: "10px" }} />
               
-              <Bar dataKey="qty_ng" name="Qty NG" fill="#EF4444" radius={[4, 4, 0, 0]} barSize={30} />
-            </BarChart>
+              {/* Stacked Bars */}
+              {ngNames.map((name, index) => (
+                <Bar 
+                  key={name} 
+                  dataKey={name} 
+                  name={name} 
+                  fill={COLORS[index % COLORS.length]} 
+                  stackId="ng" 
+                  radius={index === ngNames.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]} 
+                  barSize={30} 
+                />
+              ))}
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </div>
