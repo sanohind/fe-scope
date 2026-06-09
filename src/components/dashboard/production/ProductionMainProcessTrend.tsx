@@ -165,7 +165,7 @@ const ProductionMainProcessTrend: React.FC<ProductionMainProcessTrendProps> = ({
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Daily Production by Main Process</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Production by Main Process (Kelola)</h3>
         </div>
         <div className="rounded-lg border border-error-200 bg-error-50 p-4 text-error-600 dark:border-error-800 dark:bg-error-900/20 dark:text-error-400">
           {error || "No data available"}
@@ -178,7 +178,7 @@ const ProductionMainProcessTrend: React.FC<ProductionMainProcessTrendProps> = ({
     <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Daily Production by Main Process</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Production by Main Process (Kelola)</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {divisi === "ALL" ? "All Divisions" : divisi} · {period === "daily" ? "Daily" : period === "monthly" ? "Monthly" : "Yearly"}
           </p>
@@ -212,17 +212,17 @@ const ProductionMainProcessTrend: React.FC<ProductionMainProcessTrendProps> = ({
                 }}
               />
               <Tooltip content={<CustomTooltip />} />
-              
+
               {/* Stacked Bars */}
               {mainProcesses.map((name, index) => (
-                <Bar 
-                  key={name} 
-                  dataKey={name} 
-                  name={name} 
-                  fill={COLORS[index % COLORS.length]} 
-                  stackId="process" 
-                  radius={index === mainProcesses.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]} 
-                  barSize={30} 
+                <Bar
+                  key={name}
+                  dataKey={name}
+                  name={name}
+                  fill={COLORS[index % COLORS.length]}
+                  stackId="process"
+                  radius={index === mainProcesses.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                  barSize={30}
                 />
               ))}
             </ComposedChart>
